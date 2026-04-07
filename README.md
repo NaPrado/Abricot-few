@@ -46,3 +46,26 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to enforce code quality and branch conventions.
+
+### Install
+
+```sh
+pip install pre-commit
+pre-commit install
+```
+
+### Hooks
+
+| Hook | Description |
+|------|-------------|
+| `eslint` | Runs ESLint with `--fix` on staged `.vue`, `.js`, and `.ts` files |
+| `check-protected-branches` | Blocks direct commits to `main` |
+| `check-branch-naming` | Enforces branch name format: `<type>/<desc>` |
+
+Valid branch types: `feature`, `bugfix`, `refactor`, `hotfix`, `release`, `chore`.
+
+Examples: `feature/add-login`, `bugfix/fix-header`
