@@ -32,18 +32,34 @@ function closeModal(): void {
   editingRestaurant.value = null
 }
 
-async function handleSave(payload: RestaurantCreateRequest): Promise<void> {
+async function handleSave(payload: RestaurantCreateRequest, photo: File | null): Promise<void> {
   try {
+    let restaurantId: number
     if (editingRestaurant.value) {
       await store.update(editingRestaurant.value.id, payload)
-      show("Restaurante actualizado correctamente", "success")
+      restaurantId = editingRestaurant.value.id
     } else {
-      await store.create(payload)
-      show("Restaurante creado correctamente", "success")
+      const created = await store.create(payload)
+      restaurantId = created.id
     }
+    if (photo) {
+      await store.uploadPhoto(restaurantId, photo)
+    }
+    show(editingRestaurant.value ? "Restaurante actualizado correctamente" : "Restaurante creado correctamente", "success")
     closeModal()
   } catch (e) {
     show(e instanceof Error ? e.message : "Error al guardar", "error")
+  }
+}
+
+async function handleUploadPhoto(file: File): Promise<void> {
+  if (!viewingRestaurant.value) return
+  try {
+    await store.uploadPhoto(viewingRestaurant.value.id, file)
+    viewingRestaurant.value = store.restaurants.find((r) => r.id === viewingRestaurant.value!.id) ?? null
+    show("Foto actualizada correctamente", "success")
+  } catch (e) {
+    show(e instanceof Error ? e.message : "Error al subir la foto", "error")
   }
 }
 
@@ -161,6 +177,7 @@ async function handleDelete(id: number): Promise<void> {
       v-if="viewingRestaurant"
       :restaurant="viewingRestaurant"
       @close="viewingRestaurant = null"
+      @upload-photo="handleUploadPhoto"
     />
 
     <!-- Edit/Create modal -->

@@ -20,9 +20,10 @@ export const useRestaurantStore = defineStore("restaurant", () => {
     }
   }
 
-  async function create(payload: RestaurantCreateRequest): Promise<void> {
+  async function create(payload: RestaurantCreateRequest): Promise<Restaurant> {
     const created = await restaurantService.create(payload)
     restaurants.value.push(created)
+    return created
   }
 
   async function update(id: number, payload: RestaurantUpdateRequest): Promise<void> {
@@ -36,5 +37,11 @@ export const useRestaurantStore = defineStore("restaurant", () => {
     restaurants.value = restaurants.value.filter((r) => r.id !== id)
   }
 
-  return { restaurants, isLoading, error, fetchAll, create, update, remove }
+  async function uploadPhoto(id: number, file: File): Promise<void> {
+    const updated = await restaurantService.uploadPhoto(id, file)
+    const idx = restaurants.value.findIndex((r) => r.id === id)
+    if (idx !== -1) restaurants.value[idx] = updated
+  }
+
+  return { restaurants, isLoading, error, fetchAll, create, update, remove, uploadPhoto }
 })

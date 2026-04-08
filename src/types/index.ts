@@ -32,6 +32,7 @@ export interface Restaurant {
   phone: string
   email: string | null
   description: string | null
+  photoUrl: string | null
   createdAt: string
 }
 

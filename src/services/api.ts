@@ -35,6 +35,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
+
   if (res.status === 401) {
     handleExpiredSession()
   }
@@ -53,9 +54,31 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return data as T
 }
 
+async function upload<T>(method: string, path: string, formData: FormData): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers: { ...getAuthHeader() },
+    body: formData,
+  })
+
+  if (res.status === 401) {
+    handleExpiredSession()
+  }
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    const message: string = data?.message ?? data?.msg ?? `Error ${res.status}`
+    throw new ApiError(res.status, message)
+  }
+
+  return data as T
+}
+
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body: unknown) => request<T>("POST", path, body),
   put: <T>(path: string, body: unknown) => request<T>("PUT", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
+  postForm: <T>(path: string, formData: FormData) => upload<T>("POST", path, formData),
 }
