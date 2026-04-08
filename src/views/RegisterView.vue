@@ -42,7 +42,9 @@ async function handleSubmit(): Promise<void> {
     <div class="w-full max-w-sm">
       <!-- Logo -->
       <div class="text-center mb-8">
-        <RouterLink to="/" class="text-3xl font-bold text-white">🍑 Abricot</RouterLink>
+        <RouterLink to="/" class="inline-block hover:opacity-80 transition-opacity">
+          <img src="/abricot.png" alt="Abricot" class="h-12 w-auto mx-auto" />
+        </RouterLink>
         <p class="text-gray-400 mt-2 text-sm">Creá tu cuenta gratis</p>
       </div>
 

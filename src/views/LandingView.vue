@@ -8,7 +8,7 @@ const authStore = useAuthStore()
   <div class="min-h-screen bg-gray-950 text-white">
     <!-- Navbar -->
     <header class="sticky top-0 z-40 flex items-center justify-between px-8 py-4 border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-sm">
-      <span class="text-xl font-bold tracking-tight">🍑 Abricot</span>
+      <img src="/abricot.png" alt="Abricot" class="h-9 w-auto" />
       <div class="flex gap-3">
         <RouterLink
           v-if="authStore.isAuthenticated"
@@ -200,7 +200,7 @@ const authStore = useAuthStore()
 
     <!-- Footer -->
     <footer class="border-t border-gray-800 px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <span class="text-lg font-bold">🍑 Abricot</span>
+      <img src="/abricot.png" alt="Abricot" class="h-8 w-auto" />
       <span class="text-gray-500 text-sm">© 2026 Abricot · SaaS B2B para gastronomía · Argentina</span>
     </footer>
   </div>
