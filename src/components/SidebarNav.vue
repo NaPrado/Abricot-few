@@ -16,8 +16,9 @@ function logout(): void {
   <nav class="flex h-full w-64 flex-col bg-gray-900 px-4 py-6">
     <!-- Logo -->
     <div class="mb-8 px-2">
-      <RouterLink to="/" class="text-xl font-bold text-white hover:text-orange-400 transition-colors">
-        🍑 Abricot
+      <RouterLink to="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <img src="/abricot.png" alt="Abricot" class="h-8 w-auto" />
+        <span class="text-xl font-bold text-white">Abricot</span>
       </RouterLink>
     </div>
 
