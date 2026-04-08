@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { X } from "lucide-vue-next"
+import { ref } from "vue"
+import { ImagePlus, X } from "lucide-vue-next"
 import type { Restaurant } from "@/types"
 
 defineProps<{ restaurant: Restaurant }>()
-const emit = defineEmits<{ (e: "close"): void }>()
+const emit = defineEmits<{
+  (e: "close"): void
+  (e: "upload-photo", file: File): void
+}>()
+
+const fileInput = ref<HTMLInputElement | null>(null)
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-AR", {
@@ -11,6 +17,11 @@ function formatDate(iso: string): string {
     month: "long",
     year: "numeric",
   })
+}
+
+function onFileChange(event: Event): void {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) emit("upload-photo", file)
 }
 </script>
 
@@ -26,6 +37,38 @@ function formatDate(iso: string): string {
         <button @click="emit('close')" class="text-gray-400 hover:text-white transition-colors">
           <X :size="18" />
         </button>
+      </div>
+
+      <!-- Photo -->
+      <div class="relative group">
+        <img
+          v-if="restaurant.photoUrl"
+          :src="restaurant.photoUrl"
+          :alt="restaurant.name"
+          class="w-full h-48 object-cover"
+        />
+        <div
+          v-else
+          class="w-full h-48 bg-gray-800 flex items-center justify-center text-gray-600"
+        >
+          <ImagePlus :size="40" />
+        </div>
+
+        <!-- Upload overlay -->
+        <button
+          @click="fileInput?.click()"
+          class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity text-white text-sm font-medium gap-2"
+        >
+          <ImagePlus :size="18" />
+          {{ restaurant.photoUrl ? "Cambiar foto" : "Subir foto" }}
+        </button>
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="onFileChange"
+        />
       </div>
 
       <!-- Body -->

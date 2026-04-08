@@ -8,4 +8,9 @@ export const restaurantService = {
   update: (id: number, payload: RestaurantUpdateRequest) =>
     api.put<Restaurant>(`/restaurants/${id}`, payload),
   delete: (id: number) => api.delete<void>(`/restaurants/${id}`),
+  uploadPhoto: (id: number, file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+    return api.postForm<Restaurant>(`/restaurants/${id}/photo`, formData)
+  },
 }
