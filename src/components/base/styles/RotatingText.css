@@ -1,0 +1,31 @@
+.rotating-text {
+  display: inline-block;
+  position: relative;
+}
+
+.rotating-text-phrase {
+  display: inline-block;
+  color: var(--brand);
+}
+
+/* Transition */
+.rotating-text-enter-active {
+  transition: opacity var(--dur-slow) var(--ease-out),
+              transform var(--dur-slow) var(--ease-out),
+              filter var(--dur-slow) var(--ease-out);
+}
+.rotating-text-leave-active {
+  transition: opacity var(--dur-base) var(--ease-in-out),
+              transform var(--dur-base) var(--ease-in-out),
+              filter var(--dur-base) var(--ease-in-out);
+}
+.rotating-text-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(6px);
+}
+.rotating-text-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+  filter: blur(4px);
+}

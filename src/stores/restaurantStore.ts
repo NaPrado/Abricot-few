@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
-import { restaurantService } from "@/services/restaurantService"
-import type { Restaurant, RestaurantCreateRequest, RestaurantUpdateRequest } from "@/types"
+import { restaurantService } from '@/services'
+import type { Restaurant, RestaurantCreateRequest, RestaurantUpdateRequest } from '@/types'
 
 export const useRestaurantStore = defineStore("restaurant", () => {
   const restaurants = ref<Restaurant[]>([])

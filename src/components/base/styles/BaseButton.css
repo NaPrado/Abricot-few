@@ -1,0 +1,83 @@
+.base-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out),
+              opacity var(--dur-base) var(--ease-out);
+  outline: none;
+  white-space: nowrap;
+}
+
+.base-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--brand);
+}
+
+.base-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.base-button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* Primary */
+.base-button--primary {
+  background: var(--brand);
+  color: var(--text-primary);
+  border-color: var(--brand);
+}
+.base-button--primary:not(:disabled):hover {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+  box-shadow: var(--brand-glow);
+}
+
+/* Secondary */
+.base-button--secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
+}
+.base-button--secondary:not(:disabled):hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+/* Danger */
+.base-button--danger {
+  background: var(--danger);
+  color: var(--text-primary);
+  border-color: var(--danger);
+}
+.base-button--danger:not(:disabled):hover {
+  background: var(--danger-hover);
+  border-color: var(--danger-hover);
+  box-shadow: var(--danger-glow);
+}
+
+/* Ghost (icon-only actions) */
+.base-button--ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border-default);
+  padding: 0.5rem;
+}
+.base-button--ghost:not(:disabled):hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}

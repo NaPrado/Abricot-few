@@ -1,0 +1,68 @@
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
+
+export class HttpError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'HttpError'
+  }
+}
+
+function getAuthHeader(): Record<string, string> {
+  const token = localStorage.getItem('access_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+function handleExpiredSession(): never {
+  localStorage.removeItem('access_token')
+  localStorage.removeItem('user')
+  setTimeout(() => { window.location.href = '/login?expired=1' }, 100)
+  throw new HttpError(401, 'Sesión expirada. Iniciá sesión nuevamente.')
+}
+
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  })
+
+  if (res.status === 401) handleExpiredSession()
+  if (res.status === 204) return undefined as T
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new HttpError(res.status, data?.message ?? data?.msg ?? `Error ${res.status}`)
+  }
+
+  return data as T
+}
+
+async function upload<T>(method: string, path: string, formData: FormData): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers: { ...getAuthHeader() },
+    body: formData,
+  })
+
+  if (res.status === 401) handleExpiredSession()
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new HttpError(res.status, data?.message ?? data?.msg ?? `Error ${res.status}`)
+  }
+
+  return data as T
+}
+
+export const http = {
+  get:      <T>(path: string)                  => request<T>('GET', path),
+  post:     <T>(path: string, body: unknown)   => request<T>('POST', path, body),
+  put:      <T>(path: string, body: unknown)   => request<T>('PUT', path, body),
+  delete:   <T>(path: string)                  => request<T>('DELETE', path),
+  postForm: <T>(path: string, form: FormData)  => upload<T>('POST', path, form),
+}

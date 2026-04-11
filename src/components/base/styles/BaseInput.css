@@ -1,0 +1,28 @@
+.base-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 0.6875rem 1rem;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  outline: none;
+  transition: border-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+  appearance: none;
+}
+
+.base-input::placeholder {
+  color: var(--text-placeholder);
+}
+
+.base-input:focus {
+  border-color: var(--brand-border);
+  box-shadow: 0 0 0 3px var(--brand-dim), var(--brand-glow);
+}
+
+.base-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

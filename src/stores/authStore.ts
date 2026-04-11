@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
-import { authService } from "@/services/authService"
-import type { User, LoginRequest, RegisterRequest } from "@/types"
+import { authService } from '@/services'
+import type { User, LoginRequest, RegisterRequest } from '@/types'
 
 export const useAuthStore = defineStore("auth", () => {
   const token = ref<string | null>(localStorage.getItem("access_token"))

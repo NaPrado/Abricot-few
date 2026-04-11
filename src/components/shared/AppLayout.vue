@@ -4,11 +4,13 @@ import ToastContainer from './ToastContainer.vue'
 </script>
 
 <template>
-  <div class="flex h-screen w-full">
+  <div class="app-layout-wrapper">
     <SidebarNav />
-    <main class="flex-1 overflow-y-auto bg-gray-950 p-8">
+    <main class="app-layout-main-content">
       <RouterView />
     </main>
     <ToastContainer />
   </div>
 </template>
+
+<style src="./styles/AppLayout.css" scoped></style>
