@@ -1,0 +1,7 @@
+export type { DiscountTypeType } from './DiscountTypeType'
+export type { PromotionItemType } from './PromotionItemType'
+export type { PromotionType } from './PromotionType'
+export type { PromotionFeedQueryType } from './PromotionFeedQueryType'
+export type { PromotionFeedResponseType } from './PromotionFeedResponseType'
+export type { CreatePromotionRequestType } from './CreatePromotionRequestType'
+export type { UpdatePromotionRequestType } from './UpdatePromotionRequestType'

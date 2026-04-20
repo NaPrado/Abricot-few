@@ -3,8 +3,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ImagePlus, X, MapPin, Phone, Mail, Calendar } from 'lucide-vue-next'
 import type { Restaurant } from '@/types'
-
-const props = defineProps<{ restaurant: Restaurant }>()
+defineProps<{ restaurant: Restaurant }>()
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'upload-photo', file: File): void
