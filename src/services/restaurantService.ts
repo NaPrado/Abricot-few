@@ -1,16 +1,28 @@
 import { http } from './http'
-import type { Restaurant, RestaurantCreateRequest, RestaurantUpdateRequest } from '@/types'
+import type {
+  ApiId,
+  Restaurant,
+  RestaurantCreateRequest,
+  RestaurantListQuery,
+  RestaurantListResponse,
+  RestaurantPhotoUploadResponse,
+  RestaurantUpdateRequest,
+} from '@/types'
 
 export const restaurantService = {
-  getAll:  ()                                        => http.get<Restaurant[]>('/restaurants/'),
-  getById: (id: number)                              => http.get<Restaurant>(`/restaurants/${id}`),
-  create:  (payload: RestaurantCreateRequest)        => http.post<Restaurant>('/restaurants/', payload),
-  update:  (id: number, payload: RestaurantUpdateRequest) =>
-                                                        http.put<Restaurant>(`/restaurants/${id}`, payload),
-  delete:  (id: number)                              => http.delete<void>(`/restaurants/${id}`),
-  uploadPhoto: (id: number, file: File) => {
+  getAll: (query?: RestaurantListQuery) =>
+    http.get<RestaurantListResponse>('/restaurants/', { authMode: 'none', query }),
+  getById: (id: ApiId) =>
+    http.get<Restaurant>(`/restaurants/${id}`, { authMode: 'none' }),
+  create: (payload: RestaurantCreateRequest) =>
+    http.post<Restaurant>('/restaurants/', payload),
+  update: (id: ApiId, payload: RestaurantUpdateRequest) =>
+    http.put<Restaurant>(`/restaurants/${id}`, payload),
+  delete: (id: ApiId) =>
+    http.delete<void>(`/restaurants/${id}`),
+  uploadPhoto: (id: ApiId, file: File) => {
     const formData = new FormData()
-    formData.append('file', file)
-    return http.postForm<Restaurant>(`/restaurants/${id}/photo`, formData)
+    formData.append('photo', file)
+    return http.postForm<RestaurantPhotoUploadResponse>(`/restaurants/${id}/photo`, formData)
   },
 }

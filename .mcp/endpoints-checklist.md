@@ -4,108 +4,108 @@ Source: .mcp/abricot_frontend_guide.md
 Total unique endpoints: 77
 
 ## Auth (3)
-- [ ] POST /auth/register
-- [ ] POST /auth/login
-- [ ] POST /auth/refresh
+- [x] POST /auth/register
+- [x] POST /auth/login
+- [x] POST /auth/refresh
 
 ## Lookup Data (6)
-- [ ] GET /cuisines/
-- [ ] GET /price-ranges/
-- [ ] GET /countries/
-- [ ] GET /countries/{countryId}/provinces/
-- [ ] GET /provinces/{provinceId}/cities/
-- [ ] GET /cities/{cityId}/neighbourhoods/
+- [x] GET /cuisines/
+- [x] GET /price-ranges/
+- [x] GET /countries/
+- [x] GET /countries/{countryId}/provinces/
+- [x] GET /provinces/{provinceId}/cities/
+- [x] GET /cities/{cityId}/neighbourhoods/
 
 ## Restaurants (6)
-- [ ] GET /restaurants/
-- [ ] POST /restaurants/
-- [ ] GET /restaurants/{restaurantId}
-- [ ] PUT /restaurants/{restaurantId}
-- [ ] DELETE /restaurants/{restaurantId}
-- [ ] POST /restaurants/{restaurantId}/photo
+- [x] GET /restaurants/
+- [x] POST /restaurants/
+- [x] GET /restaurants/{restaurantId}
+- [x] PUT /restaurants/{restaurantId}
+- [x] DELETE /restaurants/{restaurantId}
+- [x] POST /restaurants/{restaurantId}/photo
 
 ## Tables (6)
-- [ ] GET /restaurants/{restaurantId}/tables/
-- [ ] POST /restaurants/{restaurantId}/tables/
-- [ ] POST /restaurants/{restaurantId}/tables/bulk
-- [ ] GET /restaurants/{restaurantId}/tables/{tableId}
-- [ ] PUT /restaurants/{restaurantId}/tables/{tableId}
-- [ ] DELETE /restaurants/{restaurantId}/tables/{tableId}
+- [x] GET /restaurants/{restaurantId}/tables/
+- [x] POST /restaurants/{restaurantId}/tables/
+- [x] POST /restaurants/{restaurantId}/tables/bulk
+- [x] GET /restaurants/{restaurantId}/tables/{tableId}
+- [x] PUT /restaurants/{restaurantId}/tables/{tableId}
+- [x] DELETE /restaurants/{restaurantId}/tables/{tableId}
 
 ## Business Hours (2)
-- [ ] GET /restaurants/{restaurantId}/business-hours/
-- [ ] PUT /restaurants/{restaurantId}/business-hours/
+- [x] GET /restaurants/{restaurantId}/business-hours/
+- [x] PUT /restaurants/{restaurantId}/business-hours/
 
 ## Availability (1)
-- [ ] GET /restaurants/{restaurantId}/availability/
+- [x] GET /restaurants/{restaurantId}/availability/
 
 ## Reservations (10)
-- [ ] POST /restaurants/{restaurantId}/reservations/
-- [ ] POST /restaurants/{restaurantId}/reservations/admin
-- [ ] GET /restaurants/{restaurantId}/reservations/
-- [ ] GET /reservations/{reservationId}
-- [ ] GET /reservations/lookup
-- [ ] PATCH /reservations/{reservationId}/cancel
-- [ ] PATCH /reservations/{reservationId}/reassign-tables
-- [ ] PATCH /reservations/{reservationId}/complete
-- [ ] PATCH /reservations/{reservationId}/no-show
-- [ ] GET /users/me/reservations/
+- [x] POST /restaurants/{restaurantId}/reservations/
+- [x] POST /restaurants/{restaurantId}/reservations/admin
+- [x] GET /restaurants/{restaurantId}/reservations/
+- [x] GET /reservations/{reservationId}
+- [x] GET /reservations/lookup
+- [x] PATCH /reservations/{reservationId}/cancel
+- [x] PATCH /reservations/{reservationId}/reassign-tables
+- [x] PATCH /reservations/{reservationId}/complete
+- [x] PATCH /reservations/{reservationId}/no-show
+- [x] GET /users/me/reservations/
 
 ## Menus (6)
-- [ ] GET /restaurants/{restaurantId}/menus/
-- [ ] POST /restaurants/{restaurantId}/menus/
-- [ ] GET /restaurants/{restaurantId}/menus/{menuId}
-- [ ] PUT /restaurants/{restaurantId}/menus/{menuId}
-- [ ] DELETE /restaurants/{restaurantId}/menus/{menuId}
-- [ ] PATCH /restaurants/{restaurantId}/menus/{menuId}/activate
+- [x] GET /restaurants/{restaurantId}/menus/
+- [x] POST /restaurants/{restaurantId}/menus/
+- [x] GET /restaurants/{restaurantId}/menus/{menuId}
+- [x] PUT /restaurants/{restaurantId}/menus/{menuId}
+- [x] DELETE /restaurants/{restaurantId}/menus/{menuId}
+- [x] PATCH /restaurants/{restaurantId}/menus/{menuId}/activate
 
 ## Menu Categories (5)
-- [ ] GET /menus/{menuId}/categories/
-- [ ] POST /menus/{menuId}/categories/
-- [ ] PUT /menus/{menuId}/categories/{categoryId}
-- [ ] DELETE /menus/{menuId}/categories/{categoryId}
-- [ ] PATCH /menus/{menuId}/categories/reorder
+- [x] GET /menus/{menuId}/categories/
+- [x] POST /menus/{menuId}/categories/
+- [x] PUT /menus/{menuId}/categories/{categoryId}
+- [x] DELETE /menus/{menuId}/categories/{categoryId}
+- [x] PATCH /menus/{menuId}/categories/reorder
 
 ## Menu Items (7)
-- [ ] GET /categories/{categoryId}/items/
-- [ ] POST /categories/{categoryId}/items/
-- [ ] GET /items/{itemId}
-- [ ] PUT /items/{itemId}
-- [ ] DELETE /items/{itemId}
-- [ ] POST /items/{itemId}/photo
-- [ ] PATCH /items/{itemId}/availability
+- [x] GET /categories/{categoryId}/items/
+- [x] POST /categories/{categoryId}/items/
+- [x] GET /items/{itemId}
+- [x] PUT /items/{itemId}
+- [x] DELETE /items/{itemId}
+- [x] POST /items/{itemId}/photo
+- [x] PATCH /items/{itemId}/availability
 
 ## Orders (6)
-- [ ] POST /restaurants/{restaurantId}/orders/
-- [ ] GET /restaurants/{restaurantId}/orders/
-- [ ] GET /orders/{orderId}
-- [ ] PATCH /orders/{orderId}/status
-- [ ] PATCH /orders/{orderId}/cancel
-- [ ] GET /users/me/orders/
+- [x] POST /restaurants/{restaurantId}/orders/
+- [x] GET /restaurants/{restaurantId}/orders/
+- [x] GET /orders/{orderId}
+- [x] PATCH /orders/{orderId}/status
+- [x] PATCH /orders/{orderId}/cancel
+- [x] GET /users/me/orders/
 
 ## Promotions (8)
-- [ ] GET /restaurants/{restaurantId}/promotions/
-- [ ] GET /promotions/feed
-- [ ] POST /restaurants/{restaurantId}/promotions/
-- [ ] GET /restaurants/{restaurantId}/promotions/{promotionId}
-- [ ] PUT /restaurants/{restaurantId}/promotions/{promotionId}
-- [ ] PATCH /restaurants/{restaurantId}/promotions/{promotionId}/deactivate
-- [ ] PATCH /restaurants/{restaurantId}/promotions/{promotionId}/activate
-- [ ] DELETE /restaurants/{restaurantId}/promotions/{promotionId}
+- [x] GET /restaurants/{restaurantId}/promotions/
+- [x] GET /promotions/feed
+- [x] POST /restaurants/{restaurantId}/promotions/
+- [x] GET /restaurants/{restaurantId}/promotions/{promotionId}
+- [x] PUT /restaurants/{restaurantId}/promotions/{promotionId}
+- [x] PATCH /restaurants/{restaurantId}/promotions/{promotionId}/deactivate
+- [x] PATCH /restaurants/{restaurantId}/promotions/{promotionId}/activate
+- [x] DELETE /restaurants/{restaurantId}/promotions/{promotionId}
 
 ## User Profile (4)
-- [ ] GET /users/me
-- [ ] PUT /users/me
-- [ ] PUT /users/me/password
-- [ ] GET /users/me/restaurants/
+- [x] GET /users/me
+- [x] PUT /users/me
+- [x] PUT /users/me/password
+- [x] GET /users/me/restaurants/
 
 ## Notification Preferences (2)
-- [ ] GET /users/me/notification-preferences/
-- [ ] PUT /users/me/notification-preferences/{restaurantId}
+- [x] GET /users/me/notification-preferences/
+- [x] PUT /users/me/notification-preferences/{restaurantId}
 
 ## Analytics (5)
-- [ ] GET /restaurants/{restaurantId}/analytics/occupancy
-- [ ] GET /restaurants/{restaurantId}/analytics/orders
-- [ ] GET /restaurants/{restaurantId}/analytics/popular-items
-- [ ] GET /restaurants/{restaurantId}/analytics/promotions
-- [ ] GET /restaurants/{restaurantId}/analytics/peak-hours
+- [x] GET /restaurants/{restaurantId}/analytics/occupancy
+- [x] GET /restaurants/{restaurantId}/analytics/orders
+- [x] GET /restaurants/{restaurantId}/analytics/popular-items
+- [x] GET /restaurants/{restaurantId}/analytics/promotions
+- [x] GET /restaurants/{restaurantId}/analytics/peak-hours
