@@ -1,0 +1,68 @@
+.profile-view {
+  padding: 2rem;
+  max-width: 36rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-view-header {
+  margin-bottom: 0.5rem;
+}
+
+.profile-view-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.profile-view-subtitle {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin-top: 0.25rem;
+}
+
+.profile-view-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-view-section-title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.profile-view-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.profile-view-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.profile-view-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profile-view-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.profile-view-actions {
+  padding-top: 0.25rem;
+}

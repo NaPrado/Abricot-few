@@ -1,28 +1,69 @@
-.base-input {
+.base-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
   width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 0.6875rem 1rem;
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  line-height: 1.5;
-  outline: none;
-  transition: border-color var(--dur-base) var(--ease-out),
-              box-shadow var(--dur-base) var(--ease-out);
-  appearance: none;
 }
 
-.base-input::placeholder {
+.base-input-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.base-input-required {
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.base-input-control {
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.9rem;
+  font-size: var(--text-sm);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+  width: 100%;
+}
+
+.base-input-control::placeholder {
   color: var(--text-placeholder);
 }
 
-.base-input:focus {
-  border-color: var(--brand-border);
-  box-shadow: 0 0 0 3px var(--brand-dim), var(--brand-glow);
+.base-input-control:hover:not(:disabled) {
+  border-color: var(--border-strong);
 }
 
-.base-input:disabled {
-  opacity: 0.4;
+.base-input-control:focus {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 1px var(--brand-border);
+  background: var(--bg-card);
+}
+
+.base-input-control:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+.base-input-control--error {
+  border-color: var(--danger-border);
+}
+.base-input-control--error:focus {
+  box-shadow: 0 0 0 3px var(--danger-dim);
+}
+
+.base-input-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.base-input-error {
+  font-size: var(--text-xs);
+  color: var(--danger-hover);
 }

@@ -1,0 +1,150 @@
+.my-reservations-view {
+  padding: 2rem;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.my-reservations-view-header {
+  margin-bottom: 1.5rem;
+}
+
+.my-reservations-view-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.my-reservations-view-subtitle {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin-top: 0.25rem;
+}
+
+.my-reservations-view-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  max-width: 16rem;
+}
+
+.my-reservations-view-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.my-reservations-view-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.my-reservations-view-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+}
+
+.my-reservations-view-card-restaurant {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.my-reservations-view-card-meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-top: 0.125rem;
+}
+
+.my-reservations-view-card-code {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: monospace;
+  margin-top: 0.125rem;
+}
+
+.my-reservations-view-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.my-reservations-view-card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.my-reservations-view-link-btn {
+  font-size: var(--text-xs);
+  color: var(--brand);
+  text-decoration: none;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-md);
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+.my-reservations-view-link-btn:hover {
+  background: var(--brand-dim);
+}
+
+.my-reservations-view-danger-btn {
+  font-size: var(--text-xs);
+  color: var(--danger);
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+.my-reservations-view-danger-btn:hover {
+  background: var(--danger-dim);
+}
+
+.my-reservations-view-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+}
+
+.my-reservations-view-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: var(--shadow-modal);
+}
+
+.my-reservations-view-modal-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.my-reservations-view-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}

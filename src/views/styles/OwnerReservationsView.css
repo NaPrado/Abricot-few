@@ -1,0 +1,180 @@
+.owner-reservations-view {
+  padding: 2rem;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.owner-reservations-view-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.owner-reservations-view-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.owner-reservations-view-subtitle {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin-top: 0.25rem;
+}
+
+.owner-reservations-view-filters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.owner-reservations-view-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.owner-reservations-view-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.owner-reservations-view-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+}
+
+.owner-reservations-view-card-guest {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.owner-reservations-view-card-meta {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}
+
+.owner-reservations-view-card-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.owner-reservations-view-card-actions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.owner-reservations-view-action-btn {
+  font-size: var(--text-xs);
+  padding: 0.3rem 0.625rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+}
+
+.owner-reservations-view-action-btn--success:hover {
+  color: var(--success);
+  border-color: var(--success-border);
+}
+
+.owner-reservations-view-action-btn--warning:hover {
+  color: var(--warning-text);
+  border-color: var(--warning-border);
+}
+
+.owner-reservations-view-action-btn--danger:hover {
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+
+.owner-reservations-view-slots-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.owner-reservations-view-slots-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.owner-reservations-view-slot-btn {
+  font-size: var(--text-sm);
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+}
+
+.owner-reservations-view-slot-btn--selected {
+  border-color: var(--brand-border);
+  color: var(--brand);
+  background: var(--brand-dim);
+}
+
+.owner-reservations-view-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+}
+
+.owner-reservations-view-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  box-shadow: var(--shadow-modal);
+}
+
+.owner-reservations-view-modal-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.owner-reservations-view-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.owner-reservations-view-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}

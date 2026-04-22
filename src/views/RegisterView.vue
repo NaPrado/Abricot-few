@@ -1,89 +1,40 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores'
-import { HttpError } from '@/services'
-import { BaseInput, BaseButton } from '@/components/base'
+import { useRegisterView } from './scripts/RegisterView'
 
-const { t } = useI18n()
-const router = useRouter()
-const authStore = useAuthStore()
-
-const name = ref('')
-const surname = ref('')
-const email = ref('')
-const password = ref('')
-const errorMsg = ref<string | null>(null)
-const isLoading = ref(false)
-
-async function handleSubmit(): Promise<void> {
-  errorMsg.value = null
-  if (password.value.length < 8) {
-    errorMsg.value = t('auth.errors.passwordLength')
-    return
-  }
-  isLoading.value = true
-  try {
-    await authStore.register({ name: name.value, surname: surname.value, email: email.value, password: password.value })
-    router.push('/app')
-  } catch (e) {
-    errorMsg.value = e instanceof HttpError ? e.message : t('auth.errors.register')
-  } finally {
-    isLoading.value = false
-  }
-}
+const {
+  RouterLink,
+  BaseButton,
+  BaseInput,
+  t,
+  form,
+  loading,
+  error,
+  onSubmit,
+} = useRegisterView()
 </script>
 
 <template>
-  <div class="register-view-wrapper">
-    <div class="register-view-content">
-      <!-- Logo -->
-      <div class="register-view-logo-section">
-        <RouterLink to="/" class="register-view-logo-link">
-          <img src="/abricot.png" alt="Abricot" class="register-view-logo-image" />
-        </RouterLink>
-        <p class="register-view-subtitle">{{ t('auth.registerSubtitle') }}</p>
-      </div>
-
-      <!-- Card -->
-      <div class="register-view-card">
-        <form class="register-view-form" @submit.prevent="handleSubmit">
-          <div class="register-view-name-grid">
-            <div>
-              <label class="register-view-field-label">{{ t('auth.firstName') }}</label>
-              <BaseInput v-model="name" placeholder="Juan" required />
-            </div>
-            <div>
-              <label class="register-view-field-label">{{ t('auth.lastName') }}</label>
-              <BaseInput v-model="surname" placeholder="García" required />
-            </div>
-          </div>
-
-          <div>
-            <label class="register-view-field-label">{{ t('auth.email') }}</label>
-            <BaseInput v-model="email" type="email" placeholder="hola@restaurante.com" required />
-          </div>
-
-          <div>
-            <label class="register-view-field-label">
-              {{ t('auth.password') }}
-              <span class="register-view-password-hint">{{ t('auth.passwordHint') }}</span>
-            </label>
-            <BaseInput v-model="password" type="password" placeholder="••••••••" required />
-          </div>
-
-          <p v-if="errorMsg" class="register-view-error-message">{{ errorMsg }}</p>
-
-          <BaseButton type="submit" :loading="isLoading" class="w-full">
-            {{ isLoading ? t('auth.registerLoading') : t('auth.registerButton') }}
-          </BaseButton>
-        </form>
-      </div>
-
-      <p class="register-view-login-prompt">
-        {{ t('auth.hasAccount') }}
-        <RouterLink to="/login" class="register-view-login-link">{{ t('auth.signIn') }}</RouterLink>
+  <div class="register-view">
+    <div class="register-view-card">
+      <img src="/abricot.png" alt="Abricot" class="register-view-logo" />
+      <h1 class="register-view-title">{{ t('auth.registerButton') }}</h1>
+      <p class="register-view-subtitle">{{ t('auth.registerSubtitle') }}</p>
+      <p v-if="error" class="register-view-error">{{ error }}</p>
+      <form class="register-view-form" @submit.prevent="onSubmit">
+        <label class="register-view-label">{{ t('auth.firstName') }}</label>
+        <BaseInput v-model="form.name" autocomplete="given-name" required />
+        <label class="register-view-label">{{ t('auth.lastName') }}</label>
+        <BaseInput v-model="form.surname" autocomplete="family-name" required />
+        <label class="register-view-label">{{ t('auth.email') }}</label>
+        <BaseInput v-model="form.email" type="email" autocomplete="email" required />
+        <label class="register-view-label">{{ t('auth.password') }} {{ t('auth.passwordHint') }}</label>
+        <BaseInput v-model="form.password" type="password" autocomplete="new-password" required />
+        <BaseButton type="submit" variant="primary" class="register-view-submit" :disabled="loading">
+          {{ loading ? t('auth.registerLoading') : t('auth.registerButton') }}
+        </BaseButton>
+      </form>
+      <p class="register-view-footer">
+        <RouterLink to="/login" class="register-view-link">{{ t('auth.loginButton') }}</RouterLink>
       </p>
     </div>
   </div>

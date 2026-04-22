@@ -1,36 +1,25 @@
 <script setup lang="ts">
-import { useToast } from '@/composables/useToast'
-import { CheckCircle, XCircle, Info, X } from 'lucide-vue-next'
+import { useToastContainer } from './scripts/ToastContainer'
 
-const { toasts, dismiss } = useToast()
-
-const iconMap: Record<string, typeof CheckCircle> = {
-  success: CheckCircle,
-  error: XCircle,
-  info: Info,
-}
-
-const typeClass: Record<string, string> = {
-  error: 'toast-item--error',
-  success: 'toast-item--success',
-  info: 'toast-item--info',
-}
+const { toasts, dismiss, CheckCircle2, Info, X, XCircle } = useToastContainer()
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="toast-container">
-      <TransitionGroup name="toast">
+    <div class="toast-container" role="region" aria-live="polite">
+      <TransitionGroup name="toast" tag="div" class="toast-stack">
         <div
-          v-for="toast in toasts"
-          :key="toast.id"
-          :class="['toast-item', typeClass[toast.type]]"
+          v-for="t in toasts"
+          :key="t.id"
+          class="toast-item"
+          :class="`toast-item--${t.type}`"
+          role="status"
         >
-          <span class="toast-item-icon">
-            <component :is="iconMap[toast.type]" :size="16" />
-          </span>
-          <span class="toast-item-message">{{ toast.message }}</span>
-          <button class="toast-item-dismiss-button" @click="dismiss(toast.id)">
+          <CheckCircle2 v-if="t.type === 'success'" :size="16" class="toast-icon" />
+          <XCircle v-else-if="t.type === 'error'" :size="16" class="toast-icon" />
+          <Info v-else :size="16" class="toast-icon" />
+          <span class="toast-message">{{ t.message }}</span>
+          <button type="button" class="toast-close" :aria-label="'Cerrar'" @click="dismiss(t.id)">
             <X :size="14" />
           </button>
         </div>

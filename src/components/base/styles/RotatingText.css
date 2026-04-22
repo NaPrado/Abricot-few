@@ -1,31 +1,41 @@
 .rotating-text {
   display: inline-block;
-  position: relative;
-}
-
-.rotating-text-phrase {
-  display: inline-block;
   color: var(--brand);
+  position: relative;
+  min-width: 6ch;
 }
 
-/* Transition */
-.rotating-text-enter-active {
-  transition: opacity var(--dur-slow) var(--ease-out),
-              transform var(--dur-slow) var(--ease-out),
-              filter var(--dur-slow) var(--ease-out);
+.rotating-text-word {
+  display: inline-block;
+  background: linear-gradient(
+    92deg,
+    var(--brand) 0%,
+    var(--brand-hover) 55%,
+    var(--brand) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(249, 115, 22, 0.18));
+  padding-right: 0.04em;
 }
+
+.rotating-text-enter-active,
 .rotating-text-leave-active {
-  transition: opacity var(--dur-base) var(--ease-in-out),
-              transform var(--dur-base) var(--ease-in-out),
-              filter var(--dur-base) var(--ease-in-out);
+  transition:
+    opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out),
+    filter var(--dur-base) var(--ease-out);
 }
+
 .rotating-text-enter-from {
   opacity: 0;
-  transform: translateY(12px);
-  filter: blur(6px);
+  transform: translateY(0.4em);
+  filter: blur(4px);
 }
+
 .rotating-text-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-0.4em);
   filter: blur(4px);
 }

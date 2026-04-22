@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
 import { restaurantService } from '@/services'
-import type { Restaurant, RestaurantCreateRequest, RestaurantUpdateRequest } from '@/types'
+import type { ApiId, Restaurant, RestaurantCreateRequest, RestaurantUpdateRequest } from '@/types'
 
 export const useRestaurantStore = defineStore("restaurant", () => {
   const restaurants = ref<Restaurant[]>([])
@@ -12,7 +12,8 @@ export const useRestaurantStore = defineStore("restaurant", () => {
     isLoading.value = true
     error.value = null
     try {
-      restaurants.value = await restaurantService.getAll()
+      const res = await restaurantService.getAll()
+      restaurants.value = res.data
     } catch (e) {
       error.value = e instanceof Error ? e.message : "Error al cargar restaurantes"
     } finally {
@@ -26,21 +27,23 @@ export const useRestaurantStore = defineStore("restaurant", () => {
     return created
   }
 
-  async function update(id: number, payload: RestaurantUpdateRequest): Promise<void> {
+  async function update(id: ApiId, payload: RestaurantUpdateRequest): Promise<void> {
     const updated = await restaurantService.update(id, payload)
     const idx = restaurants.value.findIndex((r) => r.id === id)
     if (idx !== -1) restaurants.value[idx] = updated
   }
 
-  async function remove(id: number): Promise<void> {
+  async function remove(id: ApiId): Promise<void> {
     await restaurantService.delete(id)
     restaurants.value = restaurants.value.filter((r) => r.id !== id)
   }
 
-  async function uploadPhoto(id: number, file: File): Promise<void> {
-    const updated = await restaurantService.uploadPhoto(id, file)
+  async function uploadPhoto(id: ApiId, file: File): Promise<void> {
+    const res = await restaurantService.uploadPhoto(id, file)
     const idx = restaurants.value.findIndex((r) => r.id === id)
-    if (idx !== -1) restaurants.value[idx] = updated
+    if (idx !== -1) {
+      Object.assign(restaurants.value[idx]!, { photoUrl: res.photoUrl })
+    }
   }
 
   return { restaurants, isLoading, error, fetchAll, create, update, remove, uploadPhoto }

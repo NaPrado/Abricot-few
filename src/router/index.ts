@@ -5,6 +5,7 @@ import { registerGuards } from './guards'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // ── Public ──────────────────────────────────────────────────
     {
       path: '/',
       component: () => import('@/views/LandingView.vue'),
@@ -21,17 +22,96 @@ const router = createRouter({
       meta: { public: true },
     },
     {
+      path: '/explore',
+      component: () => import('@/views/ExploreView.vue'),
+      meta: { public: true },
+    },
+    {
+      path: '/restaurants/:restaurantId',
+      component: () => import('@/views/RestaurantPublicView.vue'),
+      meta: { public: true },
+    },
+
+    // ── Owner shell (/app) ───────────────────────────────────────
+    {
       path: '/app',
       component: AppLayout,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, roles: ['RESTAURANT_ADMIN', 'SUPER_ADMIN'] },
       children: [
         { path: '', redirect: '/app/restaurants' },
         {
           path: 'restaurants',
           component: () => import('@/views/RestaurantsView.vue'),
         },
+        {
+          path: 'restaurants/:restaurantId',
+          component: () => import('@/views/OwnerRestaurantDashboardView.vue'),
+        },
+        {
+          path: 'restaurants/:restaurantId/tables',
+          component: () => import('@/views/OwnerTablesView.vue'),
+        },
+        {
+          path: 'restaurants/:restaurantId/hours',
+          component: () => import('@/views/OwnerBusinessHoursView.vue'),
+        },
+        {
+          path: 'restaurants/:restaurantId/reservations',
+          component: () => import('@/views/OwnerReservationsView.vue'),
+        },
+        {
+          path: 'restaurants/:restaurantId/orders',
+          component: () => import('@/views/OwnerOrdersView.vue'),
+        },
+        {
+          path: 'restaurants/:restaurantId/menus',
+          component: () => import('@/views/OwnerMenusView.vue'),
+        },
+        {
+          path: 'restaurants/:restaurantId/promotions',
+          component: () => import('@/views/OwnerPromotionsView.vue'),
+        },
+        {
+          path: 'restaurants/:restaurantId/stats',
+          component: () => import('@/views/OwnerAnalyticsView.vue'),
+        },
       ],
     },
+
+    // ── Customer shell (/me) ─────────────────────────────────────
+    {
+      path: '/me',
+      component: AppLayout,
+      meta: { requiresAuth: true, roles: ['CUSTOMER'] },
+      children: [
+        { path: '', redirect: '/me/reservations' },
+        {
+          path: 'reservations',
+          component: () => import('@/views/MyReservationsView.vue'),
+        },
+        {
+          path: 'reservations/:id',
+          component: () => import('@/views/ReservationDetailView.vue'),
+        },
+        {
+          path: 'orders',
+          component: () => import('@/views/MyOrdersView.vue'),
+        },
+        {
+          path: 'orders/:orderId',
+          component: () => import('@/views/OrderTrackingView.vue'),
+        },
+        {
+          path: 'profile',
+          component: () => import('@/views/ProfileView.vue'),
+        },
+        {
+          path: 'notifications',
+          component: () => import('@/views/NotificationPreferencesView.vue'),
+        },
+      ],
+    },
+
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 })

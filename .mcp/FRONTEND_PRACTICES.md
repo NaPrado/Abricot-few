@@ -10,14 +10,15 @@ Grounded in the actual codebase, not in generic tutorials.
 1. [Project Structure](#1-project-structure)
 2. [Proposed Architecture — Full Separation of Concerns](#2-proposed-architecture--full-separation-of-concerns)
 3. [Component Hierarchy](#3-component-hierarchy-detail)
-4. [Styling — Tailwind Done Right](#4-styling--tailwind-done-right)
-5. [Composables vs Stores vs Services](#5-composables-vs-stores-vs-services)
-6. [TypeScript Discipline](#6-typescript-discipline)
-7. [Vue Template Rules](#7-vue-template-rules)
-8. [Vite-Specific Practices](#8-vite-specific-practices)
-9. [HTTP Client — No Axios](#9-http-client--no-axios)
-10. [Internationalisation (i18n)](#10-internationalisation-i18n)
-11. [What to Never Do](#11-what-to-never-do)
+4. [Styling — CSS Architecture](#4-styling--css-architecture)
+5. [Script logic — co-located scripts/ modules](#5-script-logic-co-located-scripts-modules)
+6. [Composables vs Stores vs Services](#6-composables-vs-stores-vs-services)
+7. [TypeScript Discipline](#7-typescript-discipline)
+8. [Vue Template Rules](#8-vue-template-rules)
+9. [Vite-Specific Practices](#9-vite-specific-practices)
+10. [HTTP Client — No Axios](#10-http-client--no-axios)
+11. [Internationalisation (i18n)](#11-internationalisation-i18n)
+12. [What to Never Do](#12-what-to-never-do)
 
 ---
 
@@ -34,7 +35,7 @@ src/
 ├── services/        # Raw API calls. No state, no UI, no side-effects
 ├── stores/          # Pinia stores. State + mutations + async actions
 ├── types/           # All TypeScript interfaces and type aliases
-└── views/           # One file per route. Orchestration only — minimal logic
+└── views/           # One file per route + scripts/ + styles/ (see §4–§5)
 ```
 
 ### The rule of thumb
@@ -64,6 +65,7 @@ src/
 │   │   ├── BaseModal.vue
 │   │   ├── BaseSpinner.vue
 │   │   ├── BaseBadge.vue
+│   │   ├── scripts/          ← colocated logic: useBaseButtonClasses, prop types, …
 │   │   └── index.ts          ← barrel: re-exports everything in base/
 │   │
 │   ├── restaurant/           ← Tier 2: domain-specific feature components
@@ -77,6 +79,7 @@ src/
 │   │
 │   └── shared/               ← cross-domain UI (layout, toasts, confirm dialog)
 │       ├── AppLayout.vue
+│       ├── scripts/          ← useAppLayout, useModal, …
 │       ├── SidebarNav.vue
 │       ├── ToastContainer.vue
 │       ├── ConfirmModal.vue
@@ -123,7 +126,9 @@ src/
     ├── LoginView.vue
     ├── RegisterView.vue
     ├── RestaurantsView.vue
-    └── DashboardView.vue
+    ├── DashboardView.vue
+    ├── scripts/              ← useLandingView, useLoginView, … (one module per view)
+    └── styles/               ← one scoped CSS file per view (see §4)
 ```
 
 ### Why barrel files (`index.ts`) matter
@@ -255,6 +260,8 @@ There are three tiers. Each tier has a strict contract.
 
 Purely presentational. No store access. No API calls. No business logic.
 They accept props and emit events. That is their entire surface area.
+Heavier setup (computed class maps, `useId`, emit helpers) still lives in
+**`components/base/scripts/`** so the SFC stays small — see §5.
 
 ```
 BaseButton.vue
@@ -282,7 +289,9 @@ restaurant/
 
 One per route. Reads from stores, calls composables, passes data down.
 Contains almost no template logic beyond layout and conditional rendering.
-The view is the conductor — it should not play an instrument.
+Route-level Composition API logic belongs in **`views/scripts/*.ts`** (e.g.
+`useRestaurantsView`) with a thin `<script setup>` in the SFC that wires the
+template. The view is the conductor — it should not play an instrument.
 
 ---
 
@@ -342,6 +351,9 @@ Each `.vue` file links to its CSS file via `<style src>`:
 
 `scoped` is non-negotiable. It prevents class names from leaking between
 components even when two components happen to share a name like `form-label`.
+
+**Script logic** uses the same co-location idea: a `scripts/` folder next to the
+same `views/` or `components/**` tree (see [§5 Script logic](#5-script-logic-co-located-scripts-modules)).
 
 ### Verbose, semantic class names
 
@@ -511,7 +523,94 @@ Always: `<style src="./styles/ComponentName.css" scoped></style>`
 
 ---
 
-## 5. Composables vs Stores vs Services
+## 5. Script logic — co-located scripts/ modules
+
+Keep the same separation mindset as CSS: the `.vue` file should stay **template + wiring + `<style src>`**, not a hundreds-of-lines script block.
+
+### Why not `<script setup src="./scripts/X.ts">`?
+
+From **Vue 3.5** onward, `@vue/compiler-sfc` **rejects** `<script setup>` with a `src` attribute (parse error: ambiguous outside the component). External setup must not rely on that pattern.
+
+### Approved pattern: local composable beside the SFC
+
+Mirror the `styles/` layout with a **`scripts/`** folder at the same level as the components or views it belongs to:
+
+```
+src/views/
+├── LandingView.vue
+└── scripts/
+    └── LandingView.ts
+
+src/components/base/
+├── BaseButton.vue
+└── scripts/
+    └── BaseButton.ts
+
+src/components/shared/
+├── AppLayout.vue
+└── scripts/
+    └── AppLayout.ts
+```
+
+The TypeScript module exports a **single primary function** (naming convention **`use` + same basename as the SFC**, e.g. `useLandingView`, `useAppLayout`) that contains the logic that used to live inline in `<script setup>`.
+
+The SFC imports it and **exposes bindings to the template** via destructuring (or a single object if you prefer, but this codebase uses destructuring for clarity):
+
+```vue
+<script setup lang="ts">
+import { useLandingView } from './scripts/LandingView'
+
+const {
+  RouterLink,
+  authStore,
+  searchQuery,
+  glowX,
+  glowY,
+  onHeroMouseMove,
+  expandedFaq,
+  faqs,
+  toggleFaq,
+  heroRotatingPhrases,
+  /* …every symbol the template uses… */
+} = useLandingView()
+</script>
+```
+
+Return **components and icons** from the composable when the template needs them (`RouterLink`, Lucide icons, local modals). That keeps the `.vue` import list minimal.
+
+### Compiler macros stay in the `.vue` file
+
+These are compile-time transforms and **must** appear in the SFC’s `<script setup>`, not in a standalone `.ts` file:
+
+- `defineProps` / `withDefaults(defineProps(...))`
+- `defineEmits`
+- `defineExpose`
+- `defineOptions`
+
+Split rule of thumb:
+
+| In `scripts/*.ts` | In `*.vue` `<script setup>` |
+|---|---|
+| `ref`, `computed`, `watch`, `onMounted`, stores, router, helpers | Macros above + `import { useX } from './scripts/X'` + destructuring / `useModal(props, emit)` side-effect wiring |
+
+Tiny components may use **`scripts/` only for prop interfaces** (e.g. `PageContainerProps`) and keep a two-line `<script setup>` that calls `defineProps<PageContainerProps>()`.
+
+### Imports inside `scripts/` files
+
+Relative imports from a `scripts/` file resolve **from that `.ts` file’s directory**. Importing a sibling `.vue` with `./Other.vue` **breaks** because the sibling lives next to the SFC, not next to the script file.
+
+Use **`@/…` paths** for cross-folder or sibling SFC imports from `scripts/` (for example `@/components/shared/RestaurantSwitcher.vue`).
+
+### `src/composables/` vs colocated `scripts/`
+
+| Folder | Purpose |
+|---|---|
+| `src/composables/` | Shared utilities used from **many** unrelated features (`useToast`, future `useConfirm`). |
+| `views/scripts/`, `components/**/scripts/` | **One route or one component family** — not part of the global composables barrel unless a second real consumer appears. |
+
+---
+
+## 6. Composables vs Stores vs Services
 
 These three layers are frequently confused. Each has one job.
 
@@ -584,7 +683,7 @@ export function useConfirm() {
 
 ---
 
-## 6. TypeScript Discipline
+## 7. TypeScript Discipline
 
 ### `src/types/index.ts` is the single source of truth
 
@@ -631,7 +730,7 @@ const data = response.data as Restaurant
 
 ---
 
-## 7. Vue Template Rules
+## 8. Vue Template Rules
 
 ### `v-if` vs `v-show`
 
@@ -645,7 +744,9 @@ Modals correctly use `v-if` in this project. Keep it that way.
 
 ### Event handlers
 
-Short one-liners are fine inline. Anything with logic goes in `<script setup>`.
+Short one-liners are fine inline. Anything with logic goes in `<script setup>`
+or, for non-trivial screens, in the co-located **`scripts/`** module it imports
+(see [§5](#5-script-logic-co-located-scripts-modules)).
 
 ```html
 <!-- Fine — single assignment -->
@@ -704,7 +805,7 @@ emit('save', { ...form }, photoFile.value)
 
 ---
 
-## 8. Vite-Specific Practices
+## 9. Vite-Specific Practices
 
 ### Environment variables
 
@@ -756,7 +857,7 @@ Any view that isn't needed on first paint should be loaded on demand:
 
 ---
 
-## 9. HTTP Client — No Axios
+## 10. HTTP Client — No Axios
 
 Axios had a supply-chain security incident in April 2026. Given this project's
 security posture, we do not use it. The browser's native `fetch` API is
@@ -837,7 +938,7 @@ If you need request cancellation, use `AbortController` — it's built into `fet
 
 ---
 
-## 10. Internationalisation (i18n)
+## 11. Internationalisation (i18n)
 
 ### Package
 
@@ -1030,10 +1131,11 @@ export function useLocale() {
 
 ---
 
-## 11. What to Never Do
+## 12. What to Never Do
 
 | Pattern | Why it's bad | What to do instead |
 |---|---|---|
+| `<script setup src="./path.ts">` | **Vue 3.5+:** `compiler-sfc` rejects `src` on `<script setup>` (parse error) | Colocated `scripts/*.ts` exporting `use…()` + thin `<script setup>` in the SFC |
 | `style="color: red"` inline attributes | Bypasses Tailwind, no breakpoints, no design system | CSS file via `<style scoped>` |
 | Tailwind utility strings in templates | Visual decisions scattered across templates, can't be grepped | Named class in component CSS file with `@apply` |
 | Hardcoded hex/px/easing in component CSS | Magic values scattered everywhere, impossible to theme | CSS custom property from `globals.css` |

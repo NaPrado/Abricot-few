@@ -24,7 +24,7 @@ Abricot is a platform that simplifies and centralizes online orders and reservat
 - **Phase:** Structuring the DEMO. Focusing on building the SPA views and mocking the backend interactions to showcase the cloud-value proposition.
 
 ## Development Rules
-- **Architecture:** SPA optimized for a DEMO showcase. Keep component logic modular to allow easy migration to real cloud endpoints later.
+- **Architecture:** SPA optimized for a DEMO showcase. Keep component logic modular to allow easy migration to real cloud endpoints later. For **views** and **components**, put non-trivial `<script setup>` logic in a colocated **`scripts/`** module (`useViewName` / `useComponentName`) and keep the `.vue` file to template, macros, and wiring — see `.mcp/FRONTEND_PRACTICES.md` §5 (Vue 3.5+ forbids `<script setup src="...">`).
 - **Strict TypeScript:** No `any`. Define interfaces for all business entities (Reservations, Orders, Restaurants, Menu Items).
 - **Clean Code:** Use early returns, functional programming where possible, and descriptive variables.
 - **Language:** Code and comments in English. UI text and mock data in Spanish (Argentina).

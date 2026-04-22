@@ -9,29 +9,37 @@ export const useAuthStore = defineStore("auth", () => {
 
   const isAuthenticated = computed(() => token.value !== null)
 
-  function _persist(accessToken: string, userData: User): void {
+  const isOwner = computed(
+    () => user.value?.role === 'RESTAURANT_ADMIN' || user.value?.role === 'SUPER_ADMIN',
+  )
+
+  const isCustomer = computed(() => user.value?.role === 'CUSTOMER')
+
+  function _persist(accessToken: string, refreshToken: string, userData: User): void {
     token.value = accessToken
     user.value = userData
     localStorage.setItem("access_token", accessToken)
+    localStorage.setItem("refresh_token", refreshToken)
     localStorage.setItem("user", JSON.stringify(userData))
   }
 
   async function login(payload: LoginRequest): Promise<void> {
     const res = await authService.login(payload)
-    _persist(res.accessToken, res.user)
+    _persist(res.accessToken, res.refreshToken, res.user)
   }
 
   async function register(payload: RegisterRequest): Promise<void> {
     const res = await authService.register(payload)
-    _persist(res.accessToken, res.user)
+    _persist(res.accessToken, res.refreshToken, res.user)
   }
 
   function logout(): void {
     token.value = null
     user.value = null
     localStorage.removeItem("access_token")
+    localStorage.removeItem("refresh_token")
     localStorage.removeItem("user")
   }
 
-  return { token, user, isAuthenticated, login, register, logout }
+  return { token, user, isAuthenticated, isOwner, isCustomer, login, register, logout }
 })

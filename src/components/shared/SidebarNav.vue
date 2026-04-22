@@ -1,17 +1,8 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores'
-import { Home, LogOut } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
+import { useSidebarNav } from './scripts/SidebarNav'
 
-const { t } = useI18n()
-const router = useRouter()
-const authStore = useAuthStore()
-
-function logout(): void {
-  authStore.logout()
-  router.push('/login')
-}
+const { t, authStore, logout, Home, LogOut } = useSidebarNav()
 </script>
 
 <template>

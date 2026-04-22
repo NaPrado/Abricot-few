@@ -1,12 +1,14 @@
-import type { QueryParams, QueryPrimitive, QueryValue } from '@/types'
+import type { QueryPrimitive, QueryValue } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
+export const AUTH_EXPIRED_EVENT = 'abricot:auth-expired'
 
 type AuthMode = 'access' | 'refresh' | 'none'
 
 interface HttpRequestOptions {
   authMode?: AuthMode
-  query?: QueryParams
+  /** Typed query DTOs are passed through at runtime; `object` avoids index-signature friction */
+  query?: object
   headers?: Record<string, string>
 }
 
@@ -33,12 +35,20 @@ function getAuthHeader(authMode: AuthMode): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-function handleExpiredSession(): never {
+let authExpiredEventSent = false
+
+function handleExpiredSession(): void {
   localStorage.removeItem('access_token')
   localStorage.removeItem('refresh_token')
   localStorage.removeItem('user')
-  setTimeout(() => { window.location.href = '/login?expired=1' }, 100)
-  throw new HttpError(401, 'Sesion expirada. Inicia sesion nuevamente.')
+
+  if (authExpiredEventSent) return
+  authExpiredEventSent = true
+
+  window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT))
+  window.setTimeout(() => {
+    authExpiredEventSent = false
+  }, 250)
 }
 
 function appendPrimitive(searchParams: URLSearchParams, key: string, value: QueryPrimitive): void {
@@ -57,12 +67,12 @@ function appendQueryValue(searchParams: URLSearchParams, key: string, value: Que
   appendPrimitive(searchParams, key, value)
 }
 
-function buildPath(path: string, query?: QueryParams): string {
+function buildPath(path: string, query?: object): string {
   if (!query) return path
 
   const searchParams = new URLSearchParams()
   for (const [key, value] of Object.entries(query)) {
-    appendQueryValue(searchParams, key, value)
+    appendQueryValue(searchParams, key, value as QueryValue)
   }
 
   const search = searchParams.toString()
@@ -122,11 +132,12 @@ async function request<T>(
     body: hasBody ? JSON.stringify(body) : undefined,
   })
 
+  const data = await parseResponseBody(response)
+
   if (response.status === 401 && authMode !== 'none') {
     handleExpiredSession()
   }
 
-  const data = await parseResponseBody(response)
   if (!response.ok) {
     throw new HttpError(response.status, extractErrorMessage(data, response.status))
   }
@@ -152,11 +163,12 @@ async function upload<T>(
     body: formData,
   })
 
+  const data = await parseResponseBody(response)
+
   if (response.status === 401 && authMode !== 'none') {
     handleExpiredSession()
   }
 
-  const data = await parseResponseBody(response)
   if (!response.ok) {
     throw new HttpError(response.status, extractErrorMessage(data, response.status))
   }

@@ -1,27 +1,25 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { ImagePlus, X, MapPin, Phone, Mail, Calendar } from 'lucide-vue-next'
 import type { Restaurant } from '@/types'
+import { useRestaurantDetailModal } from './scripts/RestaurantDetailModal'
+
 defineProps<{ restaurant: Restaurant }>()
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'upload-photo', file: File): void
 }>()
 
-const { t } = useI18n()
-const fileInput = ref<HTMLInputElement | null>(null)
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('es-AR', {
-    day: '2-digit', month: 'long', year: 'numeric',
-  })
-}
-
-function onFileChange(event: Event): void {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (file) emit('upload-photo', file)
-}
+const {
+  t,
+  fileInput,
+  ImagePlus,
+  X,
+  MapPin,
+  Phone,
+  Mail,
+  Calendar,
+  formatDate,
+  onFileChange,
+} = useRestaurantDetailModal(emit)
 </script>
 
 <template>

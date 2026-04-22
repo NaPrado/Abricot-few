@@ -1,66 +1,26 @@
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { ImagePlus, X } from 'lucide-vue-next'
-import { BaseInput, BaseButton } from '@/components/base'
 import type { Restaurant, RestaurantCreateRequest } from '@/types'
+import { useRestaurantModal } from './scripts/RestaurantModal'
 
-interface Props {
-  restaurant?: Restaurant | null
-}
-
-const props = withDefaults(defineProps<Props>(), { restaurant: null })
+const props = withDefaults(defineProps<{ restaurant?: Restaurant | null }>(), { restaurant: null })
 const emit = defineEmits<{
   (e: 'save', payload: RestaurantCreateRequest, photo: File | null): void
   (e: 'close'): void
 }>()
 
-const { t } = useI18n()
-
-const form = reactive({ name: '', address: '', phone: '', email: '', description: '' })
-const photoFile = ref<File | null>(null)
-const photoPreview = ref<string | null>(null)
-const fileInput = ref<HTMLInputElement | null>(null)
-
-watch(
-  () => props.restaurant,
-  (r) => {
-    Object.assign(form, {
-      name:        r?.name        ?? '',
-      address:     r?.address     ?? '',
-      phone:       r?.phone       ?? '',
-      email:       r?.email       ?? '',
-      description: r?.description ?? '',
-    })
-    photoFile.value    = null
-    photoPreview.value = r?.photoUrl ?? null
-  },
-  { immediate: true },
-)
-
-function onFileChange(event: Event): void {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file) return
-  photoFile.value    = file
-  photoPreview.value = URL.createObjectURL(file)
-}
-
-function removePhoto(): void {
-  photoFile.value    = null
-  photoPreview.value = null
-  if (fileInput.value) fileInput.value.value = ''
-}
-
-function handleSubmit(): void {
-  const payload: RestaurantCreateRequest = {
-    name:    form.name,
-    address: form.address,
-    phone:   form.phone,
-    ...(form.email       && { email:       form.email }),
-    ...(form.description && { description: form.description }),
-  }
-  emit('save', payload, photoFile.value)
-}
+const {
+  t,
+  form,
+  photoPreview,
+  fileInput,
+  BaseInput,
+  BaseButton,
+  ImagePlus,
+  X,
+  onFileChange,
+  removePhoto,
+  handleSubmit,
+} = useRestaurantModal(props, emit)
 </script>
 
 <template>
@@ -129,6 +89,14 @@ function handleSubmit(): void {
             <span class="restaurant-modal-required-mark">*</span>
           </label>
           <BaseInput v-model="form.address" placeholder="Av. Corrientes 1234, CABA" required />
+        </div>
+
+        <div>
+          <label class="restaurant-modal-field-label">
+            {{ t('restaurant.fields.cityId') }}
+            <span class="restaurant-modal-required-mark">*</span>
+          </label>
+          <BaseInput v-model="form.cityId" placeholder="00000000-0000-7000-8000-000000000000" required />
         </div>
 
         <div>

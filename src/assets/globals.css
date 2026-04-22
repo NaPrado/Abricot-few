@@ -5,28 +5,28 @@
 
 :root {
   /* ── Backgrounds ─────────────────────────────────────────── */
-  --bg-base:             #050505;
-  --bg-surface:          #0f0f0f;
-  --bg-card:             #111111;
-  --bg-card-hover:       #161616;
-  --bg-input:            #0d0d0d;
+  --bg-base:             #0b0b0b;
+  --bg-surface:          #101010;
+  --bg-card:             #151515;
+  --bg-card-hover:       #1b1b1b;
+  --bg-input:            #121212;
 
   /* ── Borders ─────────────────────────────────────────────── */
-  --border-default:      rgba(255, 255, 255, 0.07);
-  --border-subtle:       rgba(255, 255, 255, 0.04);
-  --border-strong:       rgba(255, 255, 255, 0.14);
+  --border-default:      rgba(255, 255, 255, 0.1);
+  --border-subtle:       rgba(255, 255, 255, 0.05);
+  --border-strong:       rgba(255, 255, 255, 0.2);
 
   /* ── Brand (orange) ─────────────────────────────────────── */
-  --brand:               #f97316;
-  --brand-hover:         #fb923c;
-  --brand-dim:           rgba(249, 115, 22, 0.1);
-  --brand-dim-hover:     rgba(249, 115, 22, 0.18);
-  --brand-border:        rgba(249, 115, 22, 0.3);
-  --brand-border-hover:  rgba(249, 115, 22, 0.5);
-  --brand-letter-dim:    rgba(249, 115, 22, 0.22);
-  --brand-letter-bright: rgba(249, 115, 22, 0.35);
-  --brand-glow:          0 0 24px rgba(249, 115, 22, 0.18);
-  --brand-glow-strong:   0 0 48px rgba(249, 115, 22, 0.28);
+  --brand:               #b97746;
+  --brand-hover:         #c78958;
+  --brand-dim:           rgba(185, 119, 70, 0.08);
+  --brand-dim-hover:     rgba(185, 119, 70, 0.14);
+  --brand-border:        rgba(185, 119, 70, 0.24);
+  --brand-border-hover:  rgba(185, 119, 70, 0.36);
+  --brand-letter-dim:    rgba(185, 119, 70, 0.18);
+  --brand-letter-bright: rgba(185, 119, 70, 0.26);
+  --brand-glow:          none;
+  --brand-glow-strong:   none;
 
   /* ── Text ────────────────────────────────────────────────── */
   --text-primary:        #ffffff;
@@ -52,8 +52,8 @@
   --warning-text:        #fbbf24;
 
   /* ── Shadows ─────────────────────────────────────────────── */
-  --shadow-card:         0 4px 24px rgba(0, 0, 0, 0.6);
-  --shadow-modal:        0 16px 80px rgba(0, 0, 0, 0.95);
+  --shadow-card:         0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-modal:        0 20px 90px rgba(0, 0, 0, 0.7);
 
   /* ── Radii ───────────────────────────────────────────────── */
   --radius-sm:    6px;
@@ -67,10 +67,10 @@
   --space-1:  0.25rem;
   --space-2:  0.5rem;
   --space-3:  0.75rem;
-  --space-4:  1rem;
-  --space-5:  1.25rem;
-  --space-6:  1.5rem;
-  --space-8:  2rem;
+  --space-4:  1.125rem;
+  --space-5:  1.375rem;
+  --space-6:  1.75rem;
+  --space-8:  2.25rem;
   --space-10: 2.5rem;
   --space-12: 3rem;
   --space-16: 4rem;
@@ -78,11 +78,11 @@
 
   /* ── Typography ──────────────────────────────────────────── */
   --text-xs:   0.75rem;
-  --text-sm:   0.875rem;
+  --text-sm:   0.9375rem;
   --text-base: 1rem;
-  --text-lg:   1.125rem;
-  --text-xl:   1.25rem;
-  --text-2xl:  1.5rem;
+  --text-lg:   1.1875rem;
+  --text-xl:   1.3125rem;
+  --text-2xl:  1.6875rem;
   --text-3xl:  1.875rem;
   --text-4xl:  2.25rem;
   --text-5xl:  3rem;
@@ -105,9 +105,9 @@
   --glass-white-20:         rgba(255, 255, 255, 0.20);
 
   /* ── Gradients ───────────────────────────────────────────── */
-  --gradient-brand-glow-sm:        radial-gradient(ellipse, rgba(249, 115, 22, 0.05)  0%, transparent 65%);
-  --gradient-brand-glow-md:        radial-gradient(ellipse, rgba(249, 115, 22, 0.065) 0%, transparent 65%);
-  --gradient-brand-glow-cta:       radial-gradient(ellipse, rgba(249, 115, 22, 0.055) 0%, transparent 65%);
+  --gradient-brand-glow-sm:        radial-gradient(ellipse, rgba(185, 119, 70, 0.03) 0%, transparent 70%);
+  --gradient-brand-glow-md:        radial-gradient(ellipse, rgba(185, 119, 70, 0.045) 0%, transparent 70%);
+  --gradient-brand-glow-cta:       radial-gradient(ellipse, rgba(185, 119, 70, 0.04) 0%, transparent 70%);
   --gradient-photo-placeholder:    linear-gradient(135deg, #1a0900 0%, #0e0e0e 100%);
   --gradient-feature-highlight:    linear-gradient(135deg, rgba(249, 115, 22, 0.04) 0%, transparent 60%);
 
@@ -132,6 +132,50 @@
   --z-sticky:      40;
   --z-modal:       50;
   --z-toast:       60;
+}
+
+/* ================================================================
+   Base element styles
+   ================================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+body {
+  margin: 0;
+  font-family:
+    'Manrope', 'Segoe UI', 'SF Pro Text', ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 /* ================================================================
