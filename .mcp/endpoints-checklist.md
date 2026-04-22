@@ -1,7 +1,9 @@
 # Abricot API Endpoints Checklist
 
-Source: .mcp/abricot_frontend_guide.md
+Source: .mcp/abricot_frontend_guide.md (when present in the repo)
 Total unique endpoints: 77
+
+Convention: path segments like `{restaurantId}`, `{userId}`, `{menuId}`, etc. are **UUIDs** (same as `ApiIdType` / `ApiId` in the frontend). User-scoped lists and profile use **`/users/{userId}/...`** (not `/users/me/...`); pass the authenticated user’s id from session (e.g. `authStore.user.id`).
 
 ## Auth (3)
 - [x] POST /auth/register
@@ -49,7 +51,7 @@ Total unique endpoints: 77
 - [x] PATCH /reservations/{reservationId}/reassign-tables
 - [x] PATCH /reservations/{reservationId}/complete
 - [x] PATCH /reservations/{reservationId}/no-show
-- [x] GET /users/me/reservations/
+- [x] GET /users/{userId}/reservations/
 
 ## Menus (6)
 - [x] GET /restaurants/{restaurantId}/menus/
@@ -81,7 +83,7 @@ Total unique endpoints: 77
 - [x] GET /orders/{orderId}
 - [x] PATCH /orders/{orderId}/status
 - [x] PATCH /orders/{orderId}/cancel
-- [x] GET /users/me/orders/
+- [x] GET /users/{userId}/orders/
 
 ## Promotions (8)
 - [x] GET /restaurants/{restaurantId}/promotions/
@@ -94,14 +96,14 @@ Total unique endpoints: 77
 - [x] DELETE /restaurants/{restaurantId}/promotions/{promotionId}
 
 ## User Profile (4)
-- [x] GET /users/me
-- [x] PUT /users/me
-- [x] PUT /users/me/password
-- [x] GET /users/me/restaurants/
+- [x] GET /users/{userId}
+- [x] PUT /users/{userId}
+- [x] PUT /users/{userId}/password
+- [x] GET /users/{userId}/restaurants/
 
 ## Notification Preferences (2)
-- [x] GET /users/me/notification-preferences/
-- [x] PUT /users/me/notification-preferences/{restaurantId}
+- [x] GET /users/{userId}/notification-preferences/
+- [x] PUT /users/{userId}/notification-preferences/{restaurantId}
 
 ## Analytics (5)
 - [x] GET /restaurants/{restaurantId}/analytics/occupancy

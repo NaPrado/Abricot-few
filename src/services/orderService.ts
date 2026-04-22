@@ -19,6 +19,6 @@ export const orderService = {
     http.patch<Order>(`/orders/${orderId}/status`, payload),
   cancel: (orderId: ApiId) =>
     http.patch<Order>(`/orders/${orderId}/cancel`),
-  getMyOrders: (query?: RestaurantOrdersQuery) =>
-    http.get<RestaurantOrdersResponse>('/users/me/orders/', { query }),
+  listByUser: (userId: ApiId, query?: RestaurantOrdersQuery) =>
+    http.get<RestaurantOrdersResponse>(`/users/${userId}/orders/`, { query }),
 }

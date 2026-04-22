@@ -36,6 +36,6 @@ export const reservationService = {
     http.patch<Reservation>(`/reservations/${reservationId}/complete`),
   noShow: (reservationId: ApiId) =>
     http.patch<Reservation>(`/reservations/${reservationId}/no-show`),
-  getMyReservations: (query?: MyReservationsQuery) =>
-    http.get<RestaurantReservationsResponse>('/users/me/reservations/', { query }),
+  listByUser: (userId: ApiId, query?: MyReservationsQuery) =>
+    http.get<RestaurantReservationsResponse>(`/users/${userId}/reservations/`, { query }),
 }

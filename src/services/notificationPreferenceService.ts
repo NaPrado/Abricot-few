@@ -6,8 +6,8 @@ import type {
 } from '@/types'
 
 export const notificationPreferenceService = {
-  getMyPreferences: () =>
-    http.get<NotificationPreference[]>('/users/me/notification-preferences/'),
-  updateByRestaurant: (restaurantId: ApiId, payload: UpdateNotificationPreferenceRequest) =>
-    http.put<NotificationPreference>(`/users/me/notification-preferences/${restaurantId}`, payload),
+  listByUser: (userId: ApiId) =>
+    http.get<NotificationPreference[]>(`/users/${userId}/notification-preferences/`),
+  updateByRestaurant: (userId: ApiId, restaurantId: ApiId, payload: UpdateNotificationPreferenceRequest) =>
+    http.put<NotificationPreference>(`/users/${userId}/notification-preferences/${restaurantId}`, payload),
 }

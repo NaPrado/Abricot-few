@@ -141,7 +141,7 @@ Note: Regex entries are practical frontend validation patterns that match the gu
 - [x] UserType: { id: ApiIdType; email: EmailType; name: PersonNameType; surname: PersonNameType; role: UserRoleType; createdAt: IsoDateTimeType }
 - [x] UserProfileType: UserType
 - [x] UserProfileResponseType: UserType
-- [x] UpdateUserMeRequestType: { name: PersonNameType; surname: PersonNameType }
+- [x] UpdateUserMeRequestType: { name: PersonNameType; surname: PersonNameType } (body for `PUT /users/{userId}`; `userId` is the target user’s UUID, typically the current user)
 - [x] UpdatePasswordRequestType: { currentPassword: string; newPassword: PasswordType }
 - [x] UpdatePasswordResponseType: { message: string }
 - [x] MyRestaurantsResponseType: RestaurantType[]
