@@ -5,11 +5,11 @@
 
 :root {
   /* ── Backgrounds ─────────────────────────────────────────── */
-  --bg-base:             #0b0b0b;
-  --bg-surface:          #101010;
-  --bg-card:             #151515;
-  --bg-card-hover:       #1b1b1b;
-  --bg-input:            #121212;
+  --bg-base:             #030303;
+  --bg-surface:          #050505;
+  --bg-card:             #060606;
+  --bg-card-hover:       #0f0f0f;
+  --bg-input:            #0a0a0a;
 
   /* ── Borders ─────────────────────────────────────────────── */
   --border-default:      rgba(255, 255, 255, 0.1);
@@ -17,16 +17,16 @@
   --border-strong:       rgba(255, 255, 255, 0.2);
 
   /* ── Brand (orange) ─────────────────────────────────────── */
-  --brand:               #b97746;
-  --brand-hover:         #c78958;
-  --brand-dim:           rgba(185, 119, 70, 0.08);
-  --brand-dim-hover:     rgba(185, 119, 70, 0.14);
-  --brand-border:        rgba(185, 119, 70, 0.24);
-  --brand-border-hover:  rgba(185, 119, 70, 0.36);
-  --brand-letter-dim:    rgba(185, 119, 70, 0.18);
-  --brand-letter-bright: rgba(185, 119, 70, 0.26);
-  --brand-glow:          none;
-  --brand-glow-strong:   none;
+  --brand:               #f97316;
+  --brand-hover:         #fb923c;
+  --brand-dim:           rgba(249, 115, 22, 0.08);
+  --brand-dim-hover:     rgba(249, 115, 22, 0.14);
+  --brand-border:        rgba(249, 115, 22, 0.24);
+  --brand-border-hover:  rgba(249, 115, 22, 0.36);
+  --brand-letter-dim:    rgba(249, 115, 22, 0.18);
+  --brand-letter-bright: rgba(249, 115, 22, 0.26);
+  --brand-glow:          0 0 24px rgba(249, 115, 22, 0.18);
+  --brand-glow-strong:   0 0 40px rgba(249, 115, 22, 0.28);
 
   /* ── Text ────────────────────────────────────────────────── */
   --text-primary:        #ffffff;
@@ -105,11 +105,13 @@
   --glass-white-20:         rgba(255, 255, 255, 0.20);
 
   /* ── Gradients ───────────────────────────────────────────── */
-  --gradient-brand-glow-sm:        radial-gradient(ellipse, rgba(185, 119, 70, 0.03) 0%, transparent 70%);
-  --gradient-brand-glow-md:        radial-gradient(ellipse, rgba(185, 119, 70, 0.045) 0%, transparent 70%);
-  --gradient-brand-glow-cta:       radial-gradient(ellipse, rgba(185, 119, 70, 0.04) 0%, transparent 70%);
+  --gradient-brand-glow-sm:        radial-gradient(ellipse, rgba(249, 115, 22, 0.03) 0%, transparent 70%);
+  --gradient-brand-glow-md:        radial-gradient(ellipse, rgba(249, 115, 22, 0.045) 0%, transparent 70%);
+  --gradient-brand-glow-cta:       radial-gradient(ellipse, rgba(249, 115, 22, 0.04) 0%, transparent 70%);
   --gradient-photo-placeholder:    linear-gradient(135deg, #1a0900 0%, #0e0e0e 100%);
   --gradient-feature-highlight:    linear-gradient(135deg, rgba(249, 115, 22, 0.04) 0%, transparent 60%);
+  --gradient-card-overlay:         linear-gradient(to top, rgba(3,3,3,0.9) 0%, rgba(3,3,3,0.2) 50%, transparent 100%);
+  --stripe-texture:                repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.012) 6px, rgba(255,255,255,0.012) 12px);
 
   /* ── Toast ───────────────────────────────────────────────── */
   --toast-error-bg:         rgba(15, 5, 5, 0.95);
@@ -154,13 +156,20 @@ body,
 
 body {
   margin: 0;
-  font-family:
-    'Manrope', 'Segoe UI', 'SF Pro Text', ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Outfit', 'Segoe UI', ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
 }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: #111; border-radius: 99px; }
+
+button {
+  transition: transform 0.1s cubic-bezier(0.4,0,0.2,1), opacity 0.15s ease, box-shadow 0.2s ease;
+}
+button:active:not(:disabled) { transform: scale(0.97); }
 
 a {
   color: inherit;
@@ -209,4 +218,24 @@ select {
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.5; }
   50%       { opacity: 1;   }
+}
+
+@keyframes drop-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

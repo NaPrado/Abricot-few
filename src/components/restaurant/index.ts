@@ -1,2 +1,3 @@
-export { default as RestaurantModal } from './RestaurantModal.vue'
-export { default as RestaurantDetailModal } from './RestaurantDetailModal.vue'
+export { default as PremiumCard } from './PremiumCard.vue'
+export { default as ListCard } from './ListCard.vue'
+export { default as ExploreCard } from './ExploreCard.vue'

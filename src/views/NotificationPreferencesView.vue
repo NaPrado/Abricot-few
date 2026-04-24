@@ -1,75 +1,104 @@
 <script setup lang="ts">
-import { useNotificationPreferencesView } from './scripts/NotificationPreferencesView'
+import { ref, onMounted } from 'vue'
+import { notificationPreferenceService } from '@/services'
+import { useAuthStore } from '@/stores/authStore'
+import type { NotificationPreference } from '@/types'
 
-const {
-  t,
-  prefs,
-  loading,
-  savingId,
-  togglePref,
-  EmptyState,
-  BaseSpinner,
-} = useNotificationPreferencesView()
+const authStore = useAuthStore()
+const prefs = ref<NotificationPreference[]>([])
+const loading = ref(true)
+
+async function toggle(
+  pref: NotificationPreference,
+  field: 'receivePromotions' | 'receiveOrderUpdates' | 'receiveReservationReminders',
+) {
+  if (!authStore.user) return
+  const updated = { ...pref, [field]: !pref[field] }
+  const idx = prefs.value.findIndex(p => p.restaurantId === pref.restaurantId)
+  if (idx !== -1) prefs.value[idx] = updated
+  try {
+    await notificationPreferenceService.updateByRestaurant(
+      authStore.user.id,
+      pref.restaurantId,
+      {
+        receivePromotions: updated.receivePromotions,
+        receiveOrderUpdates: updated.receiveOrderUpdates,
+        receiveReservationReminders: updated.receiveReservationReminders,
+      },
+    )
+  } catch {
+    // revert on failure
+    if (idx !== -1) prefs.value[idx] = pref
+  }
+}
+
+onMounted(async () => {
+  if (!authStore.user) return
+  try {
+    prefs.value = await notificationPreferenceService.listByUser(authStore.user.id)
+  } catch {
+    // silently degrade
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
-  <div class="notifications-view">
-    <header class="notifications-view-header">
-      <h1 class="notifications-view-title">{{ t('notifications.title') }}</h1>
-      <p class="notifications-view-subtitle">{{ t('notifications.subtitle') }}</p>
-    </header>
+  <div class="notif-view">
+    <h1 class="notif-title">Notificaciones</h1>
+    <p class="notif-sub">Elegí qué querés recibir de cada restaurante.</p>
 
-    <div v-if="loading" class="notifications-view-loading">
-      <BaseSpinner />
+    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <div v-else-if="prefs.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+      Sin preferencias configuradas.
     </div>
-
-    <EmptyState
-      v-else-if="prefs.length === 0"
-      :message="t('notifications.empty')"
-      :hint="t('notifications.emptyHint')"
-    />
-
-    <ul v-else class="notifications-view-list">
-      <li v-for="pref in prefs" :key="pref.restaurantId" class="notifications-view-card">
-        <h3 class="notifications-view-card-name">{{ pref.restaurantName }}</h3>
-        <div class="notifications-view-toggles">
-          <label class="notifications-view-toggle-row">
-            <span class="notifications-view-toggle-label">{{ t('notifications.receivePromotions') }}</span>
-            <input
-              type="checkbox"
-              class="notifications-view-checkbox"
-              :checked="pref.receivePromotions"
-              :disabled="savingId === pref.restaurantId"
-              @change="togglePref(pref, 'receivePromotions')"
-            />
-          </label>
-          <label class="notifications-view-toggle-row">
-            <span class="notifications-view-toggle-label">{{ t('notifications.receiveOrderUpdates') }}</span>
-            <input
-              type="checkbox"
-              class="notifications-view-checkbox"
-              :checked="pref.receiveOrderUpdates"
-              :disabled="savingId === pref.restaurantId"
-              @change="togglePref(pref, 'receiveOrderUpdates')"
-            />
-          </label>
-          <label class="notifications-view-toggle-row">
-            <span class="notifications-view-toggle-label">{{ t('notifications.receiveReservationReminders') }}</span>
-            <input
-              type="checkbox"
-              class="notifications-view-checkbox"
-              :checked="pref.receiveReservationReminders"
-              :disabled="savingId === pref.restaurantId"
-              @change="togglePref(pref, 'receiveReservationReminders')"
-            />
+    <div v-else class="notif-list">
+      <div v-for="pref in prefs" :key="pref.restaurantId as string" class="notif-card">
+        <div class="notif-card-name">{{ pref.restaurantName }}</div>
+        <div class="notif-row">
+          <span class="notif-row-label">Promociones</span>
+          <label class="notif-toggle">
+            <input type="checkbox" :checked="pref.receivePromotions" @change="toggle(pref, 'receivePromotions')" />
+            <span class="notif-toggle-track" />
+            <span class="notif-toggle-thumb" />
           </label>
         </div>
-        <p v-if="savingId === pref.restaurantId" class="notifications-view-saving">
-          {{ t('notifications.saving') }}
-        </p>
-      </li>
-    </ul>
+        <div class="notif-row">
+          <span class="notif-row-label">Estado de pedidos</span>
+          <label class="notif-toggle">
+            <input type="checkbox" :checked="pref.receiveOrderUpdates" @change="toggle(pref, 'receiveOrderUpdates')" />
+            <span class="notif-toggle-track" />
+            <span class="notif-toggle-thumb" />
+          </label>
+        </div>
+        <div class="notif-row">
+          <span class="notif-row-label">Recordatorios de reserva</span>
+          <label class="notif-toggle">
+            <input type="checkbox" :checked="pref.receiveReservationReminders" @change="toggle(pref, 'receiveReservationReminders')" />
+            <span class="notif-toggle-track" />
+            <span class="notif-toggle-thumb" />
+          </label>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
-<style src="./styles/NotificationPreferencesView.css" scoped></style>
+<style scoped>
+.notif-view { padding: 2.5rem; max-width: 640px; }
+.notif-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
+.notif-sub { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.notif-list { display: flex; flex-direction: column; gap: 10px; }
+.notif-card { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.25rem; }
+.notif-card-name { font-size: 0.9375rem; font-weight: 600; color: #888; margin-bottom: 1rem; }
+.notif-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #0a0a0a; }
+.notif-row:last-child { border-bottom: none; }
+.notif-row-label { font-size: 0.8125rem; color: #333; }
+.notif-toggle { position: relative; width: 34px; height: 18px; cursor: pointer; }
+.notif-toggle input { opacity: 0; width: 0; height: 0; }
+.notif-toggle-track { position: absolute; inset: 0; background: #111; border-radius: 99px; transition: background var(--dur-fast); }
+.notif-toggle input:checked + .notif-toggle-track { background: var(--brand); }
+.notif-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: #333; border-radius: 50%; transition: transform var(--dur-fast), background var(--dur-fast); }
+.notif-toggle input:checked ~ .notif-toggle-thumb { transform: translateX(16px); background: #000; }
+</style>

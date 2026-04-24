@@ -1,21 +1,111 @@
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import { PublicMarketingNav } from '@/components/shared'
-import { ArrowRight } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { restaurantService } from '@/services'
+import type { Restaurant } from '@/types'
+
+const HERO_PHRASES = [
+  { top: 'Tu mesa favorita', accent: 'te espera.' },
+  { top: 'Reserva en segundos.', accent: 'Sin caos.' },
+  { top: 'Tu restaurante,', accent: 'desde aquí.' },
+  { top: 'Pedidos. Reservas.', accent: 'Todo integrado.' },
+  { top: 'Buenos Aires', accent: 'en un plato.' },
+  { top: 'Sin papel. Sin espera.', accent: 'Sin límites.' },
+]
 
 export function useLandingView() {
-  const { t } = useI18n()
-  const authStore = useAuthStore()
+  const router = useRouter()
+  const restaurants = ref<Restaurant[]>([])
+  const loading = ref(true)
   const searchQuery = ref('')
+  const searchNeighbourhood = ref('Todos')
+  const searchType = ref('Todos')
+  const activeTag = ref('Todos')
+  const phraseIdx = ref(0)
+  const phraseVisible = ref(true)
+
+  const tags = ['Todos', 'Parrilla', 'Japonés', 'Café', 'Vegano']
+  const neighbourhoodOptions = ['Todos', 'Palermo', 'San Telmo', 'Recoleta', 'Belgrano']
+  const typeOptions = ['Todos', 'Parrilla', 'Japonés', 'Café', 'Vegano']
+
+  const phrase = computed<{ top: string; accent: string }>(() =>
+    HERO_PHRASES[phraseIdx.value] ?? HERO_PHRASES[0] ?? { top: '', accent: '' },
+  )
+
+
+  const eyebrowDate = computed(() =>
+    new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }),
+  )
+
+  const featuredRestaurants = computed(() => restaurants.value.slice(0, 3))
+  const filteredRestaurants = computed(() => {
+    if (activeTag.value === 'Todos') return restaurants.value.slice(0, 6)
+    return restaurants.value
+      .filter(r => r.cuisineTypes.some(c => c.label.includes(activeTag.value)))
+      .slice(0, 6)
+  })
+
+  let phraseTimer: ReturnType<typeof setInterval> | null = null
+
+  function startPhraseRotation() {
+    phraseTimer = setInterval(() => {
+      phraseVisible.value = false
+      setTimeout(() => {
+        phraseIdx.value = (phraseIdx.value + 1) % HERO_PHRASES.length
+        phraseVisible.value = true
+      }, 500)
+    }, 5500)
+  }
+
+  function handleSearch(e: Event) {
+    e.preventDefault()
+    void router.push({ path: '/explore', query: { q: searchQuery.value } })
+  }
+
+  function navigateToExplore() {
+    void router.push('/explore')
+  }
+
+  function navigateToRegisterOwner() {
+    void router.push('/register?role=owner')
+  }
+
+  async function loadRestaurants() {
+    try {
+      const res = await restaurantService.getAll({ page: 1, per_page: 12 })
+      restaurants.value = res.data
+    } catch {
+      // silently degrade — hero/sections still render
+    } finally {
+      loading.value = false
+    }
+  }
+
+  onMounted(() => {
+    void loadRestaurants()
+    startPhraseRotation()
+  })
+
+  onUnmounted(() => {
+    if (phraseTimer) clearInterval(phraseTimer)
+  })
 
   return {
-    t,
-    RouterLink,
-    PublicMarketingNav,
-    authStore,
+    restaurants,
+    loading,
     searchQuery,
-    ArrowRight,
+    searchNeighbourhood,
+    searchType,
+    activeTag,
+    phraseVisible,
+    phrase,
+    eyebrowDate,
+    tags,
+    neighbourhoodOptions,
+    typeOptions,
+    featuredRestaurants,
+    filteredRestaurants,
+    handleSearch,
+    navigateToExplore,
+    navigateToRegisterOwner,
   }
 }

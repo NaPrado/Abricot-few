@@ -1,40 +1,54 @@
 <script setup lang="ts">
 import { useLoginView } from './scripts/LoginView'
 
-const {
-  RouterLink,
-  BaseButton,
-  BaseInput,
-  t,
-  route,
-  form,
-  loading,
-  error,
-  onSubmit,
-} = useLoginView()
+const { email, password, error, loading, handleSubmit, goToRegister, goToLanding } = useLoginView()
 </script>
 
 <template>
-  <div class="login-view">
-    <div class="login-view-card">
-      <img src="/abricot.png" alt="Abricot" class="login-view-logo" />
-      <h1 class="login-view-title">{{ t('auth.loginButton') }}</h1>
-      <p class="login-view-subtitle">{{ t('auth.loginSubtitle') }}</p>
-      <p v-if="route.query.expired" class="login-view-banner">{{ t('auth.sessionExpired') }}</p>
-      <p v-if="error" class="login-view-error">{{ error }}</p>
-      <form class="login-view-form" @submit.prevent="onSubmit">
-        <label class="login-view-label">{{ t('auth.email') }}</label>
-        <BaseInput v-model="form.email" type="email" autocomplete="email" required />
-        <label class="login-view-label">{{ t('auth.password') }}</label>
-        <BaseInput v-model="form.password" type="password" autocomplete="current-password" required />
-        <BaseButton type="submit" variant="primary" class="login-view-submit" :disabled="loading">
-          {{ loading ? t('auth.loginLoading') : t('auth.loginButton') }}
-        </BaseButton>
+  <div class="auth-view">
+    <div class="auth-card">
+      <span class="auth-logo" @click="goToLanding">Abricot</span>
+
+      <h1 class="auth-title">Bienvenido de nuevo</h1>
+      <p class="auth-subtitle">Ingresá a tu cuenta para continuar.</p>
+
+      <form class="auth-form" @submit="handleSubmit">
+        <div class="auth-field">
+          <label class="auth-label" for="login-email">Email</label>
+          <input
+            id="login-email"
+            v-model="email"
+            class="auth-input"
+            type="email"
+            placeholder="tu@email.com"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="login-password">Contraseña</label>
+          <input
+            id="login-password"
+            v-model="password"
+            class="auth-input"
+            type="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <p v-if="error" class="auth-error">{{ error }}</p>
+
+        <button class="auth-submit-btn" type="submit" :disabled="loading">
+          {{ loading ? 'Ingresando…' : 'Ingresar' }}
+        </button>
       </form>
-      <p class="login-view-footer">
-        <RouterLink to="/register" class="login-view-link">{{ t('auth.registerButton') }}</RouterLink>
-        ·
-        <RouterLink to="/" class="login-view-link">{{ t('nav.home') }}</RouterLink>
+
+      <p class="auth-footer">
+        ¿No tenés cuenta?
+        <button class="auth-link" type="button" @click="goToRegister">Registrate</button>
       </p>
     </div>
   </div>

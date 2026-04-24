@@ -1,16 +1,30 @@
 <script setup lang="ts">
-import { onErrorCaptured, ref } from 'vue'
+import { computed, onErrorCaptured, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { BaseButton } from '@/components/base'
-import { ToastContainer } from '@/components/shared'
+import { AppNavbar, ToastContainer } from '@/components/shared'
 import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '@/stores/authStore'
 
 const { t } = useI18n()
 const hasFatalError = ref(false)
+const route = useRoute()
+const authStore = useAuthStore()
 
 onErrorCaptured(() => {
   hasFatalError.value = true
   return false
 })
+
+const hideNavbar = computed(() => {
+  return route.path === '/login' || route.path === '/register'
+})
+
+const hideNavbarForOwner = computed(() => {
+  return authStore.isOwner && route.path.startsWith('/app')
+})
+
+const showNavbar = computed(() => !hideNavbar.value && !hideNavbarForOwner.value)
 
 function reloadApp(): void {
   window.location.reload()
@@ -24,7 +38,14 @@ function reloadApp(): void {
       <p class="app-fallback-description">{{ t('app.fatalDescription') }}</p>
       <BaseButton variant="outline" @click="reloadApp">{{ t('app.reloadAction') }}</BaseButton>
     </main>
-    <RouterView v-else />
+    <template v-else>
+      <AppNavbar v-if="showNavbar" />
+      <RouterView v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" :key="route.path" />
+        </Transition>
+      </RouterView>
+    </template>
     <ToastContainer />
   </div>
 </template>
@@ -52,5 +73,20 @@ function reloadApp(): void {
   margin: 0;
   color: var(--text-muted);
   max-width: 30rem;
+}
+
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.22s cubic-bezier(0.4,0,0.2,1), transform 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>

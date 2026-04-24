@@ -1,83 +1,65 @@
 import { computed } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import {
-  BarChart2,
-  Bell,
-  BookOpen,
-  Calendar,
-  CalendarCheck,
-  ClipboardList,
-  Clock,
-  LayoutDashboard,
-  LayoutGrid,
-  LogOut,
-  ShoppingBag,
-  Sparkles,
-  Table2,
-  Tag,
-  User as UserIcon,
-} from 'lucide-vue-next'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-import { useRestaurantContextStore } from '@/stores/restaurantContextStore'
-import RestaurantSwitcher from '@/components/shared/RestaurantSwitcher.vue'
+
+export interface SidebarNavItem {
+  key: string
+  label: string
+  to: string
+  icon: string
+  icon2?: string
+}
 
 export function useAppLayout() {
-  const { t } = useI18n()
-  const auth = useAuthStore()
-  const ctx = useRestaurantContextStore()
+  const authStore = useAuthStore()
+  const route = useRoute()
   const router = useRouter()
 
-  const variant = computed<'customer' | 'owner'>(() =>
-    auth.user?.role === 'RESTAURANT_ADMIN' || auth.user?.role === 'SUPER_ADMIN' ? 'owner' : 'customer',
-  )
+  const isOwner = computed(() => authStore.isOwner)
+  const user = computed(() => authStore.user)
+  const userInitial = computed(() => user.value?.name?.[0]?.toUpperCase() ?? '?')
+  const userName = computed(() => {
+    if (!user.value) return 'Usuario'
+    return `${user.value.name} ${user.value.surname}`.trim()
+  })
 
-  const ownerBaseLinks = computed(() => [
-    { to: '/app/restaurants', label: t('nav.ownerRestaurants'), icon: LayoutGrid },
-  ])
+  const restaurantId = computed(() => route.params.restaurantId as string | undefined)
 
-  const ownerRestaurantLinks = computed(() => {
-    const id = ctx.activeRestaurantId
-    if (!id) return []
+  const ownerNavItems = computed<SidebarNavItem[]>(() => {
+    const base = restaurantId.value
+      ? `/app/restaurants/${restaurantId.value}`
+      : '/app/restaurants'
     return [
-      { to: `/app/restaurants/${id}`, label: t('nav.ownerDashboard'), icon: LayoutDashboard },
-      { to: `/app/restaurants/${id}/tables`, label: t('nav.ownerTables'), icon: Table2 },
-      { to: `/app/restaurants/${id}/hours`, label: t('nav.ownerHours'), icon: Clock },
-      { to: `/app/restaurants/${id}/reservations`, label: t('nav.ownerReservations'), icon: CalendarCheck },
-      { to: `/app/restaurants/${id}/orders`, label: t('nav.ownerOrders'), icon: ClipboardList },
-      { to: `/app/restaurants/${id}/menus`, label: t('nav.ownerMenus'), icon: BookOpen },
-      { to: `/app/restaurants/${id}/promotions`, label: t('nav.ownerPromotions'), icon: Tag },
-      { to: `/app/restaurants/${id}/stats`, label: t('nav.ownerAnalytics'), icon: BarChart2 },
+      { key: 'overview',    label: 'Dashboard',     to: base,                    icon: 'M3 3h7v7H3zM13 3h7v7h-7zM3 13h7v7H3zM13 13h7v7h-7z' },
+      { key: 'analytics',   label: 'Analíticas',    to: `${base}/stats`,         icon: 'M18 20V10M12 20V4M6 20v-6' },
+      { key: 'reservations',label: 'Reservas',      to: `${base}/reservations`,  icon: 'M3 4h18v16H3zM16 2v4M8 2v4M3 10h18' },
+      { key: 'orders',      label: 'Pedidos',       to: `${base}/orders`,        icon: 'M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
+      { key: 'menus',       label: 'Menú digital',  to: `${base}/menus`,         icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+      { key: 'promotions',  label: 'Promociones',   to: `${base}/promotions`,    icon: 'M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01' },
+      { key: 'restaurants', label: 'Mis locales',   to: '/app/restaurants',      icon: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2zM9 22V12h6v10' },
     ]
   })
 
-  const ownerLinks = computed(() => [...ownerBaseLinks.value, ...ownerRestaurantLinks.value])
+  function isNavActive(to: string): boolean {
+    if (to === '/app/restaurants') {
+      return route.path === '/app/restaurants'
+    }
+    return route.path.startsWith(to)
+  }
 
-  const customerLinks = computed(() => [
-    { to: '/explore', label: t('nav.explore'), icon: Sparkles },
-    { to: '/me/reservations', label: t('nav.myReservations'), icon: Calendar },
-    { to: '/me/orders', label: t('nav.myOrders'), icon: ShoppingBag },
-    { to: '/me/profile', label: t('nav.profile'), icon: UserIcon },
-    { to: '/me/notifications', label: t('nav.notifications'), icon: Bell },
-  ])
-
-  const links = computed(() => (variant.value === 'owner' ? ownerLinks.value : customerLinks.value))
-
-  function onLogout(): void {
-    auth.logout()
-    ctx.clear()
-    router.push('/')
+  function logout() {
+    authStore.logout()
+    void router.push('/login')
   }
 
   return {
-    RouterLink,
-    RouterView,
-    LogOut,
-    UserIcon,
-    RestaurantSwitcher,
-    auth,
-    variant,
-    links,
-    onLogout,
+    isOwner,
+    user,
+    userInitial,
+    userName,
+    ownerNavItems,
+    isNavActive,
+    logout,
+    currentPath: computed(() => route.path),
   }
 }

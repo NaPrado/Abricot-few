@@ -2,86 +2,80 @@
 import { useProfileView } from './scripts/ProfileView'
 
 const {
-  t,
-  form,
-  passwordForm,
-  saving,
-  savingPassword,
-  saveInfo,
-  savePassword,
-  BaseInput,
-  BaseButton,
+  name, surname, email,
+  saving, saveSuccess, saveError, saveProfile,
+  currentPassword, newPassword, passwordSaving, passwordSuccess, passwordError, savePassword,
 } = useProfileView()
 </script>
 
 <template>
   <div class="profile-view">
-    <header class="profile-view-header">
-      <h1 class="profile-view-title">{{ t('profile.title') }}</h1>
-      <p class="profile-view-subtitle">{{ t('profile.subtitle') }}</p>
-    </header>
+    <h1 class="profile-title">Mi perfil</h1>
+    <p class="profile-sub">Administrá tu información personal.</p>
 
-    <section class="profile-view-card">
-      <h2 class="profile-view-section-title">{{ t('profile.personalInfo') }}</h2>
-      <form class="profile-view-form" @submit.prevent="saveInfo">
-        <div class="profile-view-field-row">
-          <BaseInput
-            v-model="form.name"
-            :label="t('profile.firstName')"
-            required
-          />
-          <BaseInput
-            v-model="form.surname"
-            :label="t('profile.lastName')"
-            required
-          />
+    <!-- Personal info -->
+    <div class="profile-section">
+      <div class="profile-section-title">Información personal</div>
+      <form class="profile-form" @submit="saveProfile">
+        <div class="profile-form-row">
+          <div class="profile-field">
+            <label class="profile-label">Nombre</label>
+            <input v-model="name" class="profile-input" type="text" />
+          </div>
+          <div class="profile-field">
+            <label class="profile-label">Apellido</label>
+            <input v-model="surname" class="profile-input" type="text" />
+          </div>
         </div>
-        <div class="profile-view-field">
-          <BaseInput
-            v-model="form.email"
-            :label="t('profile.email')"
-            type="email"
-            disabled
-          />
-          <p class="profile-view-hint">{{ t('profile.emailHint') }}</p>
+        <div class="profile-field">
+          <label class="profile-label">Email</label>
+          <input class="profile-input profile-input--disabled" type="email" :value="email" disabled />
         </div>
-        <div class="profile-view-actions">
-          <BaseButton type="submit" variant="primary" :loading="saving">
-            {{ saving ? t('profile.savingInfo') : t('profile.saveInfo') }}
-          </BaseButton>
-        </div>
+        <p v-if="saveError" class="profile-error">{{ saveError }}</p>
+        <p v-if="saveSuccess" class="profile-success">Cambios guardados.</p>
+        <button class="profile-save-btn" type="submit" :disabled="saving">
+          {{ saving ? 'Guardando…' : 'Guardar cambios' }}
+        </button>
       </form>
-    </section>
+    </div>
 
-    <section class="profile-view-card">
-      <h2 class="profile-view-section-title">{{ t('profile.changePassword') }}</h2>
-      <form class="profile-view-form" @submit.prevent="savePassword">
-        <BaseInput
-          v-model="passwordForm.currentPassword"
-          :label="t('profile.currentPassword')"
-          type="password"
-          required
-        />
-        <BaseInput
-          v-model="passwordForm.newPassword"
-          :label="t('profile.newPassword')"
-          type="password"
-          required
-        />
-        <BaseInput
-          v-model="passwordForm.confirmPassword"
-          :label="t('profile.confirmPassword')"
-          type="password"
-          required
-        />
-        <div class="profile-view-actions">
-          <BaseButton type="submit" variant="secondary" :loading="savingPassword">
-            {{ savingPassword ? t('profile.savingPassword') : t('profile.savePassword') }}
-          </BaseButton>
+    <!-- Password -->
+    <div class="profile-section">
+      <div class="profile-section-title">Cambiar contraseña</div>
+      <form class="profile-form" @submit="savePassword">
+        <div class="profile-field">
+          <label class="profile-label">Contraseña actual</label>
+          <input v-model="currentPassword" class="profile-input" type="password" autocomplete="current-password" />
         </div>
+        <div class="profile-field">
+          <label class="profile-label">Nueva contraseña</label>
+          <input v-model="newPassword" class="profile-input" type="password" autocomplete="new-password" minlength="8" />
+        </div>
+        <p v-if="passwordError" class="profile-error">{{ passwordError }}</p>
+        <p v-if="passwordSuccess" class="profile-success">Contraseña actualizada.</p>
+        <button class="profile-save-btn" type="submit" :disabled="passwordSaving">
+          {{ passwordSaving ? 'Actualizando…' : 'Actualizar contraseña' }}
+        </button>
       </form>
-    </section>
+    </div>
   </div>
 </template>
 
-<style src="./styles/ProfileView.css" scoped></style>
+<style scoped>
+.profile-view { padding: 2.5rem; max-width: 640px; }
+.profile-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
+.profile-sub { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.profile-section { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem; }
+.profile-section-title { font-size: 0.875rem; font-weight: 600; color: #888; margin-bottom: 1.25rem; }
+.profile-form { display: flex; flex-direction: column; gap: 0.875rem; }
+.profile-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.profile-field { display: flex; flex-direction: column; gap: 5px; }
+.profile-label { font-size: 0.5625rem; color: #2a2a2a; letter-spacing: 0.14em; text-transform: uppercase; }
+.profile-input { background: #080808; border: 1px solid #111; border-radius: var(--radius-md); padding: 0.625rem 0.875rem; color: #ccc; font-size: 0.875rem; font-family: inherit; outline: none; transition: border-color var(--dur-fast); }
+.profile-input:focus { border-color: #1a1a1a; }
+.profile-input--disabled { color: #2a2a2a; cursor: not-allowed; }
+.profile-error { font-size: 0.8125rem; color: var(--danger); }
+.profile-success { font-size: 0.8125rem; color: var(--brand); }
+.profile-save-btn { align-self: flex-start; padding: 0.625rem 1.5rem; background: #e8e8e8; border: none; border-radius: var(--radius-md); color: #060606; font-weight: 700; font-size: 0.8125rem; font-family: inherit; cursor: pointer; transition: opacity var(--dur-fast); }
+.profile-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>

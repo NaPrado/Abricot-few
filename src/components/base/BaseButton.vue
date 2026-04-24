@@ -1,26 +1,30 @@
 <script setup lang="ts">
-import { useBaseButtonClasses, type BaseButtonProps } from './scripts/BaseButton'
+type Variant = 'primary' | 'brand' | 'outline' | 'ghost' | 'danger'
+type Size = 'sm' | 'md' | 'lg'
 
-const props = withDefaults(defineProps<BaseButtonProps>(), {
+withDefaults(defineProps<{
+  variant?: Variant
+  size?: Size
+  type?: 'button' | 'submit' | 'reset'
+  disabled?: boolean
+  loading?: boolean
+}>(), {
   variant: 'primary',
   size: 'md',
   type: 'button',
-  loading: false,
   disabled: false,
-  block: false,
+  loading: false,
 })
-
-const classes = useBaseButtonClasses(props)
 </script>
 
 <template>
   <button
-    :class="classes"
     :type="type"
     :disabled="disabled || loading"
+    :class="['base-button', `base-button--${variant}`, size !== 'md' && `base-button--${size}`]"
   >
-    <span v-if="loading" class="base-button-spinner" aria-hidden="true" />
-    <slot />
+    <slot v-if="!loading" />
+    <span v-else>…</span>
   </button>
 </template>
 

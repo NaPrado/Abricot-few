@@ -1,181 +1,142 @@
-.app-layout {
+/* ── Owner layout ────────────────────────────────────────────── */
+.app-layout-owner {
   display: flex;
   min-height: 100vh;
   background: var(--bg-base);
-  color: var(--text-primary);
+  padding-top: 60px;
 }
 
-.app-sidebar {
-  width: var(--sidebar-width);
+.app-layout-sidebar {
+  width: 230px;
   flex-shrink: 0;
-  border-right: 1px solid var(--border-subtle);
   background: var(--bg-surface);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0 0.75rem 1.5rem;
   display: flex;
   flex-direction: column;
-  padding: 1.25rem 0.875rem;
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: 60px;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
 }
 
-.app-sidebar-brand {
-  display: flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem 1.25rem;
+.app-layout-sidebar-top {
+  padding: 1.5rem 0.5rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  margin-bottom: 0.5rem;
 }
 
-.app-sidebar-logo {
-  height: 1.75rem;
-  width: auto;
+.app-layout-sidebar-logo {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--brand);
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
 }
 
-.app-sidebar-switcher {
-  padding: 0 0.25rem 1rem;
-  margin-bottom: 0.25rem;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.app-sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  margin-top: 0.25rem;
-}
-
-.app-sidebar-link {
+.app-layout-owner-card {
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.6rem 0.75rem;
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  border-radius: var(--radius-md);
-  border-left: 2px solid transparent;
-  transition: background var(--dur-fast) var(--ease-out),
-              color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out);
-}
-.app-sidebar-link:hover {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-.app-sidebar-link--active {
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-primary);
-  border-left-color: var(--brand-border);
-}
-.app-sidebar-link--active .app-sidebar-link-icon {
-  color: var(--text-secondary);
 }
 
-.app-sidebar-link-icon {
-  flex-shrink: 0;
-  color: currentColor;
-}
-
-.app-sidebar-footer {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.app-sidebar-user {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.375rem 0.5rem;
-}
-
-.app-sidebar-user-avatar {
-  width: 2rem;
-  height: 2rem;
+.app-layout-owner-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--brand-dim);
+  color: var(--brand);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
-  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
-.app-sidebar-user-info {
+.app-layout-owner-name {
+  font-size: 0.8125rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.app-layout-owner-role {
+  font-size: 0.625rem;
+  color: #333;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-layout-sidebar-section {
+  font-size: 0.5625rem;
+  color: #2a2a2a;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 1rem 0.75rem 0.5rem;
+}
+
+.app-layout-sidebar-nav {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-}
-
-.app-sidebar-user-name {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.app-sidebar-user-email {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.app-sidebar-logout {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  transition: color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out);
-}
-.app-sidebar-logout:hover {
-  color: var(--danger-hover);
-  border-color: var(--danger-border);
-}
-
-.app-main {
+  gap: 0.125rem;
   flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-@media (max-width: 768px) {
-  .app-layout {
-    flex-direction: column;
-  }
-  .app-sidebar {
-    position: sticky;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-    padding: 0.75rem 1rem;
-    gap: 1rem;
-  }
-  .app-sidebar-nav {
-    flex-direction: row;
-    margin-top: 0;
-    gap: 0.25rem;
-  }
-  .app-sidebar-footer {
-    border-top: none;
-    padding-top: 0;
-    flex-direction: row;
-    margin-top: 0;
-    margin-left: auto;
-  }
-  .app-sidebar-user {
-    display: none;
-  }
+.app-layout-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #444;
+  font-size: 0.8125rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 0.125rem;
+  transition: background var(--dur-fast), color var(--dur-fast);
+  position: relative;
+  text-decoration: none;
+}
+
+.app-layout-nav-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+  color: #666;
+}
+
+.app-layout-nav-item--active {
+  background: rgba(249, 115, 22, 0.06);
+  color: #ccc;
+}
+
+.app-layout-nav-dot {
+  position: absolute;
+  right: 0.625rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.app-layout-sidebar-bottom {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 0.5rem;
+}
+
+.app-layout-main {
+  flex: 1;
+  padding: 2.5rem 2.5rem 3.75rem;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* ── Customer layout: passthrough (just min-height + pt) ─────── */
+.app-layout-customer {
+  min-height: 100vh;
+  background: var(--bg-base);
+  padding-top: 60px;
 }

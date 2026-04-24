@@ -2,6 +2,11 @@
 // The MessageSchema type is derived from this object, so every key added
 // here must also be added to en.ts or the build will fail.
 const es = {
+  app: {
+    fatalTitle: 'Algo salió mal',
+    fatalDescription: 'Ocurrió un error inesperado. Por favor recargá la página.',
+    reloadAction: 'Recargar',
+  },
   common: {
     all: 'Todos',
     save: 'Guardar cambios',

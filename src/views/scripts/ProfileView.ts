@@ -1,85 +1,77 @@
-import { onMounted, reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/authStore'
+import { ref, onMounted } from 'vue'
 import { userService } from '@/services'
-import { useToast } from '@/composables/useToast'
-import { BaseInput, BaseButton } from '@/components/base'
+import { useAuthStore } from '@/stores/authStore'
+import type { UpdatePasswordRequest } from '@/types'
 
 export function useProfileView() {
-  const { t } = useI18n()
-  const auth = useAuthStore()
-  const toast = useToast()
+  const authStore = useAuthStore()
 
-  const form = reactive({
-    name: '',
-    surname: '',
-    email: '',
-  })
-
-  const passwordForm = reactive({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  })
-
+  const name = ref(authStore.user?.name ?? '')
+  const surname = ref(authStore.user?.surname ?? '')
+  const email = ref(authStore.user?.email ?? '')
   const saving = ref(false)
-  const savingPassword = ref(false)
+  const saveSuccess = ref(false)
+  const saveError = ref('')
 
-  onMounted(() => {
-    if (auth.user) {
-      form.name = auth.user.name
-      form.surname = auth.user.surname
-      form.email = auth.user.email
-    }
-  })
+  const currentPassword = ref('')
+  const newPassword = ref('')
+  const passwordSaving = ref(false)
+  const passwordSuccess = ref(false)
+  const passwordError = ref('')
 
-  async function saveInfo(): Promise<void> {
-    if (!auth.user) return
+  async function saveProfile(e: Event) {
+    e.preventDefault()
+    if (!authStore.user) return
     saving.value = true
+    saveSuccess.value = false
+    saveError.value = ''
     try {
-      const updated = await userService.update(auth.user.id, { name: form.name, surname: form.surname })
-      auth.user.name = updated.name
-      auth.user.surname = updated.surname
-      toast.show(t('profile.toast.infoOk'), 'success')
+      await userService.update(authStore.user.id, { name: name.value, surname: surname.value })
+      saveSuccess.value = true
     } catch {
-      toast.show(t('profile.toast.infoError'), 'error')
+      saveError.value = 'No fue posible guardar los cambios.'
     } finally {
       saving.value = false
     }
   }
 
-  async function savePassword(): Promise<void> {
-    if (!auth.user) return
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.show(t('profile.toast.passwordMismatch'), 'error')
-      return
+  async function savePassword(e: Event) {
+    e.preventDefault()
+    if (!authStore.user) return
+    passwordSaving.value = true
+    passwordSuccess.value = false
+    passwordError.value = ''
+    const payload: UpdatePasswordRequest = {
+      currentPassword: currentPassword.value,
+      newPassword: newPassword.value,
     }
-    savingPassword.value = true
     try {
-      await userService.updatePassword(auth.user.id, {
-        currentPassword: passwordForm.currentPassword,
-        newPassword: passwordForm.newPassword,
-      })
-      toast.show(t('profile.toast.passwordOk'), 'success')
-      passwordForm.currentPassword = ''
-      passwordForm.newPassword = ''
-      passwordForm.confirmPassword = ''
+      await userService.updatePassword(authStore.user.id, payload)
+      passwordSuccess.value = true
+      currentPassword.value = ''
+      newPassword.value = ''
     } catch {
-      toast.show(t('profile.toast.passwordError'), 'error')
+      passwordError.value = 'Contraseña actual incorrecta o error al actualizar.'
     } finally {
-      savingPassword.value = false
+      passwordSaving.value = false
     }
   }
 
+  onMounted(async () => {
+    if (!authStore.user) return
+    try {
+      const profile = await userService.getById(authStore.user.id)
+      name.value = profile.name
+      surname.value = profile.surname
+      email.value = profile.email
+    } catch {
+      // use cached values
+    }
+  })
+
   return {
-    t,
-    form,
-    passwordForm,
-    saving,
-    savingPassword,
-    saveInfo,
-    savePassword,
-    BaseInput,
-    BaseButton,
+    name, surname, email,
+    saving, saveSuccess, saveError, saveProfile,
+    currentPassword, newPassword, passwordSaving, passwordSuccess, passwordError, savePassword,
   }
 }

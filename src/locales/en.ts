@@ -3,6 +3,11 @@ import type { MessageSchema } from './es'
 // TypeScript enforces that every key in MessageSchema exists here.
 // A missing or misspelled key is a compile error, not a silent blank string.
 const en: MessageSchema = {
+  app: {
+    fatalTitle: 'Something went wrong',
+    fatalDescription: 'An unexpected error occurred. Please reload the page.',
+    reloadAction: 'Reload',
+  },
   common: {
     all: 'All',
     save: 'Save changes',

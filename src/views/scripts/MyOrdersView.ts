@@ -1,58 +1,81 @@
-import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/authStore'
+import { ref, onMounted } from 'vue'
 import { orderService } from '@/services'
-import { useToast } from '@/composables/useToast'
-import { BaseSelect, BaseSpinner, EmptyState, StatusBadge } from '@/components/base'
-import type { OrderStatus, OrderType } from '@/types'
+import { useAuthStore } from '@/stores/authStore'
+import type { Order } from '@/types'
+
+const STATUS_STEPS = ['PENDING', 'CONFIRMED', 'IN_PREPARATION', 'READY', 'COMPLETED'] as const
+const STATUS_LABEL: Record<string, string> = {
+  PENDING: 'Pendiente',
+  CONFIRMED: 'Confirmado',
+  IN_PREPARATION: 'En preparación',
+  READY: 'Listo para retirar',
+  COMPLETED: 'Completado',
+  CANCELLED: 'Cancelado',
+}
+const STATUS_ES: Record<string, string> = {
+  PENDING: 'Recibimos tu pedido',
+  CONFIRMED: 'El restaurante lo confirmó',
+  IN_PREPARATION: 'Lo están preparando',
+  READY: '¡Tu pedido está listo!',
+  COMPLETED: 'Pedido entregado',
+}
 
 export function useMyOrdersView() {
-  const { t } = useI18n()
-  const auth = useAuthStore()
-  const toast = useToast()
+  const authStore = useAuthStore()
 
-  const orders = ref<OrderType[]>([])
-  const loading = ref(false)
-  const statusFilter = ref('')
+  const orders = ref<Order[]>([])
+  const loading = ref(true)
+  const expandedId = ref<string | null>(null)
 
-  const statusFilterOptions = computed(() => [
-    { value: '', label: t('common.all') },
-    { value: 'PENDING', label: t('myOrders.status.PENDING') },
-    { value: 'CONFIRMED', label: t('myOrders.status.CONFIRMED') },
-    { value: 'IN_PREPARATION', label: t('myOrders.status.IN_PREPARATION') },
-    { value: 'READY', label: t('myOrders.status.READY') },
-    { value: 'COMPLETED', label: t('myOrders.status.COMPLETED') },
-    { value: 'CANCELLED', label: t('myOrders.status.CANCELLED') },
-  ])
+  function statusLabel(s: string): string {
+    return STATUS_LABEL[s] ?? s
+  }
 
-  onMounted(() => void load())
-  watch(statusFilter, () => void load())
+  function statusStepIndex(s: string): number {
+    return STATUS_STEPS.indexOf(s as typeof STATUS_STEPS[number])
+  }
 
-  async function load(): Promise<void> {
-    if (!auth.user) return
-    loading.value = true
+  function stepDescription(step: string): string {
+    return STATUS_ES[step] ?? step
+  }
+
+  function formatDateTime(iso: string): string {
+    return new Date(iso).toLocaleString('es-AR', {
+      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+    })
+  }
+
+  function formatMoney(n: string | number): string {
+    const v = Number(n)
+    return `$${Math.round(v).toLocaleString('es-AR')}`
+  }
+
+  function toggle(id: string) {
+    expandedId.value = expandedId.value === id ? null : id
+  }
+
+  onMounted(async () => {
+    if (!authStore.user) return
     try {
-      const query = statusFilter.value ? { status: statusFilter.value as OrderStatus } : undefined
-      const res = await orderService.listByUser(auth.user.id, query)
+      const res = await orderService.listByUser(authStore.user.id, { page: 1, per_page: 50 })
       orders.value = res.data
     } catch {
-      toast.show(t('errors.generic'), 'error')
+      // silently degrade
     } finally {
       loading.value = false
     }
-  }
+  })
 
   return {
-    t,
     orders,
     loading,
-    statusFilter,
-    statusFilterOptions,
-    StatusBadge,
-    BaseSelect,
-    BaseSpinner,
-    EmptyState,
-    RouterLink,
+    expandedId,
+    steps: STATUS_STEPS,
+    statusLabel,
+    statusStepIndex,
+    stepDescription,
+    formatDateTime,
+    formatMoney,
+    toggle,
   }
 }

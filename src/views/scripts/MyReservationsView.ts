@@ -1,92 +1,81 @@
-import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/authStore'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { reservationService } from '@/services'
-import { useToast } from '@/composables/useToast'
-import { BaseInput, BaseSelect, BaseButton, BaseSpinner, EmptyState, StatusBadge } from '@/components/base'
-import type { ReservationStatus, ReservationType } from '@/types'
+import { useAuthStore } from '@/stores/authStore'
+import type { Reservation } from '@/types'
+
+const STATUS_LABEL: Record<string, string> = {
+  CONFIRMED: 'Confirmada',
+  CANCELLED: 'Cancelada',
+  COMPLETED: 'Completada',
+  NO_SHOW: 'No asistió',
+}
 
 export function useMyReservationsView() {
-  const { t } = useI18n()
-  const auth = useAuthStore()
-  const toast = useToast()
+  const authStore = useAuthStore()
+  const router = useRouter()
 
-  const reservations = ref<ReservationType[]>([])
-  const loading = ref(false)
-  const statusFilter = ref('')
+  const reservations = ref<Reservation[]>([])
+  const loading = ref(true)
+  const selected = ref<Reservation | null>(null)
 
-  const showCancelModal = ref(false)
-  const cancelingId = ref<string | null>(null)
-  const cancelReason = ref('')
+  function statusLabel(s: string): string {
+    return STATUS_LABEL[s] ?? s
+  }
 
-  const statusFilterOptions = computed(() => [
-    { value: '', label: t('common.all') },
-    { value: 'CONFIRMED', label: t('myReservations.status.CONFIRMED') },
-    { value: 'CANCELLED', label: t('myReservations.status.CANCELLED') },
-    { value: 'COMPLETED', label: t('myReservations.status.COMPLETED') },
-    { value: 'NO_SHOW', label: t('myReservations.status.NO_SHOW') },
-  ])
+  function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('es-AR', {
+      weekday: 'long', day: 'numeric', month: 'long',
+    })
+  }
 
-  onMounted(() => void load())
-  watch(statusFilter, () => void load())
+  function formatTime(t: string): string {
+    return t.slice(0, 5)
+  }
 
-  async function load(): Promise<void> {
-    if (!auth.user) return
-    loading.value = true
+  function colorBg(id: string): string {
+    const colors = ['#1a1208', '#0a0f1a', '#120a08', '#100808', '#080f0a', '#0f0f08']
+    const idx = id.charCodeAt(0) % colors.length
+    return colors[idx] ?? '#111'
+  }
+
+  async function cancelReservation(id: string) {
     try {
-      const query = statusFilter.value ? { status: statusFilter.value as ReservationStatus } : undefined
-      const res = await reservationService.listByUser(auth.user.id, query)
+      await reservationService.cancel(id)
+      reservations.value = reservations.value.map(r =>
+        r.id === id ? { ...r, status: 'CANCELLED' } : r,
+      )
+      if (selected.value?.id === id) selected.value = { ...selected.value, status: 'CANCELLED' }
+    } catch {
+      // silently fail — user can retry
+    }
+  }
+
+  function navigateToRestaurant(restaurantId: string) {
+    void router.push(`/restaurants/${restaurantId}`)
+  }
+
+  onMounted(async () => {
+    if (!authStore.user) return
+    try {
+      const res = await reservationService.listByUser(authStore.user.id, { page: 1, per_page: 50 })
       reservations.value = res.data
     } catch {
-      toast.show(t('errors.generic'), 'error')
+      // silently degrade
     } finally {
       loading.value = false
     }
-  }
-
-  function openCancel(id: string): void {
-    cancelingId.value = id
-    cancelReason.value = ''
-    showCancelModal.value = true
-  }
-
-  function closeCancel(): void {
-    showCancelModal.value = false
-    cancelingId.value = null
-    cancelReason.value = ''
-  }
-
-  async function confirmCancel(): Promise<void> {
-    if (!cancelingId.value) return
-    try {
-      await reservationService.cancel(cancelingId.value, { reason: cancelReason.value || undefined })
-      toast.show(t('myReservations.toast.cancelOk'), 'success')
-      closeCancel()
-      await load()
-    } catch {
-      toast.show(t('myReservations.toast.error'), 'error')
-    }
-  }
+  })
 
   return {
-    t,
     reservations,
     loading,
-    statusFilter,
-    cancelingId,
-    cancelReason,
-    showCancelModal,
-    statusFilterOptions,
-    openCancel,
-    closeCancel,
-    confirmCancel,
-    StatusBadge,
-    BaseSelect,
-    BaseInput,
-    BaseButton,
-    BaseSpinner,
-    EmptyState,
-    RouterLink,
+    selected,
+    statusLabel,
+    formatDate,
+    formatTime,
+    colorBg,
+    cancelReservation,
+    navigateToRestaurant,
   }
 }

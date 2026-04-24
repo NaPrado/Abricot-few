@@ -1,55 +1,50 @@
-import { reactive, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-import { BaseButton, BaseInput } from '@/components/base'
 
 export function useRegisterView() {
-  const { t } = useI18n()
-  const auth = useAuthStore()
   const router = useRouter()
+  const route = useRoute()
+  const authStore = useAuthStore()
 
-  const form = reactive({
-    email: '',
-    password: '',
-    name: '',
-    surname: '',
-  })
+  const role = ref<'customer' | 'owner'>(route.query.role === 'owner' ? 'owner' : 'customer')
+  const name = ref('')
+  const surname = ref('')
+  const email = ref('')
+  const password = ref('')
+  const error = ref('')
   const loading = ref(false)
-  const error = ref<string | null>(null)
 
-  async function onSubmit(): Promise<void> {
-    error.value = null
+  async function handleSubmit(e: Event) {
+    e.preventDefault()
+    error.value = ''
     loading.value = true
     try {
-      await auth.register({
-        email: form.email,
-        password: form.password,
-        name: form.name,
-        surname: form.surname,
+      await authStore.register({
+        name: name.value,
+        surname: surname.value,
+        email: email.value,
+        password: password.value,
       })
-      const role = auth.user?.role
-      if (role === 'RESTAURANT_ADMIN' || role === 'SUPER_ADMIN') {
-        await router.replace('/app/restaurants')
+      if (authStore.isOwner) {
+        void router.push('/app/restaurants')
       } else {
-        await router.replace('/explore')
+        void router.push('/me/reservations')
       }
     } catch {
-      error.value = t('auth.errors.register')
+      error.value = 'No pudimos crear tu cuenta. Verificá los datos e intentá de nuevo.'
     } finally {
       loading.value = false
     }
   }
 
-  return {
-    RouterLink,
-    BaseButton,
-    BaseInput,
-    t,
-    auth,
-    form,
-    loading,
-    error,
-    onSubmit,
+  function goToLogin() {
+    void router.push('/login')
   }
+
+  function goToLanding() {
+    void router.push('/')
+  }
+
+  return { role, name, surname, email, password, error, loading, handleSubmit, goToLogin, goToLanding }
 }

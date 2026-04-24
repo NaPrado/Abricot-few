@@ -1,164 +1,114 @@
 <script setup lang="ts">
-import { useOwnerReservationsView } from './scripts/OwnerReservationsView'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { reservationService } from '@/services'
+import type { Reservation } from '@/types'
 
-const {
-  t,
-  reservations,
-  loading,
-  filters,
-  statusFilterOptions,
-  sourceFilterOptions,
-  adminSourceOptions,
-  showAdminForm,
-  adminForm,
-  availableSlots,
-  loadingSlots,
-  cancelTarget,
-  cancelReason,
-  openAdminForm,
-  closeAdminForm,
-  checkSlots,
-  createAdminReservation,
-  openCancel,
-  closeCancel,
-  confirmCancel,
-  confirmComplete,
-  confirmNoShow,
-  StatusBadge,
-  BaseInput,
-  BaseSelect,
-  BaseButton,
-  BaseSpinner,
-  EmptyState,
-  Plus,
-} = useOwnerReservationsView()
+const route = useRoute()
+const restaurantId = route.params.restaurantId as string
+
+const reservations = ref<Reservation[]>([])
+const loading = ref(true)
+
+const STATUS_LABEL: Record<string, string> = {
+  CONFIRMED: 'Confirmada',
+  CANCELLED: 'Cancelada',
+  COMPLETED: 'Completada',
+  NO_SHOW: 'No asistió',
+}
+
+function statusLabel(s: string): string { return STATUS_LABEL[s] ?? s }
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+}
+
+async function markCompleted(id: string) {
+  try {
+    await reservationService.complete(id)
+    const idx = reservations.value.findIndex(r => r.id === id)
+    if (idx !== -1) reservations.value[idx] = { ...reservations.value[idx]!, status: 'COMPLETED' }
+  } catch { /* silently fail */ }
+}
+
+async function markNoShow(id: string) {
+  try {
+    await reservationService.noShow(id)
+    const idx = reservations.value.findIndex(r => r.id === id)
+    if (idx !== -1) reservations.value[idx] = { ...reservations.value[idx]!, status: 'NO_SHOW' }
+  } catch { /* silently fail */ }
+}
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    const res = await reservationService.getByRestaurant(restaurantId, { page: 1, per_page: 50 })
+    reservations.value = res.data
+  } catch {
+    // silently degrade
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
-  <div class="owner-reservations-view">
-    <header class="owner-reservations-view-header">
-      <div>
-        <h1 class="owner-reservations-view-title">{{ t('ownerReservations.title') }}</h1>
-        <p class="owner-reservations-view-subtitle">{{ t('ownerReservations.subtitle') }}</p>
-      </div>
-      <BaseButton variant="primary" @click="openAdminForm">
-        <Plus :size="15" />
-        {{ t('ownerReservations.new') }}
-      </BaseButton>
-    </header>
+  <div class="owner-reserv-view">
+    <h1 class="owner-sub-title">Reservas</h1>
+    <p class="owner-sub-desc">Gestión de reservas del restaurante.</p>
 
-    <!-- Filters -->
-    <div class="owner-reservations-view-filters">
-      <BaseInput v-model="filters.dateFrom" :label="t('ownerReservations.filterDateFrom')" type="date" />
-      <BaseInput v-model="filters.dateTo" :label="t('ownerReservations.filterDateTo')" type="date" />
-      <BaseSelect v-model="filters.status" :label="t('ownerReservations.filterStatus')" :options="statusFilterOptions" />
-      <BaseSelect v-model="filters.source" :label="t('ownerReservations.filterSource')" :options="sourceFilterOptions" />
+    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <div v-else-if="reservations.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+      Sin reservas.
     </div>
-
-    <div v-if="loading" class="owner-reservations-view-loading">
-      <BaseSpinner />
+    <div v-else class="owner-table">
+      <div class="owner-table-head">
+        <span>Cliente</span>
+        <span>Fecha</span>
+        <span>Hora</span>
+        <span>Personas</span>
+        <span>Estado</span>
+        <span>Acciones</span>
+      </div>
+      <div v-for="r in reservations" :key="r.id" class="owner-table-row">
+        <span class="owner-table-cell">{{ r.guestName ?? 'Online' }}</span>
+        <span class="owner-table-cell">{{ formatDate(r.date) }}</span>
+        <span class="owner-table-cell">{{ r.timeSlot.slice(0,5) }}</span>
+        <span class="owner-table-cell">{{ r.partySize }}</span>
+        <span :class="['owner-table-cell', 'owner-status', `owner-status--${r.status}`]">{{ statusLabel(r.status) }}</span>
+        <span class="owner-table-cell owner-actions">
+          <button
+            v-if="r.status === 'CONFIRMED'"
+            class="owner-action-btn"
+            @click="markCompleted(r.id as string)"
+          >Completar</button>
+          <button
+            v-if="r.status === 'CONFIRMED'"
+            class="owner-action-btn owner-action-btn--danger"
+            @click="markNoShow(r.id as string)"
+          >No asistió</button>
+        </span>
+      </div>
     </div>
-
-    <EmptyState
-      v-else-if="reservations.length === 0"
-      :message="t('ownerReservations.empty')"
-    />
-
-    <ul v-else class="owner-reservations-view-list">
-      <li v-for="r in reservations" :key="r.id" class="owner-reservations-view-card">
-        <div class="owner-reservations-view-card-info">
-          <p class="owner-reservations-view-card-guest">
-            {{ r.guestName ?? 'Cliente registrado' }}
-          </p>
-          <p class="owner-reservations-view-card-meta">
-            {{ r.date }} · {{ r.timeSlot }} · {{ r.partySize }} personas · {{ r.confirmationCode }}
-          </p>
-        </div>
-        <div class="owner-reservations-view-card-right">
-          <StatusBadge :status="r.status" scope="ownerReservations" />
-          <div class="owner-reservations-view-card-actions">
-            <button
-              v-if="r.status === 'CONFIRMED'"
-              type="button"
-              class="owner-reservations-view-action-btn owner-reservations-view-action-btn--success"
-              @click="confirmComplete(r.id)"
-            >
-              {{ t('ownerReservations.actions.complete') }}
-            </button>
-            <button
-              v-if="r.status === 'CONFIRMED'"
-              type="button"
-              class="owner-reservations-view-action-btn owner-reservations-view-action-btn--warning"
-              @click="confirmNoShow(r.id)"
-            >
-              {{ t('ownerReservations.actions.noShow') }}
-            </button>
-            <button
-              v-if="r.status === 'CONFIRMED'"
-              type="button"
-              class="owner-reservations-view-action-btn owner-reservations-view-action-btn--danger"
-              @click="openCancel(r.id)"
-            >
-              {{ t('ownerReservations.actions.cancel') }}
-            </button>
-          </div>
-        </div>
-      </li>
-    </ul>
-
-    <!-- Admin create modal -->
-    <Teleport to="body">
-      <div v-if="showAdminForm" class="owner-reservations-view-modal-overlay" @click.self="closeAdminForm">
-        <div class="owner-reservations-view-modal">
-          <h3 class="owner-reservations-view-modal-title">{{ t('ownerReservations.adminForm.title') }}</h3>
-          <form class="owner-reservations-view-form" @submit.prevent="createAdminReservation">
-            <BaseInput v-model.number="adminForm.partySize" :label="t('ownerReservations.adminForm.partySize')" type="number" required />
-            <BaseInput v-model="adminForm.date" :label="t('ownerReservations.adminForm.date')" type="date" required />
-            <BaseSelect v-model="adminForm.source" :label="t('ownerReservations.adminForm.source')" :options="adminSourceOptions" />
-            <BaseInput v-model="adminForm.guestName" :label="t('ownerReservations.adminForm.guestName')" />
-            <BaseInput v-model="adminForm.guestPhone" :label="t('ownerReservations.adminForm.guestPhone')" />
-            <BaseInput v-model="adminForm.notes" :label="t('ownerReservations.adminForm.notes')" />
-            <BaseButton type="button" variant="ghost" @click="checkSlots" :loading="loadingSlots">
-              {{ t('ownerReservations.adminForm.checkSlots') }}
-            </BaseButton>
-            <div v-if="availableSlots.length > 0" class="owner-reservations-view-slots">
-              <p class="owner-reservations-view-slots-label">{{ t('restaurantPublic.book.availableSlots') }}</p>
-              <div class="owner-reservations-view-slots-grid">
-                <button
-                  v-for="slot in availableSlots"
-                  :key="slot.timeSlot"
-                  type="button"
-                  class="owner-reservations-view-slot-btn"
-                  :class="{ 'owner-reservations-view-slot-btn--selected': adminForm.timeSlot === slot.timeSlot }"
-                  @click="adminForm.timeSlot = slot.timeSlot"
-                >
-                  {{ slot.timeSlot }}
-                </button>
-              </div>
-            </div>
-            <div class="owner-reservations-view-modal-actions">
-              <BaseButton type="button" variant="ghost" @click="closeAdminForm">{{ t('common.cancel') }}</BaseButton>
-              <BaseButton type="submit" variant="primary" :disabled="!adminForm.timeSlot">{{ t('common.create') }}</BaseButton>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Teleport>
-
-    <!-- Cancel modal -->
-    <Teleport to="body">
-      <div v-if="cancelTarget" class="owner-reservations-view-modal-overlay" @click.self="closeCancel">
-        <div class="owner-reservations-view-modal">
-          <h3 class="owner-reservations-view-modal-title">{{ t('ownerReservations.cancelConfirm') }}</h3>
-          <BaseInput v-model="cancelReason" :label="t('ownerReservations.cancelReason')" />
-          <div class="owner-reservations-view-modal-actions">
-            <BaseButton variant="ghost" @click="closeCancel">{{ t('common.cancel') }}</BaseButton>
-            <BaseButton variant="danger" @click="confirmCancel">{{ t('common.confirm') }}</BaseButton>
-          </div>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>
 
-<style src="./styles/OwnerReservationsView.css" scoped></style>
+<style scoped>
+.owner-reserv-view { padding: 2.5rem; }
+.owner-sub-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
+.owner-sub-desc { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.owner-table { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); overflow: hidden; }
+.owner-table-head { display: grid; grid-template-columns: 1fr 80px 70px 70px 100px 160px; padding: 0.75rem 1.25rem; background: #080808; font-size: 0.5625rem; color: #2a2a2a; letter-spacing: 0.14em; text-transform: uppercase; }
+.owner-table-row { display: grid; grid-template-columns: 1fr 80px 70px 70px 100px 160px; padding: 0.875rem 1.25rem; border-top: 1px solid #0a0a0a; align-items: center; }
+.owner-table-cell { font-size: 0.8125rem; color: #444; }
+.owner-status { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.owner-status--CONFIRMED { color: var(--brand); }
+.owner-status--CANCELLED { color: #222; }
+.owner-status--COMPLETED { color: #333; }
+.owner-status--NO_SHOW { color: var(--danger); }
+.owner-actions { display: flex; gap: 0.5rem; }
+.owner-action-btn { background: transparent; border: 1px solid #161616; color: #333; border-radius: var(--radius-sm); padding: 4px 10px; font-size: 0.6875rem; font-family: inherit; cursor: pointer; transition: all var(--dur-fast); }
+.owner-action-btn:hover { color: #666; border-color: #222; }
+.owner-action-btn--danger { border-color: rgba(239,68,68,0.2); color: var(--danger); }
+.owner-action-btn--danger:hover { background: rgba(239,68,68,0.06); }
+</style>

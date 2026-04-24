@@ -1,0 +1,228 @@
+.app-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  background: rgba(3, 3, 3, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.app-navbar-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.app-navbar-links {
+  display: flex;
+  gap: 0.125rem;
+}
+
+.app-navbar-link {
+  background: none;
+  border: none;
+  color: #3a3a3a;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  padding: 0.375rem 0.875rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color var(--dur-fast) var(--ease-out);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  display: inline-flex;
+}
+
+.app-navbar-link--active {
+  color: #aaa;
+}
+
+.app-navbar-link:hover {
+  color: #777;
+}
+
+.app-navbar-logo {
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-weight: 800;
+  font-size: 1.1875rem;
+  letter-spacing: -0.03em;
+  font-family: inherit;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.app-navbar-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-navbar-login {
+  background: transparent;
+  border: none;
+  color: #444;
+  border-radius: var(--radius-sm);
+  padding: 0.4375rem 0.875rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-flex;
+}
+
+.app-navbar-register {
+  background: transparent;
+  border: 1px solid #1c1c1c;
+  color: #777;
+  border-radius: var(--radius-sm);
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  transition: border-color var(--dur-fast);
+}
+
+.app-navbar-register:hover {
+  border-color: #2a2a2a;
+  color: #aaa;
+}
+
+/* Avatar button + dropdown */
+.app-navbar-avatar-wrap {
+  position: relative;
+}
+
+.app-navbar-avatar-btn {
+  background: none;
+  border: 1px solid #111;
+  border-radius: 99px;
+  padding: 0.25rem 0.75rem 0.25rem 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color var(--dur-fast);
+}
+
+.app-navbar-avatar-btn:hover {
+  border-color: #1f1f1f;
+}
+
+.app-navbar-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--brand-dim);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.app-navbar-avatar-name {
+  font-size: 0.8125rem;
+  color: #999;
+}
+
+.app-navbar-avatar-chevron {
+  color: #333;
+  font-size: 0.625rem;
+  transition: transform var(--dur-base) var(--ease-out);
+  display: inline-block;
+}
+
+.app-navbar-avatar-chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown */
+.app-navbar-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #0a0a0a;
+  border: 1px solid #141414;
+  border-radius: var(--radius-lg);
+  padding: 0.375rem;
+  min-width: 210px;
+  box-shadow: 0 24px 56px rgba(0,0,0,0.8);
+  z-index: 200;
+  animation: drop-in var(--dur-base) var(--ease-spring) both;
+}
+
+.app-navbar-drop-header {
+  padding: 0.625rem 0.75rem 0.5rem;
+}
+
+.app-navbar-drop-name {
+  font-size: 0.8125rem;
+  color: #ccc;
+  font-weight: 500;
+}
+
+.app-navbar-drop-email {
+  font-size: 0.6875rem;
+  color: #444;
+  margin-top: 2px;
+}
+
+.app-navbar-drop-divider {
+  height: 1px;
+  background: #0d0d0d;
+  margin: 0.25rem 0;
+}
+
+.app-navbar-drop-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #777;
+  font-size: 0.8125rem;
+  padding: 0.5625rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  transition: color var(--dur-fast), background var(--dur-fast);
+}
+
+.app-navbar-drop-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: #aaa;
+}
+
+.app-navbar-drop-item--danger {
+  color: #555;
+}
+
+.app-navbar-drop-item--danger:hover {
+  color: var(--danger);
+  background: var(--danger-dim);
+}

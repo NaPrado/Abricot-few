@@ -1,223 +1,122 @@
 <script setup lang="ts">
-import { useOwnerMenusView } from './scripts/OwnerMenusView'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { menuService } from '@/services'
+import type { Menu, MenuDetail } from '@/types'
 
-const {
-  t,
-  menus,
-  loading,
-  expandedMenuId,
-  expandedCategoryId,
-  showMenuForm,
-  menuFormName,
-  showCategoryForm,
-  categoryFormName,
-  showItemForm,
-  itemForm,
-  savingMenu,
-  savingCategory,
-  savingItem,
-  toggleMenu,
-  toggleCategory,
-  openMenuCreate,
-  closeMenuForm,
-  saveMenu,
-  deleteMenu,
-  activateMenu,
-  openCategoryCreate,
-  closeCategoryForm,
-  saveCategory,
-  deleteCategory,
-  openItemCreate,
-  closeItemForm,
-  saveItem,
-  deleteItem,
-  toggleItemAvailability,
-  onItemPhoto,
-  BaseInput,
-  BaseTextarea,
-  BaseButton,
-  BaseSpinner,
-  EmptyState,
-  Plus,
-  Pencil,
-  Trash2,
-  ChevronDown,
-  ChevronRight,
-  Check,
-  ImagePlus,
-} = useOwnerMenusView()
+const route = useRoute()
+const restaurantId = route.params.restaurantId as string
+
+const menus = ref<Menu[]>([])
+const selectedMenu = ref<MenuDetail | null>(null)
+const loading = ref(true)
+const detailLoading = ref(false)
+
+function formatMoney(n: string | number): string { return `$${Math.round(Number(n)).toLocaleString('es-AR')}` }
+
+async function selectMenu(menu: Menu) {
+  detailLoading.value = true
+  try {
+    selectedMenu.value = await menuService.getById(restaurantId, menu.id)
+  } catch { /* silently fail */ }
+  finally { detailLoading.value = false }
+}
+
+async function activateMenu(id: string) {
+  try {
+    await menuService.activate(restaurantId, id)
+    menus.value = menus.value.map(m => ({ ...m, isActive: m.id === id }))
+  } catch { /* silently fail */ }
+}
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    menus.value = await menuService.getByRestaurant(restaurantId)
+    if (menus.value.length > 0) await selectMenu(menus.value[0]!)
+  } catch {
+    // silently degrade
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
   <div class="owner-menus-view">
-    <header class="owner-menus-view-header">
-      <div>
-        <h1 class="owner-menus-view-title">{{ t('ownerMenus.title') }}</h1>
-        <p class="owner-menus-view-subtitle">{{ t('ownerMenus.subtitle') }}</p>
+    <h1 class="owner-sub-title">Menú digital</h1>
+    <p class="owner-sub-desc">Administrá la carta de tu restaurante.</p>
+
+    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <template v-else>
+      <div v-if="menus.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+        No hay menús creados.
       </div>
-      <BaseButton variant="primary" @click="openMenuCreate">
-        <Plus :size="15" />
-        {{ t('ownerMenus.new') }}
-      </BaseButton>
-    </header>
-
-    <div v-if="loading" class="owner-menus-view-loading">
-      <BaseSpinner />
-    </div>
-
-    <EmptyState
-      v-else-if="menus.length === 0"
-      :title="t('ownerMenus.empty')"
-      :description="t('ownerMenus.emptyHint')"
-    />
-
-    <ul v-else class="owner-menus-view-menu-list">
-      <li v-for="menu in menus" :key="menu.id" class="owner-menus-view-menu-item">
-        <!-- Menu header -->
-        <div class="owner-menus-view-menu-header" @click="toggleMenu(menu.id)">
-          <div class="owner-menus-view-menu-header-left">
-            <component :is="expandedMenuId === menu.id ? ChevronDown : ChevronRight" :size="16" />
-            <span class="owner-menus-view-menu-name">{{ menu.name }}</span>
-            <span v-if="menu.isActive" class="owner-menus-view-badge--active">{{ t('ownerMenus.active') }}</span>
-          </div>
-          <div class="owner-menus-view-menu-actions" @click.stop>
-            <button type="button" class="owner-menus-view-icon-btn" @click="activateMenu(menu)">
-              <Check :size="14" />
-            </button>
-            <button type="button" class="owner-menus-view-icon-btn" @click="openMenuCreate(menu)">
-              <Pencil :size="14" />
-            </button>
-            <button type="button" class="owner-menus-view-icon-btn owner-menus-view-icon-btn--danger" @click="deleteMenu(menu.id)">
-              <Trash2 :size="14" />
-            </button>
+      <div v-else class="owner-menus-layout">
+        <!-- Menu list -->
+        <div class="owner-menus-list">
+          <div
+            v-for="m in menus"
+            :key="m.id"
+            :class="['owner-menu-item', selectedMenu?.id === m.id && 'owner-menu-item--active']"
+            @click="selectMenu(m)"
+          >
+            <span class="owner-menu-item-name">{{ m.name }}</span>
+            <span v-if="m.isActive" class="owner-menu-active-badge">Activo</span>
+            <button
+              v-else
+              class="owner-menu-activate-btn"
+              @click.stop="activateMenu(m.id as string)"
+            >Activar</button>
           </div>
         </div>
 
-        <!-- Categories (expanded) -->
-        <div v-if="expandedMenuId === menu.id" class="owner-menus-view-categories">
-          <ul class="owner-menus-view-category-list">
-            <li v-for="cat in menu.categories" :key="cat.id" class="owner-menus-view-category-item">
-              <!-- Category header -->
-              <div class="owner-menus-view-category-header" @click="toggleCategory(cat.id)">
-                <div class="owner-menus-view-category-header-left">
-                  <component :is="expandedCategoryId === cat.id ? ChevronDown : ChevronRight" :size="14" />
-                  <span class="owner-menus-view-category-name">{{ cat.name }}</span>
-                  <span class="owner-menus-view-category-count">{{ cat.items.length }}</span>
+        <!-- Menu detail -->
+        <div class="owner-menus-detail">
+          <div v-if="detailLoading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+          <template v-else-if="selectedMenu">
+            <div
+              v-for="category in selectedMenu.categories"
+              :key="category.id"
+              class="owner-menu-category"
+            >
+              <div class="owner-menu-cat-name">{{ category.name }}</div>
+              <div
+                v-for="item in category.items"
+                :key="item.id"
+                :class="['owner-menu-row', !item.isAvailable && 'owner-menu-row--unavailable']"
+              >
+                <div>
+                  <div class="owner-menu-row-name">{{ item.name }}</div>
+                  <div class="owner-menu-row-desc">{{ item.description }}</div>
                 </div>
-                <div class="owner-menus-view-category-actions" @click.stop>
-                  <button type="button" class="owner-menus-view-icon-btn" @click="openCategoryCreate(menu.id, cat)">
-                    <Pencil :size="13" />
-                  </button>
-                  <button type="button" class="owner-menus-view-icon-btn owner-menus-view-icon-btn--danger" @click="deleteCategory(menu.id, cat.id)">
-                    <Trash2 :size="13" />
-                  </button>
-                </div>
+                <div class="owner-menu-row-price">{{ formatMoney(item.price) }}</div>
               </div>
-
-              <!-- Items (expanded) -->
-              <ul v-if="expandedCategoryId === cat.id" class="owner-menus-view-items-list">
-                <li v-for="item in cat.items" :key="item.id" class="owner-menus-view-item-row">
-                  <img
-                    v-if="item.photoUrl"
-                    :src="item.photoUrl"
-                    class="owner-menus-view-item-photo"
-                    alt=""
-                  />
-                  <div class="owner-menus-view-item-photo-placeholder" v-else>
-                    <ImagePlus :size="14" />
-                  </div>
-                  <div class="owner-menus-view-item-info">
-                    <p class="owner-menus-view-item-name">{{ item.name }}</p>
-                    <p class="owner-menus-view-item-price">${{ item.price }}</p>
-                  </div>
-                  <div class="owner-menus-view-item-actions">
-                    <label class="owner-menus-view-toggle-small">
-                      <input
-                        type="checkbox"
-                        :checked="item.isAvailable"
-                        @change="toggleItemAvailability(item)"
-                      />
-                      {{ t('ownerMenus.itemAvailable') }}
-                    </label>
-                    <label class="owner-menus-view-photo-upload-btn">
-                      <input type="file" accept="image/*" class="owner-menus-view-file-input" @change="onItemPhoto(item.id, $event)" />
-                      <ImagePlus :size="13" />
-                    </label>
-                    <button type="button" class="owner-menus-view-icon-btn" @click="openItemCreate(cat.id, item)">
-                      <Pencil :size="13" />
-                    </button>
-                    <button type="button" class="owner-menus-view-icon-btn owner-menus-view-icon-btn--danger" @click="deleteItem(cat.id, item.id)">
-                      <Trash2 :size="13" />
-                    </button>
-                  </div>
-                </li>
-
-                <li class="owner-menus-view-add-item-row">
-                  <button type="button" class="owner-menus-view-add-item-btn" @click="openItemCreate(cat.id)">
-                    <Plus :size="13" />
-                    {{ t('ownerMenus.newItem') }}
-                  </button>
-                </li>
-              </ul>
-            </li>
-          </ul>
-
-          <button type="button" class="owner-menus-view-add-category-btn" @click="openCategoryCreate(menu.id)">
-            <Plus :size="14" />
-            {{ t('ownerMenus.newCategory') }}
-          </button>
-        </div>
-      </li>
-    </ul>
-
-    <!-- Menu create/edit modal -->
-    <Teleport to="body">
-      <div v-if="showMenuForm" class="owner-menus-view-modal-overlay" @click.self="closeMenuForm">
-        <div class="owner-menus-view-modal">
-          <h3 class="owner-menus-view-modal-title">{{ t('ownerMenus.menuName') }}</h3>
-          <BaseInput v-model="menuFormName" :label="t('ownerMenus.menuName')" required />
-          <div class="owner-menus-view-modal-actions">
-            <BaseButton variant="ghost" @click="closeMenuForm">{{ t('common.cancel') }}</BaseButton>
-            <BaseButton variant="primary" :loading="savingMenu" @click="saveMenu">{{ t('common.save') }}</BaseButton>
-          </div>
+            </div>
+          </template>
         </div>
       </div>
-    </Teleport>
-
-    <!-- Category create/edit modal -->
-    <Teleport to="body">
-      <div v-if="showCategoryForm" class="owner-menus-view-modal-overlay" @click.self="closeCategoryForm">
-        <div class="owner-menus-view-modal">
-          <h3 class="owner-menus-view-modal-title">{{ t('ownerMenus.categoryName') }}</h3>
-          <BaseInput v-model="categoryFormName" :label="t('ownerMenus.categoryName')" required />
-          <div class="owner-menus-view-modal-actions">
-            <BaseButton variant="ghost" @click="closeCategoryForm">{{ t('common.cancel') }}</BaseButton>
-            <BaseButton variant="primary" :loading="savingCategory" @click="saveCategory">{{ t('common.save') }}</BaseButton>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <!-- Item create/edit modal -->
-    <Teleport to="body">
-      <div v-if="showItemForm" class="owner-menus-view-modal-overlay" @click.self="closeItemForm">
-        <div class="owner-menus-view-modal">
-          <h3 class="owner-menus-view-modal-title">{{ t('ownerMenus.itemName') }}</h3>
-          <BaseInput v-model="itemForm.name" :label="t('ownerMenus.itemName')" required />
-          <BaseTextarea v-model="itemForm.description" :label="t('ownerMenus.itemDescription')" />
-          <BaseInput v-model="itemForm.price" :label="t('ownerMenus.itemPrice')" required />
-          <label class="owner-menus-view-checkbox-row">
-            <input type="checkbox" v-model="itemForm.isAvailable" />
-            {{ t('ownerMenus.itemAvailable') }}
-          </label>
-          <div class="owner-menus-view-modal-actions">
-            <BaseButton variant="ghost" @click="closeItemForm">{{ t('common.cancel') }}</BaseButton>
-            <BaseButton variant="primary" :loading="savingItem" @click="saveItem">{{ t('common.save') }}</BaseButton>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    </template>
   </div>
 </template>
 
-<style src="./styles/OwnerMenusView.css" scoped></style>
+<style scoped>
+.owner-menus-view { padding: 2.5rem; }
+.owner-sub-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
+.owner-sub-desc { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.owner-menus-layout { display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; }
+.owner-menus-list { display: flex; flex-direction: column; gap: 4px; }
+.owner-menu-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-md); cursor: pointer; transition: border-color var(--dur-fast); }
+.owner-menu-item--active { border-color: var(--brand); }
+.owner-menu-item-name { font-size: 0.875rem; color: #555; }
+.owner-menu-active-badge { font-size: 0.5625rem; color: var(--brand); letter-spacing: 0.1em; text-transform: uppercase; }
+.owner-menu-activate-btn { background: transparent; border: 1px solid #111; color: #222; border-radius: 99px; padding: 2px 8px; font-size: 0.5625rem; font-family: inherit; cursor: pointer; }
+.owner-menus-detail { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.5rem; }
+.owner-menu-category { margin-bottom: 1.5rem; }
+.owner-menu-cat-name { font-size: 0.5625rem; color: #2a2a2a; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.owner-menu-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #0a0a0a; gap: 1rem; }
+.owner-menu-row--unavailable { opacity: 0.4; }
+.owner-menu-row-name { font-size: 0.875rem; color: #888; font-weight: 500; }
+.owner-menu-row-desc { font-size: 0.75rem; color: #2a2a2a; margin-top: 2px; }
+.owner-menu-row-price { font-size: 0.875rem; font-weight: 700; color: #555; white-space: nowrap; }
+</style>

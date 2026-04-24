@@ -107,6 +107,17 @@ function extractErrorMessage(data: unknown, status: number): string {
   return `Error ${status}`
 }
 
+const REQUEST_TIMEOUT_MS = 10_000
+
+function withTimeout(ms: number): { signal: AbortSignal; cancel: () => void } {
+  const controller = new AbortController()
+  const id = window.setTimeout(() => controller.abort(), ms)
+  return {
+    signal: controller.signal,
+    cancel: () => window.clearTimeout(id),
+  }
+}
+
 async function request<T>(
   method: string,
   path: string,
@@ -126,11 +137,14 @@ async function request<T>(
     headers['Content-Type'] = 'application/json'
   }
 
+  const { signal, cancel } = withTimeout(REQUEST_TIMEOUT_MS)
+
   const response = await fetch(`${BASE_URL}${url}`, {
     method,
     headers,
     body: hasBody ? JSON.stringify(body) : undefined,
-  })
+    signal,
+  }).finally(cancel)
 
   const data = await parseResponseBody(response)
 
@@ -154,6 +168,8 @@ async function upload<T>(
   const authMode = options.authMode ?? 'access'
   const url = buildPath(path, options.query)
 
+  const { signal, cancel } = withTimeout(REQUEST_TIMEOUT_MS)
+
   const response = await fetch(`${BASE_URL}${url}`, {
     method,
     headers: {
@@ -161,7 +177,8 @@ async function upload<T>(
       ...options.headers,
     },
     body: formData,
-  })
+    signal,
+  }).finally(cancel)
 
   const data = await parseResponseBody(response)
 

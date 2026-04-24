@@ -2,279 +2,184 @@
 import { useRestaurantPublicView } from './scripts/RestaurantPublicView'
 
 const {
-  BaseButton,
-  BaseSpinner,
-  EmptyState,
-  RouterLink,
-  StatusBadge,
-  t,
   restaurant,
-  loadingRestaurant,
-  restaurantError,
-  menus,
-  activeMenuId,
-  menuCategories,
-  loadingMenu,
-  menuError,
-  visiblePromotions,
-  loadingPromotions,
-  promotionsError,
-  sortedBusinessHours,
-  loadingBusinessHours,
-  businessHoursError,
-  visitDate,
+  menu,
+  loading,
+  activeTab,
+  bookingDate,
   partySize,
-  availability,
+  selectedSlot,
+  bookingLoading,
+  bookingSuccess,
+  bookingError,
+  colorBg,
   availableSlots,
-  availabilitySummary,
-  loadingAvailability,
-  availabilityError,
-  formatCurrency,
-  formatDate,
-  businessHourLabel,
-  promotionDiscountLabel,
-  loadRestaurant,
-  loadMenus,
-  loadPromotions,
-  loadBusinessHours,
-  checkAvailability,
-  selectMenu,
+  tabs,
+  loadSlots,
+  confirmReservation,
+  adjustParty,
 } = useRestaurantPublicView()
 </script>
 
 <template>
-  <div class="restaurant-public-view">
-    <RouterLink to="/explore" class="restaurant-public-back">{{ t('restaurantPublic.backExplore') }}</RouterLink>
+  <div class="restaurant-view">
+    <div v-if="loading" class="restaurant-loading">Cargando…</div>
+    <template v-else-if="restaurant">
+      <!-- Gallery -->
+      <div class="restaurant-gallery">
+        <div
+          class="restaurant-gallery-main"
+          :style="{
+            background: restaurant.photoUrl
+              ? `url(${restaurant.photoUrl}) center/cover`
+              : colorBg,
+          }"
+        />
+        <div class="restaurant-gallery-stack">
+          <div class="restaurant-gallery-thumb" :style="{ background: '#0a0a0a' }" />
+          <div class="restaurant-gallery-thumb" :style="{ background: '#060606' }" />
+        </div>
+      </div>
 
-    <div v-if="loadingRestaurant" class="restaurant-public-state">
-      <BaseSpinner :size="28" :label="t('restaurantPublic.loading')" />
-    </div>
-
-    <EmptyState
-      v-else-if="restaurantError || !restaurant"
-      :title="t('restaurantPublic.errorTitle')"
-      :description="restaurantError || t('restaurantPublic.errorLoad')"
-    >
-      <template #action>
-        <BaseButton variant="outline" @click="loadRestaurant">{{ t('common.retry') }}</BaseButton>
-      </template>
-    </EmptyState>
-
-    <template v-else>
-      <div class="restaurant-public-layout">
-        <section class="restaurant-public-main">
-          <article class="restaurant-public-hero">
-            <div v-if="restaurant.photoUrl" class="restaurant-public-hero-image">
-              <img :src="restaurant.photoUrl" :alt="restaurant.name" />
+      <!-- Body -->
+      <div class="restaurant-body">
+        <!-- Info column -->
+        <div>
+          <div class="restaurant-info-header">
+            <h1 class="restaurant-name">{{ restaurant.name }}</h1>
+            <div class="restaurant-meta-row">
+              <span class="restaurant-rating">
+                <span style="color:#f97316">★</span> 4.8
+              </span>
+              <span v-if="restaurant.cuisineTypes[0]">{{ restaurant.cuisineTypes[0].label }}</span>
+              <span v-if="restaurant.priceRange">{{ restaurant.priceRange.label }}</span>
+              <span>{{ restaurant.address }}</span>
             </div>
-            <div v-else class="restaurant-public-hero-image restaurant-public-hero-image--placeholder">
-              {{ restaurant.name.charAt(0).toUpperCase() }}
-            </div>
-            <div class="restaurant-public-hero-body">
-              <h1 class="restaurant-public-title">{{ restaurant.name }}</h1>
-              <p class="restaurant-public-meta">
-                {{ restaurant.address }} · {{ restaurant.city.name }}
-              </p>
-              <p class="restaurant-public-description">
-                {{ restaurant.description || t('restaurantPublic.noDescription') }}
-              </p>
-              <div class="restaurant-public-tags">
-                <span class="restaurant-public-tag">{{ restaurant.priceRange?.label || t('restaurantPublic.noPriceRange') }}</span>
-                <span
-                  v-for="cuisine in restaurant.cuisineTypes"
-                  :key="cuisine.id"
-                  class="restaurant-public-tag"
-                >
-                  {{ cuisine.label }}
-                </span>
-              </div>
-            </div>
-          </article>
+          </div>
 
-          <section class="restaurant-public-section">
-            <header class="restaurant-public-section-header">
-              <h2>{{ t('restaurantPublic.menuTitle') }}</h2>
-              <div v-if="menus.length > 1" class="restaurant-public-menu-switcher">
-                <button
-                  v-for="menu in menus"
-                  :key="menu.id"
-                  type="button"
-                  :class="[
-                    'restaurant-public-menu-tab',
-                    { 'restaurant-public-menu-tab--active': menu.id === activeMenuId },
-                  ]"
-                  @click="selectMenu(menu.id)"
-                >
-                  {{ menu.name }}
-                </button>
-              </div>
-            </header>
+          <p class="restaurant-desc">{{ restaurant.description }}</p>
 
-            <div v-if="loadingMenu" class="restaurant-public-state-inline">
-              <BaseSpinner :label="t('restaurantPublic.loading')" />
-            </div>
-
-            <EmptyState
-              v-else-if="menuError"
-              :title="t('restaurantPublic.sectionErrorTitle')"
-              :description="menuError"
+          <!-- Tabs -->
+          <div class="restaurant-tabs">
+            <button
+              v-for="tab in tabs"
+              :key="tab"
+              :class="['restaurant-tab', tab === activeTab && 'restaurant-tab--active']"
+              @click="activeTab = tab"
             >
-              <template #action>
-                <BaseButton variant="outline" @click="loadMenus">{{ t('common.retry') }}</BaseButton>
-              </template>
-            </EmptyState>
+              {{ tab }}
+            </button>
+          </div>
 
-            <EmptyState
-              v-else-if="menuCategories.length === 0"
-              :title="t('restaurantPublic.emptyMenuTitle')"
-              :description="t('restaurantPublic.emptyMenuHint')"
-            />
-
-            <div v-else class="restaurant-public-menu-grid">
-              <article
-                v-for="category in menuCategories"
+          <!-- Menu tab -->
+          <div v-if="activeTab === 'Menú'">
+            <div v-if="!menu" style="color:#2a2a2a;font-size:0.875rem">Sin carta disponible.</div>
+            <div v-else>
+              <div
+                v-for="category in menu.categories"
                 :key="category.id"
-                class="restaurant-public-menu-category"
+                class="restaurant-menu-category"
               >
-                <h3>{{ category.name }}</h3>
-                <ul>
-                  <li v-for="item in category.items" :key="item.id" class="restaurant-public-menu-item">
-                    <div>
-                      <div class="restaurant-public-menu-name-row">
-                        <h4>{{ item.name }}</h4>
-                        <StatusBadge
-                          :label="item.isAvailable ? t('restaurantPublic.available') : t('restaurantPublic.unavailable')"
-                          :tone="item.isAvailable ? 'success' : 'neutral'"
-                        />
-                      </div>
-                      <p v-if="item.description" class="restaurant-public-menu-description">{{ item.description }}</p>
-                    </div>
-                    <strong>{{ formatCurrency(item.price) }}</strong>
-                  </li>
-                </ul>
-              </article>
+                <div class="restaurant-menu-cat-name">{{ category.name }}</div>
+                <div
+                  v-for="item in category.items"
+                  :key="item.id"
+                  class="restaurant-menu-item"
+                >
+                  <div>
+                    <div class="restaurant-menu-item-name">{{ item.name }}</div>
+                    <div class="restaurant-menu-item-desc">{{ item.description }}</div>
+                  </div>
+                  <div class="restaurant-menu-item-price">
+                    ${{ Math.round(Number(item.price)).toLocaleString('es-AR') }}
+                  </div>
+                </div>
+              </div>
             </div>
-          </section>
+          </div>
+        </div>
 
-          <section class="restaurant-public-section">
-            <header class="restaurant-public-section-header">
-              <h2>{{ t('restaurantPublic.promotionsTitle') }}</h2>
-            </header>
-
-            <div v-if="loadingPromotions" class="restaurant-public-state-inline">
-              <BaseSpinner :label="t('restaurantPublic.loading')" />
-            </div>
-
-            <EmptyState
-              v-else-if="promotionsError"
-              :title="t('restaurantPublic.sectionErrorTitle')"
-              :description="promotionsError"
+        <!-- Booking panel -->
+        <div class="restaurant-booking-panel">
+          <!-- Tab switcher -->
+          <div class="restaurant-panel-tabs">
+            <button
+              :class="['restaurant-panel-tab', activeTab === 'Reservar' && 'restaurant-panel-tab--active']"
+              @click="activeTab = 'Reservar'"
             >
-              <template #action>
-                <BaseButton variant="outline" @click="loadPromotions">{{ t('common.retry') }}</BaseButton>
-              </template>
-            </EmptyState>
-
-            <EmptyState
-              v-else-if="visiblePromotions.length === 0"
-              :title="t('restaurantPublic.emptyPromotionsTitle')"
-              :description="t('restaurantPublic.emptyPromotionsHint')"
-            />
-
-            <div v-else class="restaurant-public-promotions-grid">
-              <article
-                v-for="promotion in visiblePromotions"
-                :key="promotion.id"
-                class="restaurant-public-promo-card"
-              >
-                <p class="restaurant-public-promo-value">{{ promotionDiscountLabel(promotion) }}</p>
-                <h3>{{ promotion.title }}</h3>
-                <p class="restaurant-public-promo-description">
-                  {{ promotion.description || t('restaurantPublic.noPromotionDescription') }}
-                </p>
-                <p class="restaurant-public-promo-dates">
-                  {{ t('restaurantPublic.validity') }} {{ formatDate(promotion.startDate) }} - {{ formatDate(promotion.endDate) }}
-                </p>
-                <StatusBadge
-                  :label="promotion.isActive ? t('restaurantPublic.active') : t('restaurantPublic.inactive')"
-                  :tone="promotion.isActive ? 'success' : 'neutral'"
-                />
-              </article>
-            </div>
-          </section>
-
-          <section class="restaurant-public-section">
-            <header class="restaurant-public-section-header">
-              <h2>{{ t('restaurantPublic.hoursTitle') }}</h2>
-            </header>
-
-            <div v-if="loadingBusinessHours" class="restaurant-public-state-inline">
-              <BaseSpinner :label="t('restaurantPublic.loading')" />
-            </div>
-
-            <EmptyState
-              v-else-if="businessHoursError"
-              :title="t('restaurantPublic.sectionErrorTitle')"
-              :description="businessHoursError"
+              Reservar
+            </button>
+            <button
+              :class="['restaurant-panel-tab', activeTab === 'Para llevar' && 'restaurant-panel-tab--active']"
+              @click="activeTab = 'Para llevar'"
             >
-              <template #action>
-                <BaseButton variant="outline" @click="loadBusinessHours">{{ t('common.retry') }}</BaseButton>
-              </template>
-            </EmptyState>
+              Para llevar
+            </button>
+          </div>
 
-            <EmptyState
-              v-else-if="sortedBusinessHours.length === 0"
-              :title="t('restaurantPublic.emptyHoursTitle')"
-              :description="t('restaurantPublic.emptyHoursHint')"
-            />
-
-            <ul v-else class="restaurant-public-hours-list">
-              <li v-for="hour in sortedBusinessHours" :key="hour.id">
-                <span>{{ hour.dayName }}</span>
-                <strong>{{ businessHourLabel(hour) }}</strong>
-              </li>
-            </ul>
-          </section>
-        </section>
-
-        <aside class="restaurant-public-side">
-          <section class="restaurant-public-reserve-card">
-            <h2>{{ t('restaurantPublic.availabilityTitle') }}</h2>
-            <p>{{ t('restaurantPublic.availabilityHint') }}</p>
-
-            <label class="restaurant-public-form-field">
-              <span>{{ t('restaurantPublic.dateLabel') }}</span>
-              <input v-model="visitDate" type="date" />
-            </label>
-
-            <label class="restaurant-public-form-field">
-              <span>{{ t('restaurantPublic.partySizeLabel') }}</span>
-              <input v-model.number="partySize" type="number" min="1" step="1" />
-            </label>
-
-            <BaseButton variant="primary" @click="checkAvailability">
-              {{ t('restaurantPublic.checkAvailability') }}
-            </BaseButton>
-
-            <div v-if="loadingAvailability" class="restaurant-public-state-inline">
-              <BaseSpinner :label="t('restaurantPublic.loading')" />
-            </div>
-
-            <p v-else-if="availabilityError" class="restaurant-public-inline-error">{{ availabilityError }}</p>
-
-            <template v-else-if="availability">
-              <p class="restaurant-public-availability-summary">{{ availabilitySummary }}</p>
-              <p class="restaurant-public-availability-note">
-                {{ availability.allowTableJoining ? t('restaurantPublic.allowJoin') : t('restaurantPublic.noJoin') }}
-              </p>
-              <ul v-if="availableSlots.length > 0" class="restaurant-public-slot-list">
-                <li v-for="slot in availableSlots" :key="slot.timeSlot">
-                  <button type="button">{{ slot.timeSlot.slice(0, 5) }}</button>
-                </li>
-              </ul>
+          <template v-if="activeTab !== 'Menú'">
+            <template v-if="bookingSuccess">
+              <div class="restaurant-panel-success">
+                <div class="restaurant-panel-success-icon">✓</div>
+                <div class="restaurant-panel-success-title">¡Reserva confirmada!</div>
+                <div class="restaurant-panel-success-sub">
+                  Te llegará una confirmación por email.
+                </div>
+              </div>
             </template>
-          </section>
-        </aside>
+
+            <template v-else>
+              <!-- Date -->
+              <div class="restaurant-panel-field">
+                <div class="restaurant-panel-label">Fecha</div>
+                <input
+                  v-model="bookingDate"
+                  class="restaurant-panel-input"
+                  type="date"
+                  @change="loadSlots"
+                />
+              </div>
+
+              <!-- Party size -->
+              <div class="restaurant-panel-field">
+                <div class="restaurant-panel-label">Personas</div>
+                <div class="restaurant-party-row">
+                  <button class="restaurant-party-btn" type="button" @click="adjustParty(-1)">−</button>
+                  <span class="restaurant-party-val">{{ partySize }}</span>
+                  <button class="restaurant-party-btn" type="button" @click="adjustParty(1)">+</button>
+                </div>
+              </div>
+
+              <!-- Time slots -->
+              <div class="restaurant-panel-field">
+                <div class="restaurant-panel-label">Horario</div>
+                <div v-if="availableSlots.length === 0" class="restaurant-no-slots">
+                  Sin disponibilidad para esta fecha.
+                </div>
+                <div v-else class="restaurant-slots-grid">
+                  <button
+                    v-for="slot in availableSlots"
+                    :key="slot.timeSlot"
+                    :class="['restaurant-slot-btn', slot.timeSlot === selectedSlot && 'restaurant-slot-btn--selected']"
+                    @click="selectedSlot = slot.timeSlot"
+                  >
+                    {{ slot.timeSlot.slice(0, 5) }}
+                  </button>
+                </div>
+              </div>
+
+              <p v-if="bookingError" class="restaurant-panel-error">{{ bookingError }}</p>
+
+              <button
+                class="restaurant-confirm-btn"
+                :disabled="!selectedSlot || bookingLoading"
+                @click="confirmReservation"
+              >
+                {{ bookingLoading ? 'Confirmando…' : 'Confirmar reserva' }}
+              </button>
+            </template>
+          </template>
+        </div>
       </div>
     </template>
   </div>

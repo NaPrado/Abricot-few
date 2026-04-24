@@ -2,62 +2,103 @@
 import { useMyOrdersView } from './scripts/MyOrdersView'
 
 const {
-  t,
   orders,
   loading,
-  statusFilter,
-  statusFilterOptions,
-  StatusBadge,
-  BaseSelect,
-  BaseSpinner,
-  EmptyState,
-  RouterLink,
+  expandedId,
+  steps,
+  statusLabel,
+  statusStepIndex,
+  stepDescription,
+  formatDateTime,
+  formatMoney,
+  toggle,
 } = useMyOrdersView()
 </script>
 
 <template>
-  <div class="my-orders-view">
-    <header class="my-orders-view-header">
-      <h1 class="my-orders-view-title">{{ t('myOrders.title') }}</h1>
-      <p class="my-orders-view-subtitle">{{ t('myOrders.subtitle') }}</p>
-    </header>
+  <div class="my-orders">
+    <h1 class="my-orders-title">Mis pedidos</h1>
+    <p class="my-orders-sub">Seguí el estado de tus pedidos en tiempo real.</p>
 
-    <div class="my-orders-view-filters">
-      <BaseSelect v-model="statusFilter" :label="t('myOrders.filterStatus')" :options="statusFilterOptions" />
+    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <div v-else-if="orders.length === 0" class="my-orders-empty">
+      No tenés pedidos todavía.
     </div>
-
-    <div v-if="loading" class="my-orders-view-loading">
-      <BaseSpinner />
-    </div>
-
-    <EmptyState
-      v-else-if="orders.length === 0"
-      :message="t('myOrders.empty')"
-      :hint="t('myOrders.emptyHint')"
-    />
-
-    <ul v-else class="my-orders-view-list">
-      <li v-for="order in orders" :key="order.id" class="my-orders-view-card">
-        <div class="my-orders-view-card-main">
-          <p class="my-orders-view-card-restaurant">{{ order.restaurantName }}</p>
-          <p class="my-orders-view-card-meta">
-            {{ order.createdAt.slice(0, 10) }} · ${{ order.totalAmount }}
-          </p>
-          <p class="my-orders-view-card-items">
-            {{ order.items.length }} {{ t('myOrders.colItems').toLowerCase() }}
-          </p>
-        </div>
-        <div class="my-orders-view-card-right">
-          <StatusBadge :status="order.status" scope="myOrders" />
-          <RouterLink
-            :to="`/me/orders/${order.id}`"
-            class="my-orders-view-link-btn"
+    <template v-else>
+      <div v-for="order in orders" :key="order.id" class="order-row">
+        <!-- Header -->
+        <div class="order-row-header" @click="toggle(order.id as string)">
+          <div>
+            <div class="order-row-restaurant">{{ order.restaurantName }}</div>
+            <div class="order-row-meta">{{ formatDateTime(order.createdAt) }} · {{ order.items.length }} ítems</div>
+          </div>
+          <span class="order-row-total">{{ formatMoney(order.totalAmount) }}</span>
+          <span
+            :class="[
+              'order-row-status',
+              order.status === 'CANCELLED'
+                ? 'order-row-status--cancelled'
+                : ['COMPLETED'].includes(order.status)
+                  ? 'order-row-status--done'
+                  : 'order-row-status--active',
+            ]"
           >
-            {{ t('myOrders.viewDetail') }}
-          </RouterLink>
+            {{ statusLabel(order.status) }}
+          </span>
+          <span :class="['order-row-chevron', expandedId === order.id && 'order-row-chevron--open']">▼</span>
         </div>
-      </li>
-    </ul>
+
+        <!-- Expanded -->
+        <div v-if="expandedId === order.id" class="order-row-body">
+          <!-- Timeline -->
+          <div class="order-timeline">
+            <div
+              v-for="(step, i) in steps"
+              :key="step"
+              class="order-timeline-item"
+            >
+              <div class="order-timeline-dot-col">
+                <div
+                  :class="[
+                    'order-timeline-dot',
+                    statusStepIndex(order.status) > i && 'order-timeline-dot--done',
+                    statusStepIndex(order.status) === i && 'order-timeline-dot--current',
+                  ]"
+                />
+                <div
+                  v-if="i < steps.length - 1"
+                  :class="[
+                    'order-timeline-line',
+                    statusStepIndex(order.status) > i && 'order-timeline-line--done',
+                  ]"
+                />
+              </div>
+              <div
+                :class="[
+                  'order-timeline-label',
+                  statusStepIndex(order.status) > i && 'order-timeline-label--done',
+                  statusStepIndex(order.status) === i && 'order-timeline-label--current',
+                ]"
+              >
+                {{ stepDescription(step) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Items -->
+          <div>
+            <div class="order-items-title">Detalle del pedido</div>
+            <div v-for="item in order.items" :key="item.id" class="order-item-row">
+              <span>
+                <span class="order-item-name">{{ item.menuItemName }}</span>
+                <span class="order-item-qty">×{{ item.quantity }}</span>
+              </span>
+              <span class="order-item-price">{{ formatMoney(Number(item.unitPrice) * item.quantity) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 

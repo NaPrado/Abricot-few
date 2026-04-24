@@ -1,39 +1,29 @@
 .toast-container {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  bottom: 1.5rem;
+  right: 1.5rem;
   z-index: var(--z-toast);
-  pointer-events: none;
-}
-
-.toast-stack {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  align-items: flex-end;
+  pointer-events: none;
 }
 
 .toast-item {
-  pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.75rem 0.875rem 0.75rem 1rem;
-  min-width: 18rem;
-  max-width: 26rem;
-  background: var(--toast-info-bg);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  box-shadow: var(--shadow-modal);
-  backdrop-filter: blur(14px);
-}
-
-.toast-item--success {
-  background: var(--toast-success-bg);
-  border-color: var(--success-border);
-  color: var(--toast-success-text);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  border: 1px solid transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: all;
+  animation: fade-slide-up var(--dur-base) var(--ease-spring) both;
+  max-width: 360px;
+  line-height: 1.4;
 }
 
 .toast-item--error {
@@ -42,41 +32,14 @@
   color: var(--toast-error-text);
 }
 
-.toast-icon {
-  flex-shrink: 0;
+.toast-item--success {
+  background: var(--toast-success-bg);
+  border-color: var(--success-border);
+  color: var(--toast-success-text);
 }
 
-.toast-message {
-  flex: 1;
-  line-height: 1.45;
-}
-
-.toast-close {
-  background: transparent;
-  border: none;
-  color: inherit;
-  opacity: 0.65;
-  padding: 0.25rem;
-  border-radius: var(--radius-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity var(--dur-fast) var(--ease-out);
-}
-.toast-close:hover {
-  opacity: 1;
-}
-
-.toast-enter-active,
-.toast-leave-active {
-  transition: opacity var(--dur-base) var(--ease-out),
-              transform var(--dur-base) var(--ease-out);
-}
-.toast-enter-from {
-  opacity: 0;
-  transform: translateX(16px);
-}
-.toast-leave-to {
-  opacity: 0;
-  transform: translateX(16px);
+.toast-item--info {
+  background: var(--toast-info-bg);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #aaa;
 }

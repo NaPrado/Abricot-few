@@ -1,82 +1,81 @@
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import {
-  Table2,
-  Clock,
-  CalendarCheck,
-  ClipboardList,
-  BookOpen,
-  Tag,
-  BarChart2,
-} from 'lucide-vue-next'
-import {
-  tableService,
+  restaurantService,
+  analyticsService,
   reservationService,
   orderService,
-  menuService,
 } from '@/services'
-import { BaseSpinner } from '@/components/base'
-import type { Table, Reservation, Order, Menu } from '@/types'
+import type { Restaurant, OccupancyAnalyticsResponse, OrdersAnalyticsResponse, Reservation, Order } from '@/types'
+
+const TODAY = new Date().toISOString().split('T')[0] as string
+const SEVEN_DAYS_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] as string
 
 export function useOwnerRestaurantDashboardView() {
-  const { t } = useI18n()
   const route = useRoute()
+  const restaurantId = route.params.restaurantId as string
 
-  const restaurantId = computed(() => route.params.restaurantId as string)
+  const restaurant = ref<Restaurant | null>(null)
+  const occupancy = ref<OccupancyAnalyticsResponse | null>(null)
+  const orders = ref<OrdersAnalyticsResponse | null>(null)
+  const recentReservations = ref<Reservation[]>([])
+  const recentOrders = ref<Order[]>([])
+  const loading = ref(true)
 
-  const tables = ref<Table[]>([])
-  const reservationsToday = ref<Reservation[]>([])
-  const ordersPending = ref<Order[]>([])
-  const menus = ref<Menu[]>([])
-  const loading = ref(false)
-
-  const stats = computed(() => ({
-    tables: tables.value.length,
-    reservationsToday: reservationsToday.value.length,
-    ordersPending: ordersPending.value.length,
-    menusActive: menus.value.filter((m) => m.isActive).length,
-  }))
-
-  const quickLinks = computed(() => {
-    const id = restaurantId.value
-    return [
-      { to: `/app/restaurants/${id}/tables`, label: t('nav.ownerTables'), icon: Table2 },
-      { to: `/app/restaurants/${id}/hours`, label: t('nav.ownerHours'), icon: Clock },
-      { to: `/app/restaurants/${id}/reservations`, label: t('nav.ownerReservations'), icon: CalendarCheck },
-      { to: `/app/restaurants/${id}/orders`, label: t('nav.ownerOrders'), icon: ClipboardList },
-      { to: `/app/restaurants/${id}/menus`, label: t('nav.ownerMenus'), icon: BookOpen },
-      { to: `/app/restaurants/${id}/promotions`, label: t('nav.ownerPromotions'), icon: Tag },
-      { to: `/app/restaurants/${id}/stats`, label: t('nav.ownerAnalytics'), icon: BarChart2 },
-    ]
+  const revenueMax = computed(() => {
+    if (!orders.value?.revenueByDay.length) return 1
+    return Math.max(...orders.value.revenueByDay.map(d => Number(d.revenue)), 1)
   })
 
-  onMounted(() => void load())
+  const occupancyPct = computed(() => {
+    if (!occupancy.value?.occupancyByDay.length) return 0
+    const avg = occupancy.value.occupancyByDay.reduce((s, d) => s + d.occupancyRate, 0) / occupancy.value.occupancyByDay.length
+    return Math.round(avg * 100)
+  })
 
-  async function load(): Promise<void> {
-    if (!restaurantId.value) return
-    loading.value = true
-    const today = new Date().toISOString().split('T')[0]
-    const [tablesRes, reservationsRes, ordersRes, menusRes] = await Promise.allSettled([
-      tableService.getByRestaurant(restaurantId.value),
-      reservationService.getByRestaurant(restaurantId.value, { date_from: today, date_to: today }),
-      orderService.getByRestaurant(restaurantId.value, { status: 'PENDING' }),
-      menuService.getByRestaurant(restaurantId.value),
-    ])
-    if (tablesRes.status === 'fulfilled') tables.value = tablesRes.value
-    if (reservationsRes.status === 'fulfilled') reservationsToday.value = reservationsRes.value.data
-    if (ordersRes.status === 'fulfilled') ordersPending.value = ordersRes.value.data
-    if (menusRes.status === 'fulfilled') menus.value = menusRes.value
-    loading.value = false
+  function formatMoney(n: string | number): string {
+    const v = Number(n)
+    if (v >= 1000000) return `$${(v / 1000000).toFixed(1)}M`
+    if (v >= 1000) return `$${Math.round(v / 1000)}k`
+    return `$${Math.round(v)}`
   }
 
+  function formatTime(iso: string): string {
+    return new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  onMounted(async () => {
+    loading.value = true
+    try {
+      const [rest, occ, ord, reservRes, ordRes] = await Promise.all([
+        restaurantService.getById(restaurantId),
+        analyticsService.getOccupancy(restaurantId, { start: SEVEN_DAYS_AGO, end: TODAY }),
+        analyticsService.getOrders(restaurantId, { start: SEVEN_DAYS_AGO, end: TODAY }),
+        reservationService.getByRestaurant(restaurantId, { page: 1, per_page: 5 }),
+        orderService.getByRestaurant(restaurantId, { page: 1, per_page: 5 }),
+      ])
+      restaurant.value = rest
+      occupancy.value = occ
+      orders.value = ord
+      recentReservations.value = reservRes.data
+      recentOrders.value = ordRes.data
+    } catch {
+      // silently degrade — show empty states
+    } finally {
+      loading.value = false
+    }
+  })
+
   return {
-    t,
+    restaurant,
+    occupancy,
+    orders,
+    recentReservations,
+    recentOrders,
     loading,
-    restaurantId,
-    stats,
-    quickLinks,
-    BaseSpinner,
-    RouterLink,
+    revenueMax,
+    occupancyPct,
+    formatMoney,
+    formatTime,
   }
 }

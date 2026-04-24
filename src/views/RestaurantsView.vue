@@ -1,84 +1,59 @@
 <script setup lang="ts">
 import { useRestaurantsView } from './scripts/RestaurantsView'
 
-const {
-  Plus,
-  Pencil,
-  Trash2,
-  Eye,
-  BaseButton,
-  RestaurantModal,
-  RestaurantDetailModal,
-  t,
-  store,
-  showForm,
-  editing,
-  detail,
-  openCreate,
-  openEdit,
-  closeForm,
-  onSave,
-  onDelete,
-  onDetailPhoto,
-} = useRestaurantsView()
+const { restaurants, loading, colorBg, navigate } = useRestaurantsView()
 </script>
 
 <template>
   <div class="restaurants-view">
-    <header class="restaurants-view-header">
-      <div>
-        <h1 class="restaurants-view-title">{{ t('restaurant.title') }}</h1>
-        <p class="restaurants-view-subtitle">{{ t('restaurant.subtitle') }}</p>
+    <div class="restaurants-view-header">
+      <h1 class="restaurants-view-title">Mis restaurantes</h1>
+      <p class="restaurants-view-sub">Seleccioná un local para ver su panel de control.</p>
+    </div>
+
+    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <div v-else-if="restaurants.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+      No tenés restaurantes asociados a tu cuenta.
+    </div>
+    <div v-else class="restaurants-grid">
+      <div
+        v-for="r in restaurants"
+        :key="r.id"
+        class="restaurant-owner-card"
+        @click="navigate(r.id as string)"
+      >
+        <div
+          class="restaurant-owner-card-img"
+          :style="{
+            background: r.photoUrl
+              ? `url(${r.photoUrl}) center/cover`
+              : colorBg(r.id as string),
+          }"
+        />
+        <div class="restaurant-owner-card-body">
+          <div class="restaurant-owner-card-name">{{ r.name }}</div>
+          <div class="restaurant-owner-card-meta">
+            {{ r.cuisineTypes[0]?.label ?? '' }}
+            <span v-if="r.address"> · {{ r.address }}</span>
+          </div>
+          <div class="restaurant-owner-card-arrow">Ver panel →</div>
+        </div>
       </div>
-      <BaseButton variant="primary" class="restaurants-view-add" @click="openCreate">
-        <Plus :size="16" />
-        {{ t('restaurant.new') }}
-      </BaseButton>
-    </header>
-
-    <p v-if="store.error" class="restaurants-view-error">{{ store.error }}</p>
-
-    <div v-if="store.isLoading" class="restaurants-view-loading">{{ t('common.loading') }}</div>
-
-    <ul v-else-if="store.restaurants.length === 0" class="restaurants-view-empty">
-      <li>{{ t('restaurant.empty') }}</li>
-      <li class="restaurants-view-empty-hint">{{ t('restaurant.emptyHint') }}</li>
-    </ul>
-
-    <ul v-else class="restaurants-view-list">
-      <li v-for="r in store.restaurants" :key="r.id" class="restaurants-view-card">
-        <div class="restaurants-view-card-main">
-          <h2 class="restaurants-view-card-name">{{ r.name }}</h2>
-          <p class="restaurants-view-card-meta">{{ r.address }} · {{ r.city.name }}</p>
-        </div>
-        <div class="restaurants-view-card-actions">
-          <button type="button" class="restaurants-view-icon-btn" :title="t('common.view')" @click="detail = r">
-            <Eye :size="16" />
-          </button>
-          <button type="button" class="restaurants-view-icon-btn" :title="t('common.edit')" @click="openEdit(r)">
-            <Pencil :size="16" />
-          </button>
-          <button type="button" class="restaurants-view-icon-btn restaurants-view-icon-btn--danger" :title="t('common.delete')" @click="onDelete(r.id)">
-            <Trash2 :size="16" />
-          </button>
-        </div>
-      </li>
-    </ul>
-
-    <RestaurantModal
-      v-if="showForm"
-      :restaurant="editing"
-      @close="closeForm"
-      @save="onSave"
-    />
-
-    <RestaurantDetailModal
-      v-if="detail"
-      :restaurant="detail"
-      @close="detail = null"
-      @upload-photo="onDetailPhoto"
-    />
+    </div>
   </div>
 </template>
 
-<style src="./styles/RestaurantsView.css" scoped></style>
+<style scoped>
+.restaurants-view { padding: 2.5rem; }
+.restaurants-view-header { margin-bottom: 2rem; }
+.restaurants-view-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
+.restaurants-view-sub { font-size: 0.8125rem; color: #2a2a2a; margin: 0; }
+.restaurants-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.restaurant-owner-card { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; transition: border-color var(--dur-fast); }
+.restaurant-owner-card:hover { border-color: #1a1a1a; }
+.restaurant-owner-card-img { height: 160px; }
+.restaurant-owner-card-body { padding: 1.125rem; }
+.restaurant-owner-card-name { font-size: 1rem; font-weight: 600; color: #bbb; margin-bottom: 4px; }
+.restaurant-owner-card-meta { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 1rem; }
+.restaurant-owner-card-arrow { font-size: 0.75rem; color: var(--brand); letter-spacing: 0.04em; }
+</style>

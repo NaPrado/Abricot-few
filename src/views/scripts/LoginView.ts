@@ -1,48 +1,41 @@
-import { reactive, ref } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-import { BaseButton, BaseInput } from '@/components/base'
 
 export function useLoginView() {
-  const { t } = useI18n()
-  const auth = useAuthStore()
   const router = useRouter()
-  const route = useRoute()
+  const authStore = useAuthStore()
 
-  const form = reactive({ email: '', password: '' })
+  const email = ref('')
+  const password = ref('')
+  const error = ref('')
   const loading = ref(false)
-  const error = ref<string | null>(null)
 
-  async function onSubmit(): Promise<void> {
-    error.value = null
+  async function handleSubmit(e: Event) {
+    e.preventDefault()
+    error.value = ''
     loading.value = true
     try {
-      await auth.login({ email: form.email, password: form.password })
-      const role = auth.user?.role
-      if (role === 'RESTAURANT_ADMIN' || role === 'SUPER_ADMIN') {
-        await router.replace('/app/restaurants')
+      await authStore.login({ email: email.value, password: password.value })
+      if (authStore.isOwner) {
+        void router.push('/app/restaurants')
       } else {
-        await router.replace('/explore')
+        void router.push('/me/reservations')
       }
     } catch {
-      error.value = t('auth.errors.login')
+      error.value = 'Email o contraseña incorrectos.'
     } finally {
       loading.value = false
     }
   }
 
-  return {
-    RouterLink,
-    BaseButton,
-    BaseInput,
-    t,
-    auth,
-    router,
-    route,
-    form,
-    loading,
-    error,
-    onSubmit,
+  function goToRegister() {
+    void router.push('/register')
   }
+
+  function goToLanding() {
+    void router.push('/')
+  }
+
+  return { email, password, error, loading, handleSubmit, goToRegister, goToLanding }
 }
