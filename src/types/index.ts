@@ -22,10 +22,10 @@ import type { ApiErrorResponseType, ApiIdType, PaginatedResponseType, Pagination
 import type { CityType, CountryType, CuisineType, NeighbourhoodType, PriceRangeType, ProvinceType } from './lookup'
 import type { CreateMenuCategoryRequestType, CreateMenuItemRequestType, CreateMenuRequestType, MenuCategoryType, MenuCategoryWithItemsType, MenuDetailType, MenuItemPhotoUploadResponseType, MenuItemType, MenuType, ReorderMenuCategoriesRequestType, UpdateMenuCategoryRequestType, UpdateMenuItemAvailabilityRequestType, UpdateMenuItemRequestType, UpdateMenuRequestType } from './menu'
 import type { NotificationPreferenceType, UpdateNotificationPreferenceRequestType } from './notificationPreference'
-import type { CancelOrderRequestType, CreateOrderRequestItemType, CreateOrderRequestType, OrderItemType, OrderStatusType, OrderType, RestaurantOrdersQueryType, RestaurantOrdersResponseType, UpdateOrderStatusRequestType } from './order'
-import type { CreatePromotionRequestType, DiscountTypeType, PromotionFeedQueryType, PromotionFeedResponseType, PromotionItemType, PromotionType, UpdatePromotionRequestType } from './promotion'
+import type { CancelOrderRequestType, CreateOrderRequestItemType, CreateOrderRequestType, OrderItemType, OrderStatusType, OrderType, RestaurantOrderPatchRequestType, RestaurantOrdersQueryType, RestaurantOrdersResponseType, UpdateOrderStatusRequestType } from './order'
+import type { CreatePromotionRequestType, DiscountTypeType, PromotionFeedQueryType, PromotionFeedResponseType, PromotionItemType, PromotionListResponseType, PromotionType } from './promotion'
 import type { CancelReservationRequestType, CreateAdminReservationRequestType, CreateReservationRequestType, ReassignReservationTablesRequestType, ReservationLookupQueryType, ReservationSourceType, ReservationStatusType, ReservationTableType, ReservationType, RestaurantReservationsQueryType, RestaurantReservationsResponseType } from './reservation'
-import type { RestaurantCityType, RestaurantCountryType, RestaurantCreateRequestType, RestaurantCuisineTypeType, RestaurantListQueryType, RestaurantListResponseType, RestaurantNeighbourhoodType, RestaurantPhotoUploadResponseType, RestaurantPriceRangeType, RestaurantProvinceType, RestaurantType, RestaurantUpdateRequestType } from './restaurant'
+import type { RestaurantCityType, RestaurantCountryType, RestaurantCreateRequestType, RestaurantCuisineTypeType, RestaurantListQueryType, RestaurantListResponseType, RestaurantMyReviewPutRequestType, RestaurantMyReviewResponseType, RestaurantNeighbourhoodType, RestaurantPhotoUploadResponseType, RestaurantPriceRangeType, RestaurantProvinceType, RestaurantType, RestaurantUpdateRequestType, ReviewScoreType } from './restaurant'
 import type { BulkCreateTablesGroupType, BulkCreateTablesRequestType, BulkCreateTablesResponseType, CreateTableRequestType, TableType, UpdateTableRequestType } from './table'
 import type { MyRestaurantsResponseType, UpdatePasswordRequestType, UpdatePasswordResponseType, UpdateUserMeRequestType, UserProfileResponseType, UserProfileType, UserRoleType, UserType } from './user'
 
@@ -93,6 +93,7 @@ export type CreateOrderRequest = CreateOrderRequestType
 export type RestaurantOrdersQuery = RestaurantOrdersQueryType
 export type RestaurantOrdersResponse = RestaurantOrdersResponseType
 export type UpdateOrderStatusRequest = UpdateOrderStatusRequestType
+export type RestaurantOrderPatchRequest = RestaurantOrderPatchRequestType
 export type CancelOrderRequest = CancelOrderRequestType
 export type DiscountType = DiscountTypeType
 export type PromotionItem = PromotionItemType
@@ -100,7 +101,7 @@ export type Promotion = PromotionType
 export type PromotionFeedQuery = PromotionFeedQueryType
 export type PromotionFeedResponse = PromotionFeedResponseType
 export type CreatePromotionRequest = CreatePromotionRequestType
-export type UpdatePromotionRequest = UpdatePromotionRequestType
+export type PromotionListResponse = PromotionListResponseType
 export type ReservationSource = ReservationSourceType
 export type ReservationStatus = ReservationStatusType
 export type ReservationTable = ReservationTableType
@@ -124,6 +125,9 @@ export type RestaurantListResponse = RestaurantListResponseType
 export type RestaurantCreateRequest = RestaurantCreateRequestType
 export type RestaurantUpdateRequest = RestaurantUpdateRequestType
 export type RestaurantPhotoUploadResponse = RestaurantPhotoUploadResponseType
+export type ReviewScore = ReviewScoreType
+export type RestaurantMyReviewPutRequest = RestaurantMyReviewPutRequestType
+export type RestaurantMyReviewResponse = RestaurantMyReviewResponseType
 export type Table = TableType
 export type CreateTableRequest = CreateTableRequestType
 export type UpdateTableRequest = UpdateTableRequestType

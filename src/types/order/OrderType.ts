@@ -13,5 +13,6 @@ export interface OrderType {
   notes?: string | null
   estimatedReadyAt?: IsoDateTimeType | null
   createdAt: IsoDateTimeType
-  items: OrderItemType[]
+  /** Present on order detail; list endpoints may omit line items. */
+  items?: OrderItemType[]
 }

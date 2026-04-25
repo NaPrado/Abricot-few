@@ -2,27 +2,29 @@ import { http } from './http'
 import type {
   ApiId,
   CreatePromotionRequest,
+  PaginationQuery,
   Promotion,
   PromotionFeedQuery,
   PromotionFeedResponse,
-  UpdatePromotionRequest,
+  PromotionListResponse,
 } from '@/types'
 
 export const promotionService = {
-  getByRestaurant: (restaurantId: ApiId) =>
-    http.get<Promotion[]>(`/restaurants/${restaurantId}/promotions/`, { authMode: 'none' }),
-  getFeed: (query?: PromotionFeedQuery) =>
-    http.get<PromotionFeedResponse>('/promotions/feed', { authMode: 'none', query }),
+  /** Admin: all promotions for the restaurant (incl. inactive); requires JWT. */
+  listByRestaurant: (restaurantId: ApiId, query?: PaginationQuery) =>
+    http.get<PromotionListResponse>(`/restaurants/${restaurantId}/promotions`, { query }),
+
   create: (restaurantId: ApiId, payload: CreatePromotionRequest) =>
-    http.post<Promotion>(`/restaurants/${restaurantId}/promotions/`, payload),
+    http.post<Promotion>(`/restaurants/${restaurantId}/promotions`, payload),
+
   getById: (restaurantId: ApiId, promotionId: ApiId) =>
-    http.get<Promotion>(`/restaurants/${restaurantId}/promotions/${promotionId}`, { authMode: 'none' }),
-  update: (restaurantId: ApiId, promotionId: ApiId, payload: UpdatePromotionRequest) =>
-    http.put<Promotion>(`/restaurants/${restaurantId}/promotions/${promotionId}`, payload),
-  deactivate: (restaurantId: ApiId, promotionId: ApiId) =>
-    http.patch<Promotion>(`/restaurants/${restaurantId}/promotions/${promotionId}/deactivate`),
-  activate: (restaurantId: ApiId, promotionId: ApiId) =>
-    http.patch<Promotion>(`/restaurants/${restaurantId}/promotions/${promotionId}/activate`),
+    http.get<Promotion>(`/restaurants/${restaurantId}/promotions/${promotionId}`),
+
+  /** 204 No Content on success. */
   delete: (restaurantId: ApiId, promotionId: ApiId) =>
     http.delete<void>(`/restaurants/${restaurantId}/promotions/${promotionId}`),
+
+  /** Public feed (unchanged contract). */
+  getFeed: (query?: PromotionFeedQuery) =>
+    http.get<PromotionFeedResponse>('/promotions/feed', { authMode: 'none', query }),
 }

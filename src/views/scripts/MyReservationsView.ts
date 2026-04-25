@@ -58,7 +58,7 @@ export function useMyReservationsView() {
   onMounted(async () => {
     if (!authStore.user) return
     try {
-      const res = await reservationService.listByUser(authStore.user.id, { page: 1, per_page: 50 })
+      const res = await reservationService.listByUser(authStore.user.id, { page: 1, perPage: 50 })
       reservations.value = res.data
     } catch {
       // silently degrade

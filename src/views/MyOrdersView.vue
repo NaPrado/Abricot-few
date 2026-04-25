@@ -30,7 +30,7 @@ const {
         <div class="order-row-header" @click="toggle(order.id as string)">
           <div>
             <div class="order-row-restaurant">{{ order.restaurantName }}</div>
-            <div class="order-row-meta">{{ formatDateTime(order.createdAt) }} · {{ order.items.length }} ítems</div>
+            <div class="order-row-meta">{{ formatDateTime(order.createdAt) }} · {{ order.items?.length ?? 0 }} ítems</div>
           </div>
           <span class="order-row-total">{{ formatMoney(order.totalAmount) }}</span>
           <span
@@ -88,7 +88,7 @@ const {
           <!-- Items -->
           <div>
             <div class="order-items-title">Detalle del pedido</div>
-            <div v-for="item in order.items" :key="item.id" class="order-item-row">
+            <div v-for="item in order.items ?? []" :key="item.id" class="order-item-row">
               <span>
                 <span class="order-item-name">{{ item.menuItemName }}</span>
                 <span class="order-item-qty">×{{ item.quantity }}</span>

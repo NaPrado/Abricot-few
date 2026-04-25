@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useAppLayout } from './scripts/AppLayout'
 
+const route = useRoute()
 const {
   isOwner,
   userInitial,
@@ -9,6 +10,10 @@ const {
   ownerNavItems,
   isNavActive,
   logout,
+  ownerRestaurants,
+  ownerRestaurantsLoading,
+  sidebarSelectValue,
+  onRestaurantSelect,
 } = useAppLayout()
 </script>
 
@@ -26,6 +31,27 @@ const {
           </div>
         </div>
       </div>
+
+      <template v-if="ownerRestaurants.length > 0">
+        <div class="app-layout-sidebar-section">LOCAL ACTIVO</div>
+        <div class="app-layout-restaurant-picker">
+          <select
+            class="app-layout-restaurant-select"
+            :value="sidebarSelectValue"
+            :disabled="ownerRestaurantsLoading"
+            aria-label="Elegir restaurante"
+            @change="onRestaurantSelect"
+          >
+            <option value="">Todos los locales</option>
+            <option v-for="r in ownerRestaurants" :key="r.id" :value="r.id">
+              {{ r.name }}
+            </option>
+          </select>
+          <p class="app-layout-restaurant-hint">
+            Dashboard, menú y analíticas corresponden al local elegido.
+          </p>
+        </div>
+      </template>
 
       <div class="app-layout-sidebar-section">MENÚ</div>
 
@@ -59,13 +85,14 @@ const {
     </aside>
 
     <main class="app-layout-main">
-      <RouterView />
+      <!-- fullPath forces child remount when /app/.../tabs change (nested outlet bug without key) -->
+      <RouterView :key="route.fullPath" />
     </main>
   </div>
 
   <!-- Customer: just pass through (AppNavbar is global) -->
   <div v-else class="app-layout-customer">
-    <RouterView />
+    <RouterView :key="route.fullPath" />
   </div>
 </template>
 

@@ -1,0 +1,38 @@
+# Dev stack: named container + fixed ports + isolated bridge network.
+# Rebuild the dev container after changing this file.
+
+services:
+  app:
+    container_name: abricot-frontend-dev
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+
+    volumes:
+      - ..:/workspace:cached
+      - abricot-node_modules:/workspace/node_modules
+      - abricot-pnpm-store:/pnpm-store
+
+    # Map host → container (all interfaces on host so IPv4 and tools agree).
+    ports:
+      - "0.0.0.0:5173:5173"
+      - "0.0.0.0:4173:4173"
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    networks:
+      - abricot-dev-net
+
+    command: sleep infinity
+
+networks:
+  abricot-dev-net:
+    name: abricot-dev-net
+    driver: bridge
+
+volumes:
+  abricot-node_modules:
+    name: abricot-node_modules
+  abricot-pnpm-store:
+    name: abricot-pnpm-store

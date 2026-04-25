@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import type { Restaurant } from '@/types'
+import { restaurantRatingLabel } from '@/utils/restaurantRatingLabel'
 
 const props = defineProps<{
   restaurant: Restaurant
@@ -47,7 +48,7 @@ function getColorBg(): string {
     <div class="list-card-body">
       <div class="list-card-row">
         <div class="list-card-name">{{ restaurant.name }}</div>
-        <div class="list-card-rating"><span style="color:#f97316">★</span> 4.8</div>
+        <div class="list-card-rating"><span style="color:#f97316">★</span> {{ restaurantRatingLabel(restaurant) }}</div>
       </div>
       <div class="list-card-meta">{{ getCuisineAndPrice() }}</div>
       <div class="list-card-desc">{{ restaurant.description }}</div>

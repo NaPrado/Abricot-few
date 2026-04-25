@@ -1,43 +1,11 @@
 {
   "name": "Abricot Frontend",
-  "build": {
-    "dockerfile": "Dockerfile",
-    // Context is the repo root so the image has access to .npmrc etc. during build
-    "context": ".."
-  },
-
-  // Bind-mount the repo into /workspace with cached consistency for better
-  // I/O performance over the WSL2 ↔ Windows bridge.
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
   "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
 
-  "mounts": [
-    // node_modules lives in a named Docker volume — never on the Windows FS.
-    // This means: no AV scanning, no symlink issues, and near-native I/O speed.
-    "source=abricot-node_modules,target=/workspace/node_modules,type=volume",
-
-    // pnpm's content-addressable store is also a volume.
-    // Packages are hashed and deduplicated here; it persists across rebuilds
-    // so you don't re-download the internet every time you rebuild the container.
-    "source=abricot-pnpm-store,target=/pnpm-store,type=volume"
-  ],
-
-  // Install dependencies after the container is created.
-  // pnpm will respect the onlyBuiltDependencies whitelist in package.json,
-  // so only esbuild / @tailwindcss/oxide / oxlint may run install scripts.
   "postCreateCommand": "pnpm install",
-
-  "forwardPorts": [5173, 4173],
-  "portsAttributes": {
-    "5173": {
-      "label": "Vite Dev Server",
-      "onAutoForward": "notify"
-    },
-    "4173": {
-      "label": "Vite Preview",
-      "onAutoForward": "silent"
-    }
-  },
 
   "customizations": {
     "vscode": {
@@ -50,19 +18,15 @@
         "oxc.oxc-vscode"
       ],
       "settings": {
+        "remote.autoForwardPorts": false,
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "[vue]": {
           "editor.defaultFormatter": "Vue.volar"
         },
-        // Point TS language server at the project's own TypeScript install
         "typescript.tsdk": "node_modules/typescript/lib",
         "npm.packageManager": "pnpm",
-        // Volar takeover mode — disable the built-in TS extension for .vue files
         "typescript.enablePromptUseWorkspaceTsdk": true,
-        // node_modules is a Docker volume with hundreds of thousands of files.
-        // Excluding it from the file watcher prevents the "too many active changes"
-        // git warning and avoids wasting CPU scanning files that are never edited.
         "files.watcherExclude": {
           "**/node_modules/**": true
         },

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import type { Restaurant } from '@/types'
+import { restaurantRatingLabel } from '@/utils/restaurantRatingLabel'
 
 const props = defineProps<{
   restaurant: Restaurant
@@ -41,7 +42,7 @@ function getCuisineAndAddress(): string {
     <div class="explore-card-body">
       <div class="explore-card-top-row">
         <div class="explore-card-name">{{ restaurant.name }}</div>
-        <div class="explore-card-rating"><span style="color:#f97316">★</span> 4.8</div>
+        <div class="explore-card-rating"><span style="color:#f97316">★</span> {{ restaurantRatingLabel(restaurant) }}</div>
       </div>
       <div class="explore-card-meta">{{ getCuisineAndAddress() }}</div>
       <div class="explore-card-desc">{{ restaurant.description }}</div>

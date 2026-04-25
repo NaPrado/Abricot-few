@@ -71,7 +71,7 @@ export function useLandingView() {
 
   async function loadRestaurants() {
     try {
-      const res = await restaurantService.getAll({ page: 1, per_page: 12 })
+      const res = await restaurantService.getAll({ page: 1, perPage: 12 })
       restaurants.value = res.data
     } catch {
       // silently degrade — hero/sections still render

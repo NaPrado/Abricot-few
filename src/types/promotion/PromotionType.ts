@@ -6,7 +6,8 @@ import type { PromotionItemType } from './PromotionItemType'
 export interface PromotionType {
   id: ApiIdType
   restaurantId: ApiIdType
-  restaurantName: string
+  /** Some public/feed payloads include this; admin list may omit it. */
+  restaurantName?: string
   title: PromotionTitleType
   description?: LongTextType
   discountType: DiscountTypeType
@@ -16,5 +17,8 @@ export interface PromotionType {
   isActive: boolean
   notifyUsers: boolean
   createdAt: IsoDateTimeType
-  items: PromotionItemType[]
+  /** Admin list/detail: UUIDs of menu items in scope (may be absent on some payloads). */
+  menuItemIds?: ApiIdType[]
+  /** Optional enriched rows (e.g. public feed). */
+  items?: PromotionItemType[]
 }

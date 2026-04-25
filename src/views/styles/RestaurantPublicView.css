@@ -90,6 +90,74 @@
   margin-bottom: 2rem;
 }
 
+.restaurant-review-panel {
+  padding: 1.25rem;
+  margin-bottom: 1.75rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid #141414;
+  background: #080808;
+}
+
+.restaurant-review-panel-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #aaa;
+  margin: 0 0 0.35rem;
+}
+
+.restaurant-review-panel-hint {
+  font-size: 0.75rem;
+  color: #444;
+  margin: 0 0 0.85rem;
+  line-height: 1.45;
+}
+
+.restaurant-review-stars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.restaurant-review-star-btn {
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #1a1a1a;
+  background: #0c0c0c;
+  color: #666;
+  cursor: pointer;
+  transition: color var(--dur-fast), border-color var(--dur-fast), background var(--dur-fast);
+}
+
+.restaurant-review-star-btn:hover:not(:disabled) {
+  color: #f97316;
+  border-color: rgba(249, 115, 22, 0.35);
+}
+
+.restaurant-review-star-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.restaurant-review-star-btn--active {
+  color: #f97316;
+  border-color: rgba(249, 115, 22, 0.45);
+  background: rgba(249, 115, 22, 0.06);
+}
+
+.restaurant-review-error {
+  font-size: 0.75rem;
+  color: var(--danger, #ef4444);
+  margin: 0.75rem 0 0;
+}
+
+.restaurant-review-loading {
+  font-size: 0.75rem;
+  color: #555;
+  margin: 0.75rem 0 0;
+}
+
 /* Tabs */
 .restaurant-tabs {
   display: flex;
@@ -355,4 +423,145 @@
   align-items: center;
   min-height: 40vh;
   color: #2a2a2a;
+}
+
+/* ── Menu item layout with cart controls ─────────────────── */
+.restaurant-menu-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.restaurant-menu-item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.restaurant-menu-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.restaurant-menu-qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #111;
+  border: 1px solid #1a1a1a;
+  color: #888;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.restaurant-menu-qty-btn:hover:not(:disabled) {
+  background: #1a1a1a;
+  color: #ccc;
+}
+
+.restaurant-menu-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.restaurant-menu-qty-val {
+  min-width: 18px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #aaa;
+}
+
+/* ── Cart (Para llevar panel) ────────────────────────────── */
+.restaurant-cart-empty {
+  font-size: 0.8125rem;
+  color: #2a2a2a;
+  text-align: center;
+  padding: 1.25rem 0;
+  line-height: 1.6;
+}
+
+.restaurant-cart-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #0d0d0d;
+}
+
+.restaurant-cart-item-name {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: #bbb;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.restaurant-cart-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.restaurant-cart-qty-val {
+  min-width: 16px;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #aaa;
+}
+
+.restaurant-cart-item-price {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #777;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.restaurant-cart-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0 1rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #ccc;
+}
+
+/* ── Panel CTA (Menú tab) ────────────────────────────────── */
+.restaurant-panel-cta-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #bbb;
+  margin-bottom: 0.375rem;
+}
+
+.restaurant-panel-cta-sub {
+  font-size: 0.8125rem;
+  color: #2a2a2a;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+.restaurant-confirm-btn--outline {
+  background: transparent;
+  border: 1px solid #1a1a1a;
+  color: #666;
+  margin-top: 0;
+}
+
+.restaurant-confirm-btn--outline:hover:not(:disabled) {
+  background: #0d0d0d;
+  color: #aaa;
+  box-shadow: none;
 }

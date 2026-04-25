@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -8,6 +8,13 @@ export function useRegisterView() {
   const authStore = useAuthStore()
 
   const role = ref<'customer' | 'owner'>(route.query.role === 'owner' ? 'owner' : 'customer')
+
+  watch(
+    () => route.query.role,
+    (r) => {
+      role.value = r === 'owner' ? 'owner' : 'customer'
+    },
+  )
   const name = ref('')
   const surname = ref('')
   const email = ref('')
@@ -25,6 +32,7 @@ export function useRegisterView() {
         surname: surname.value,
         email: email.value,
         password: password.value,
+        role: role.value === 'owner' ? 'RESTAURANT_ADMIN' : 'CUSTOMER',
       })
       if (authStore.isOwner) {
         void router.push('/app/restaurants')

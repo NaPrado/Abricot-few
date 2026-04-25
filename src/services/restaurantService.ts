@@ -5,15 +5,19 @@ import type {
   RestaurantCreateRequest,
   RestaurantListQuery,
   RestaurantListResponse,
+  RestaurantMyReviewPutRequest,
+  RestaurantMyReviewResponse,
   RestaurantPhotoUploadResponse,
   RestaurantUpdateRequest,
 } from '@/types'
 
 export const restaurantService = {
+  /** Public: no token required (`averageScore`, `reviewCount` included). */
   getAll: (query?: RestaurantListQuery) =>
     http.get<RestaurantListResponse>('/restaurants/', { authMode: 'none', query }),
-  getById: (id: ApiId) =>
-    http.get<Restaurant>(`/restaurants/${id}`, { authMode: 'none' }),
+  getById: (id: ApiId) => http.get<Restaurant>(`/restaurants/${id}`, { authMode: 'none' }),
+  putMyReview: (restaurantId: ApiId, body: RestaurantMyReviewPutRequest) =>
+    http.put<RestaurantMyReviewResponse>(`/restaurants/${restaurantId}/my-review`, body),
   create: (payload: RestaurantCreateRequest) =>
     http.post<Restaurant>('/restaurants/', payload),
   update: (id: ApiId, payload: RestaurantUpdateRequest) =>

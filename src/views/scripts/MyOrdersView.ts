@@ -57,7 +57,7 @@ export function useMyOrdersView() {
   onMounted(async () => {
     if (!authStore.user) return
     try {
-      const res = await orderService.listByUser(authStore.user.id, { page: 1, per_page: 50 })
+      const res = await orderService.listByUser(authStore.user.id, { page: 1, perPage: 50 })
       orders.value = res.data
     } catch {
       // silently degrade

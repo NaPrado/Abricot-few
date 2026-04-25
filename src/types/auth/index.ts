@@ -1,5 +1,5 @@
 export type { LoginRequestType } from './LoginRequestType'
-export type { RegisterRequestType } from './RegisterRequestType'
+export type { RegisterRequestType, RegisterRoleType } from './RegisterRequestType'
 export type { AuthResponseType } from './AuthResponseType'
 export type { RefreshTokenResponseType } from './RefreshTokenResponseType'
 export type { AuthorizationHeaderType } from './AuthorizationHeaderType'

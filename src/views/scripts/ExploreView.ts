@@ -41,7 +41,7 @@ export function useExploreView() {
     try {
       const res = await restaurantService.getAll({
         page: 1,
-        per_page: 24,
+        perPage: 24,
         name: searchQuery.value || undefined,
       })
       restaurants.value = res.data

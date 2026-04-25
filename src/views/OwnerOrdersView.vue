@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useToast } from '@/composables'
+import { HttpError } from '@/services/http'
 import { orderService } from '@/services'
 import type { Order } from '@/types'
 
 const route = useRoute()
 const restaurantId = route.params.restaurantId as string
+const toast = useToast()
 
 const orders = ref<Order[]>([])
 const loading = ref(true)
@@ -37,16 +40,24 @@ async function advance(order: Order) {
   const next = NEXT_STATUS[order.status]
   if (!next) return
   try {
-    const updated = await orderService.updateStatus(order.id, { status: next as Order['status'] })
+    const updated = await orderService.patchInRestaurant(restaurantId, order.id, {
+      status: next as Order['status'],
+    })
     const idx = orders.value.findIndex(o => o.id === order.id)
     if (idx !== -1) orders.value[idx] = updated
-  } catch { /* silently fail */ }
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 409) {
+      toast.show('No se puede cambiar a ese estado desde el actual.', 'error')
+      return
+    }
+    toast.show('No se pudo actualizar el pedido.', 'error')
+  }
 }
 
 onMounted(async () => {
   loading.value = true
   try {
-    const res = await orderService.getByRestaurant(restaurantId, { page: 1, per_page: 50 })
+    const res = await orderService.getByRestaurant(restaurantId, { page: 1, perPage: 50 })
     orders.value = res.data
   } catch {
     // silently degrade
@@ -72,7 +83,7 @@ onMounted(async () => {
           <span :class="['owner-order-status', `owner-order-status--${o.status}`]">{{ statusLabel(o.status) }}</span>
         </div>
         <div class="owner-order-items">
-          <div v-for="item in o.items" :key="item.id" class="owner-order-item">
+          <div v-for="item in o.items ?? []" :key="item.id" class="owner-order-item">
             <span class="owner-order-item-name">{{ item.menuItemName }}</span>
             <span class="owner-order-item-qty">×{{ item.quantity }}</span>
           </div>

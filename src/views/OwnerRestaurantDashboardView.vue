@@ -163,7 +163,7 @@ const {
                 :class="['owner-activity-dot', ['COMPLETED','CANCELLED'].includes(o.status) && 'owner-activity-dot--done']"
               />
               <span class="owner-activity-text">
-                {{ formatMoney(o.totalAmount) }} · {{ o.items.length }} ítems
+                {{ formatMoney(o.totalAmount) }} · {{ o.items?.length ?? 0 }} ítems
               </span>
               <span class="owner-activity-time">{{ formatTime(o.createdAt) }}</span>
             </div>

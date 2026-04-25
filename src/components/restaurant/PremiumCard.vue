@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import type { Restaurant } from '@/types'
+import { restaurantRatingLabel } from '@/utils/restaurantRatingLabel'
 
 const props = defineProps<{
   restaurant: Restaurant
@@ -39,7 +40,7 @@ function getColorBg(): string {
 
       <div class="premium-card-overlay-top">
         <span class="premium-card-rating">
-          <span style="color: #f97316;">★</span> 4.8
+          <span style="color: #f97316;">★</span> {{ restaurantRatingLabel(restaurant) }}
         </span>
       </div>
 

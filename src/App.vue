@@ -26,6 +26,13 @@ const hideNavbarForOwner = computed(() => {
 
 const showNavbar = computed(() => !hideNavbar.value && !hideNavbarForOwner.value)
 
+// Key on the parent route path for nested routes so AppLayout isn't destroyed
+// when navigating between /me/reservations ↔ /me/orders (or /app/* children).
+// For flat top-level routes use the full path so each URL gets its own instance.
+const routeKey = computed(() =>
+  route.matched.length > 1 ? route.matched[0]!.path : route.path
+)
+
 function reloadApp(): void {
   window.location.reload()
 }
@@ -42,7 +49,7 @@ function reloadApp(): void {
       <AppNavbar v-if="showNavbar" />
       <RouterView v-slot="{ Component }">
         <Transition name="page" mode="out-in">
-          <component :is="Component" :key="route.path" />
+          <component :is="Component" :key="routeKey" />
         </Transition>
       </RouterView>
     </template>

@@ -75,6 +75,42 @@
   padding: 1rem 0.75rem 0.5rem;
 }
 
+.app-layout-restaurant-picker {
+  padding: 0 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  margin-bottom: 0.25rem;
+}
+
+.app-layout-restaurant-select {
+  width: 100%;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #aaa;
+  background: #0a0a0a;
+  border: 1px solid #1f1f1f;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.app-layout-restaurant-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.app-layout-restaurant-select:focus {
+  outline: none;
+  border-color: rgba(249, 115, 22, 0.45);
+}
+
+.app-layout-restaurant-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.625rem;
+  line-height: 1.35;
+  color: #333;
+}
+
 .app-layout-sidebar-nav {
   display: flex;
   flex-direction: column;

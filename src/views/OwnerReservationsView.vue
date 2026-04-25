@@ -42,7 +42,7 @@ async function markNoShow(id: string) {
 onMounted(async () => {
   loading.value = true
   try {
-    const res = await reservationService.getByRestaurant(restaurantId, { page: 1, per_page: 50 })
+    const res = await reservationService.getByRestaurant(restaurantId, { page: 1, perPage: 50 })
     reservations.value = res.data
   } catch {
     // silently degrade

@@ -51,8 +51,8 @@ export function useOwnerRestaurantDashboardView() {
         restaurantService.getById(restaurantId),
         analyticsService.getOccupancy(restaurantId, { start: SEVEN_DAYS_AGO, end: TODAY }),
         analyticsService.getOrders(restaurantId, { start: SEVEN_DAYS_AGO, end: TODAY }),
-        reservationService.getByRestaurant(restaurantId, { page: 1, per_page: 5 }),
-        orderService.getByRestaurant(restaurantId, { page: 1, per_page: 5 }),
+        reservationService.getByRestaurant(restaurantId, { page: 1, perPage: 5 }),
+        orderService.getByRestaurant(restaurantId, { page: 1, perPage: 5 }),
       ])
       restaurant.value = rest
       occupancy.value = occ
