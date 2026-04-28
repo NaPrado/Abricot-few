@@ -1,3 +1,8 @@
+/* Single-root wrapper required so <Transition> has a real Element (not a comment node) */
+.app-layout-root {
+  min-height: 100vh;
+}
+
 /* ── Owner layout ────────────────────────────────────────────── */
 .app-layout-owner {
   display: flex;

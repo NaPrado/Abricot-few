@@ -15,6 +15,9 @@ export function useSmokeCanvas() {
   let particles: Particle[] = []
   const mouse = { x: -1000, y: -1000 }
 
+  let resizeHandler: (() => void) | null = null
+  let mountedParent: HTMLElement | null = null
+
   function initParticles(W: number, H: number) {
     const NUM = 18
     particles = Array.from({ length: NUM }, (_, i) => {
@@ -89,24 +92,36 @@ export function useSmokeCanvas() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    // Capture parent before any potential DOM removal
+    mountedParent = canvas.parentElement
+
     const resize = () => {
+      if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) return
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
       initParticles(canvas.width, canvas.height)
     }
 
+    resizeHandler = resize
     window.addEventListener('resize', resize)
-    canvas.parentElement?.addEventListener('mousemove', onMouseMove)
-    canvas.parentElement?.addEventListener('mouseleave', onMouseLeave)
+    mountedParent?.addEventListener('mousemove', onMouseMove)
+    mountedParent?.addEventListener('mouseleave', onMouseLeave)
     resize()
     animate(canvas, ctx)
+  })
 
-    onUnmounted(() => {
-      if (raf !== null) cancelAnimationFrame(raf)
-      window.removeEventListener('resize', resize)
-      canvas.parentElement?.removeEventListener('mousemove', onMouseMove)
-      canvas.parentElement?.removeEventListener('mouseleave', onMouseLeave)
-    })
+  onUnmounted(() => {
+    if (raf !== null) {
+      cancelAnimationFrame(raf)
+      raf = null
+    }
+    if (resizeHandler) {
+      window.removeEventListener('resize', resizeHandler)
+      resizeHandler = null
+    }
+    mountedParent?.removeEventListener('mousemove', onMouseMove)
+    mountedParent?.removeEventListener('mouseleave', onMouseLeave)
+    mountedParent = null
   })
 
   return { canvasRef }

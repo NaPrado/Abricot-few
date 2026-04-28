@@ -18,6 +18,7 @@ const {
 </script>
 
 <template>
+  <div class="app-layout-root">
   <!-- Owner: sidebar + main -->
   <div v-if="isOwner" class="app-layout-owner">
     <aside class="app-layout-sidebar">
@@ -93,6 +94,7 @@ const {
   <!-- Customer: just pass through (AppNavbar is global) -->
   <div v-else class="app-layout-customer">
     <RouterView :key="route.fullPath" />
+  </div>
   </div>
 </template>
 
