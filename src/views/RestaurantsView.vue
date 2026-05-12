@@ -46,7 +46,7 @@ const {
       </button>
     </div>
 
-    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
     <div v-else-if="restaurants.length === 0" class="restaurants-view-empty">
       <p>No tenés restaurantes asociados a tu cuenta.</p>
       <button type="button" class="restaurants-view-new-btn restaurants-view-new-btn--inline" @click="openCreate">
@@ -71,7 +71,7 @@ const {
         <div class="restaurant-owner-card-body">
           <div class="restaurant-owner-card-name">{{ r.name }}</div>
           <div class="restaurant-owner-card-meta">
-            {{ r.cuisineTypes[0]?.label ?? '' }}
+            {{ r.cuisineTypes?.[0]?.label ?? '' }}
             <span v-if="r.address"> · {{ r.address }}</span>
           </div>
           <div class="restaurant-owner-card-arrow">Ver panel →</div>
@@ -186,7 +186,7 @@ const {
 }
 .restaurants-view-header { margin: 0; }
 .restaurants-view-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
-.restaurants-view-sub { font-size: 0.8125rem; color: #2a2a2a; margin: 0; }
+.restaurants-view-sub { font-size: 0.8125rem; color: var(--text-muted); margin: 0; }
 .restaurants-view-new-btn {
   flex-shrink: 0;
   padding: 0.625rem 1rem;
@@ -207,7 +207,7 @@ const {
 .restaurants-view-new-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .restaurants-view-new-btn--inline { margin-top: 0.75rem; }
 .restaurants-view-empty {
-  color: #2a2a2a;
+  color: var(--text-muted);
   font-size: 0.875rem;
   padding: 2rem 0;
 }
@@ -218,16 +218,16 @@ const {
 .restaurant-owner-card-img { height: 160px; }
 .restaurant-owner-card-body { padding: 1.125rem; }
 .restaurant-owner-card-name { font-size: 1rem; font-weight: 600; color: #bbb; margin-bottom: 4px; }
-.restaurant-owner-card-meta { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 1rem; }
+.restaurant-owner-card-meta { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem; }
 .restaurant-owner-card-arrow { font-size: 0.75rem; color: var(--brand); letter-spacing: 0.04em; }
 
 .rest-create-modal { padding: 1.75rem 1.5rem 1.5rem; max-height: 85vh; overflow-y: auto; }
 .rest-create-title { font-size: 1.125rem; font-weight: 700; color: #bbb; margin: 0 0 0.25rem; letter-spacing: -0.02em; }
-.rest-create-hint { font-size: 0.75rem; color: #444; margin: 0 0 1.25rem; }
+.rest-create-hint { font-size: 0.75rem; color: var(--text-muted); margin: 0 0 1.25rem; }
 .rest-create-form { display: flex; flex-direction: column; gap: 0.875rem; }
 .rest-create-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
 @media (max-width: 520px) { .rest-create-row { grid-template-columns: 1fr; } }
-.rest-create-field { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.6875rem; color: #555; letter-spacing: 0.06em; text-transform: uppercase; }
+.rest-create-field { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.6875rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
 .rest-create-field--full { grid-column: 1 / -1; }
 .rest-create-field input,
 .rest-create-field select,
@@ -243,7 +243,7 @@ const {
 .rest-create-field textarea { resize: vertical; min-height: 3rem; }
 .rest-create-field select:disabled { opacity: 0.45; }
 .rest-create-cuisines { margin-top: 0.25rem; }
-.rest-create-cuisines-label { display: block; font-size: 0.6875rem; color: #555; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.5rem; }
+.rest-create-cuisines-label { display: block; font-size: 0.6875rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.5rem; }
 .rest-create-cuisines-list {
   display: flex; flex-wrap: wrap; gap: 0.5rem 1rem;
   max-height: 140px; overflow-y: auto; padding: 0.5rem;
@@ -269,8 +269,8 @@ const {
   transition: opacity var(--dur-fast);
 }
 .rest-create-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.rest-create-btn--ghost { background: transparent; color: #666; border-color: #333; }
-.rest-create-btn--ghost:hover:not(:disabled) { color: #999; border-color: #444; }
+.rest-create-btn--ghost { background: transparent; color: var(--text-muted); border-color: #333; }
+.rest-create-btn--ghost:hover:not(:disabled) { color: var(--text-secondary); border-color: #444; }
 .rest-create-btn--primary { background: var(--brand); color: #0a0a0a; border-color: var(--brand); }
 .rest-create-btn--primary:hover:not(:disabled) { filter: brightness(1.05); }
 </style>

@@ -1,3 +1,5 @@
 import type { BusinessHourInputType } from './BusinessHourInputType'
 
-export type UpdateBusinessHoursRequestType = BusinessHourInputType[]
+export interface UpdateBusinessHoursRequestType {
+  hours: BusinessHourInputType[]
+}

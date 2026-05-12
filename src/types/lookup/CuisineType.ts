@@ -2,6 +2,6 @@ import type { ApiIdType } from '../common'
 
 export interface CuisineType {
   id: ApiIdType
-  slug: string
+  slug?: string
   label: string
 }

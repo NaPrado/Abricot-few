@@ -13,14 +13,14 @@
 
 .my-reservations-sub {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   margin-bottom: 2rem;
 }
 
 .my-reservations-empty {
   text-align: center;
   padding: 4rem 0;
-  color: #2a2a2a;
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
@@ -157,7 +157,7 @@
 
 .reservation-modal-field-label {
   font-size: 0.5625rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 4px;

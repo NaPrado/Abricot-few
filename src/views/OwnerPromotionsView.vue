@@ -160,7 +160,7 @@ const {
   flex-wrap: wrap;
 }
 .owner-sub-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
-.owner-sub-desc { font-size: 0.8125rem; color: #2a2a2a; margin: 0; max-width: 36rem; line-height: 1.5; }
+.owner-sub-desc { font-size: 0.8125rem; color: var(--text-muted); margin: 0; max-width: 36rem; line-height: 1.5; }
 .owner-promos-new-btn {
   font-family: inherit;
   font-size: 0.8125rem;
@@ -263,23 +263,23 @@ const {
 .owner-promos-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .owner-promos-loading,
-.owner-promos-empty { color: #2a2a2a; font-size: 0.875rem; padding: 2rem 0; }
+.owner-promos-empty { color: var(--text-muted); font-size: 0.875rem; padding: 2rem 0; }
 
 .promos-list { display: flex; flex-direction: column; gap: 10px; }
 .promo-card { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.25rem; transition: opacity var(--dur-fast); }
 .promo-card--inactive { opacity: 0.55; }
 .promo-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; gap: 1rem; }
 .promo-card-title { font-size: 1rem; font-weight: 600; color: #bbb; margin-bottom: 2px; }
-.promo-card-dates { font-size: 0.75rem; color: #2a2a2a; }
+.promo-card-dates { font-size: 0.75rem; color: var(--text-muted); }
 .promo-card-scope { font-size: 0.6875rem; color: #444; margin-top: 0.35rem; }
 .promo-card-discount { font-size: 1.25rem; font-weight: 800; color: var(--brand); letter-spacing: -0.02em; white-space: nowrap; }
-.promo-card-desc { font-size: 0.8125rem; color: #2a2a2a; line-height: 1.6; margin: 0 0 0.875rem; }
+.promo-card-desc { font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6; margin: 0 0 0.875rem; }
 .promo-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem; border-top: 1px solid #0a0a0a; gap: 1rem; flex-wrap: wrap; }
 .promo-card-meta { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 .promo-badge { font-size: 0.5625rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 99px; }
 .promo-badge--on { color: #22c55e; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2); }
 .promo-badge--off { color: #888; background: #0a0a0a; border: 1px solid #111; }
-.promo-card-notify { font-size: 0.75rem; color: #2a2a2a; }
+.promo-card-notify { font-size: 0.75rem; color: var(--text-muted); }
 .promo-delete-btn {
   font-family: inherit;
   font-size: 0.6875rem;

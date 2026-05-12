@@ -1,4 +1,5 @@
-import type { QueryPrimitive, QueryValue } from '@/types'
+import type { ApiErrorResponse, QueryPrimitive, QueryValue } from '@/types'
+import { debugError, debugSection, debugWarn, redactAuthPayload } from '@/utils/debug'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 export const AUTH_EXPIRED_EVENT = 'abricot:auth-expired'
@@ -16,6 +17,8 @@ export class HttpError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    public readonly code?: string,
+    public readonly errors?: Record<string, unknown>,
   ) {
     super(message)
     this.name = 'HttpError'
@@ -93,21 +96,60 @@ async function parseResponseBody(response: Response): Promise<unknown> {
   return text.length > 0 ? text : undefined
 }
 
-function extractErrorMessage(data: unknown, status: number): string {
+function extractErrorDetails(
+  data: unknown,
+  status: number,
+): Pick<ApiErrorResponse, 'message'> & Partial<Pick<ApiErrorResponse, 'code' | 'errors'>> {
   if (typeof data === 'string' && data.trim().length > 0) {
-    return data
+    return { message: data }
   }
 
   if (typeof data === 'object' && data !== null) {
-    const errorData = data as { message?: unknown; msg?: unknown }
-    if (typeof errorData.message === 'string') return errorData.message
-    if (typeof errorData.msg === 'string') return errorData.msg
+    const errorData = data as { message?: unknown; msg?: unknown; code?: unknown; errors?: unknown }
+    const message =
+      typeof errorData.message === 'string'
+        ? errorData.message
+        : typeof errorData.msg === 'string'
+          ? errorData.msg
+          : `Error ${status}`
+
+    return {
+      message,
+      ...(typeof errorData.code === 'string' ? { code: errorData.code } : {}),
+      ...(isRecord(errorData.errors) ? { errors: errorData.errors } : {}),
+    }
   }
 
-  return `Error ${status}`
+  return { message: `Error ${status}` }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 const REQUEST_TIMEOUT_MS = 10_000
+let debugRequestCounter = 0
+
+function nextDebugRequestId(): string {
+  debugRequestCounter += 1
+  return `http-${debugRequestCounter}`
+}
+
+function summarizeData(data: unknown): unknown {
+  if (Array.isArray(data)) {
+    return { type: 'array', length: data.length, firstItem: data[0] ?? null }
+  }
+
+  if (isRecord(data)) {
+    return {
+      type: 'object',
+      keys: Object.keys(data),
+      sample: redactAuthPayload(data),
+    }
+  }
+
+  return data
+}
 
 function withTimeout(ms: number): { signal: AbortSignal; cancel: () => void } {
   const controller = new AbortController()
@@ -127,6 +169,8 @@ async function request<T>(
   const authMode = options.authMode ?? 'access'
   const url = buildPath(path, options.query)
   const hasBody = body !== undefined
+  const debugRequestId = nextDebugRequestId()
+  const startedAt = Date.now()
 
   const headers: Record<string, string> = {
     ...getAuthHeader(authMode),
@@ -139,21 +183,58 @@ async function request<T>(
 
   const { signal, cancel } = withTimeout(REQUEST_TIMEOUT_MS)
 
-  const response = await fetch(`${BASE_URL}${url}`, {
+  debugSection('http', `${debugRequestId} request start`, {
     method,
-    headers,
-    body: hasBody ? JSON.stringify(body) : undefined,
-    signal,
-  }).finally(cancel)
+    url,
+    authMode,
+    hasAuthorization: Boolean(headers.Authorization),
+    query: options.query ?? null,
+    body: hasBody && isRecord(body) ? redactAuthPayload(body) : summarizeData(body),
+  })
+
+  let response: Response
+  try {
+    response = await fetch(`${BASE_URL}${url}`, {
+      method,
+      headers,
+      body: hasBody ? JSON.stringify(body) : undefined,
+      signal,
+    }).finally(cancel)
+  } catch (error) {
+    debugError('http', `${debugRequestId} network failure`, {
+      method,
+      url,
+      authMode,
+      durationMs: Date.now() - startedAt,
+      error,
+    })
+    throw error
+  }
 
   const data = await parseResponseBody(response)
+
+  debugSection('http', `${debugRequestId} response`, {
+    method,
+    url,
+    status: response.status,
+    ok: response.ok,
+    durationMs: Date.now() - startedAt,
+    data: summarizeData(data),
+  })
 
   if (response.status === 401 && authMode !== 'none') {
     handleExpiredSession()
   }
 
   if (!response.ok) {
-    throw new HttpError(response.status, extractErrorMessage(data, response.status))
+    const error = extractErrorDetails(data, response.status)
+    debugWarn('http', `${debugRequestId} throwing HttpError`, {
+      method,
+      url,
+      status: response.status,
+      error,
+    })
+    throw new HttpError(response.status, error.message, error.code, error.errors)
   }
 
   return data as T
@@ -167,27 +248,67 @@ async function upload<T>(
 ): Promise<T> {
   const authMode = options.authMode ?? 'access'
   const url = buildPath(path, options.query)
+  const debugRequestId = nextDebugRequestId()
+  const startedAt = Date.now()
 
   const { signal, cancel } = withTimeout(REQUEST_TIMEOUT_MS)
 
-  const response = await fetch(`${BASE_URL}${url}`, {
+  const headers = {
+    ...getAuthHeader(authMode),
+    ...options.headers,
+  }
+
+  debugSection('http', `${debugRequestId} upload start`, {
     method,
-    headers: {
-      ...getAuthHeader(authMode),
-      ...options.headers,
-    },
-    body: formData,
-    signal,
-  }).finally(cancel)
+    url,
+    authMode,
+    hasAuthorization: Boolean(headers.Authorization),
+    formKeys: Array.from(formData.keys()),
+  })
+
+  let response: Response
+  try {
+    response = await fetch(`${BASE_URL}${url}`, {
+      method,
+      headers,
+      body: formData,
+      signal,
+    }).finally(cancel)
+  } catch (error) {
+    debugError('http', `${debugRequestId} upload network failure`, {
+      method,
+      url,
+      authMode,
+      durationMs: Date.now() - startedAt,
+      error,
+    })
+    throw error
+  }
 
   const data = await parseResponseBody(response)
+
+  debugSection('http', `${debugRequestId} upload response`, {
+    method,
+    url,
+    status: response.status,
+    ok: response.ok,
+    durationMs: Date.now() - startedAt,
+    data: summarizeData(data),
+  })
 
   if (response.status === 401 && authMode !== 'none') {
     handleExpiredSession()
   }
 
   if (!response.ok) {
-    throw new HttpError(response.status, extractErrorMessage(data, response.status))
+    const error = extractErrorDetails(data, response.status)
+    debugWarn('http', `${debugRequestId} throwing upload HttpError`, {
+      method,
+      url,
+      status: response.status,
+      error,
+    })
+    throw new HttpError(response.status, error.message, error.code, error.errors)
   }
 
   return data as T
@@ -206,4 +327,6 @@ export const http = {
     request<T>('DELETE', path, undefined, options),
   postForm: <T>(path: string, form: FormData, options?: HttpRequestOptions) =>
     upload<T>('POST', path, form, options),
+  putForm: <T>(path: string, form: FormData, options?: HttpRequestOptions) =>
+    upload<T>('PUT', path, form, options),
 }

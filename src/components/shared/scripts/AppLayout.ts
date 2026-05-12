@@ -3,6 +3,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { userService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
 import { useRestaurantContextStore } from '@/stores/restaurantContextStore'
+import { debugError, debugSection } from '@/utils/debug'
+import { extractRestaurantList } from '@/utils/restaurantResponses'
 import type { Restaurant } from '@/types'
 
 export interface SidebarNavItem {
@@ -39,6 +41,10 @@ export function useAppLayout() {
   watch(
     () => route.params.restaurantId as string | undefined,
     (id) => {
+      debugSection('app-layout', 'route restaurant param changed', {
+        restaurantId: id ?? null,
+        path: route.fullPath,
+      })
       if (id) contextStore.setActive(id)
     },
     { immediate: true },
@@ -47,9 +53,22 @@ export function useAppLayout() {
   onMounted(async () => {
     if (!isOwner.value || !user.value) return
     ownerRestaurantsLoading.value = true
+    debugSection('app-layout', 'loading owner restaurants', {
+      userId: user.value.id,
+      path: route.fullPath,
+    })
     try {
-      ownerRestaurants.value = await userService.listRestaurants(user.value.id)
-    } catch {
+      const response = await userService.listRestaurants(user.value.id)
+      ownerRestaurants.value = extractRestaurantList(response, 'app-layout')
+      debugSection('app-layout', 'owner restaurants loaded', {
+        count: ownerRestaurants.value.length,
+        response,
+      })
+    } catch (error) {
+      debugError('app-layout', 'failed to load owner restaurants', {
+        error,
+        userId: user.value.id,
+      })
       ownerRestaurants.value = []
     } finally {
       ownerRestaurantsLoading.value = false
@@ -64,9 +83,12 @@ export function useAppLayout() {
   })
 
   const ownerNavItems = computed<SidebarNavItem[]>(() => {
-    const base = navRestaurantId.value
-      ? `/app/restaurants/${navRestaurantId.value}`
-      : '/app/restaurants'
+    const restaurantListItem: SidebarNavItem = { key: 'restaurants', label: 'Mis locales', to: '/app/restaurants', icon: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2zM9 22V12h6v10' }
+    const id = navRestaurantId.value
+
+    if (!id) return [restaurantListItem]
+
+    const base = `/app/restaurants/${id}`
     return [
       { key: 'overview', label: 'Dashboard', to: base, icon: 'M3 3h7v7H3zM13 3h7v7h-7zM3 13h7v7H3zM13 13h7v7h-7z' },
       { key: 'analytics', label: 'Analíticas', to: `${base}/stats`, icon: 'M18 20V10M12 20V4M6 20v-6' },
@@ -74,7 +96,7 @@ export function useAppLayout() {
       { key: 'orders', label: 'Pedidos', to: `${base}/orders`, icon: 'M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
       { key: 'menus', label: 'Menú digital', to: `${base}/menus`, icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
       { key: 'promotions', label: 'Promociones', to: `${base}/promotions`, icon: 'M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01' },
-      { key: 'restaurants', label: 'Mis locales', to: '/app/restaurants', icon: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2zM9 22V12h6v10' },
+      restaurantListItem,
     ]
   })
 

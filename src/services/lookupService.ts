@@ -1,17 +1,32 @@
 import { http } from './http'
 import type { ApiId, City, Country, Cuisine, Neighbourhood, PriceRange, Province } from '@/types'
 
+type LookupType = 'country' | 'province' | 'city' | 'neighbourhood' | 'price-range' | 'cuisine-type'
+
+interface LookupResponse<T> {
+  data: T[]
+}
+
+function getLookup<T>(type: LookupType, parentId?: ApiId): Promise<LookupResponse<T>> {
+  return http.get<LookupResponse<T>>('/lookups', {
+    query: {
+      type,
+      parentId,
+    },
+  })
+}
+
 export const lookupService = {
   getCuisines: () =>
-    http.get<Cuisine[]>('/cuisines/', { authMode: 'none' }),
+    getLookup<Cuisine>('cuisine-type').then(response => response.data),
   getPriceRanges: () =>
-    http.get<PriceRange[]>('/price-ranges/', { authMode: 'none' }),
+    getLookup<PriceRange>('price-range').then(response => response.data),
   getCountries: () =>
-    http.get<Country[]>('/countries/', { authMode: 'none' }),
+    getLookup<Country>('country').then(response => response.data),
   getProvincesByCountry: (countryId: ApiId) =>
-    http.get<Province[]>(`/countries/${countryId}/provinces/`, { authMode: 'none' }),
+    getLookup<Province>('province', countryId).then(response => response.data),
   getCitiesByProvince: (provinceId: ApiId) =>
-    http.get<City[]>(`/provinces/${provinceId}/cities/`, { authMode: 'none' }),
+    getLookup<City>('city', provinceId).then(response => response.data),
   getNeighbourhoodsByCity: (cityId: ApiId) =>
-    http.get<Neighbourhood[]>(`/cities/${cityId}/neighbourhoods/`, { authMode: 'none' }),
+    getLookup<Neighbourhood>('neighbourhood', cityId).then(response => response.data),
 }

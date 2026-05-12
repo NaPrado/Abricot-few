@@ -10,22 +10,24 @@ const props = defineProps<{
 const router = useRouter()
 
 function navigate() {
+  if (!props.restaurant.id) return
   void router.push(`/restaurants/${props.restaurant.id}`)
 }
 
 function getNeighbourhood(): string {
-  return props.restaurant.neighbourhood?.name ?? props.restaurant.city.name ?? ''
+  return props.restaurant.neighbourhood?.name ?? props.restaurant.city?.name ?? ''
 }
 
 function getCuisineAndPrice(): string {
-  const cuisine = props.restaurant.cuisineTypes[0]?.label ?? ''
+  const cuisine = props.restaurant.cuisineTypes?.[0]?.label ?? ''
   const price = props.restaurant.priceRange?.label ?? ''
   return [cuisine, price].filter(Boolean).join(' · ')
 }
 
 function getColorBg(): string {
   const colors = ['#1a1208', '#0a0f1a', '#120a08', '#100808', '#080f0a', '#0f0f08']
-  const idx = (props.restaurant.id as string).charCodeAt(0) % colors.length
+  const id = String(props.restaurant.id ?? 'restaurant')
+  const idx = id.charCodeAt(0) % colors.length
   return colors[idx] ?? '#111'
 }
 </script>

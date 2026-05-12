@@ -57,8 +57,8 @@ onMounted(async () => {
     <h1 class="owner-sub-title">Reservas</h1>
     <p class="owner-sub-desc">Gestión de reservas del restaurante.</p>
 
-    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
-    <div v-else-if="reservations.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+    <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
+    <div v-else-if="reservations.length === 0" style="color:var(--text-muted);font-size:0.875rem;padding:2rem 0">
       Sin reservas.
     </div>
     <div v-else class="owner-table">
@@ -96,9 +96,9 @@ onMounted(async () => {
 <style scoped>
 .owner-reserv-view { padding: 2.5rem; }
 .owner-sub-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
-.owner-sub-desc { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.owner-sub-desc { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2rem; }
 .owner-table { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); overflow: hidden; }
-.owner-table-head { display: grid; grid-template-columns: 1fr 80px 70px 70px 100px 160px; padding: 0.75rem 1.25rem; background: #080808; font-size: 0.5625rem; color: #2a2a2a; letter-spacing: 0.14em; text-transform: uppercase; }
+.owner-table-head { display: grid; grid-template-columns: 1fr 80px 70px 70px 100px 160px; padding: 0.75rem 1.25rem; background: #080808; font-size: 0.5625rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; }
 .owner-table-row { display: grid; grid-template-columns: 1fr 80px 70px 70px 100px 160px; padding: 0.875rem 1.25rem; border-top: 1px solid #0a0a0a; align-items: center; }
 .owner-table-cell { font-size: 0.8125rem; color: #444; }
 .owner-status { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; }

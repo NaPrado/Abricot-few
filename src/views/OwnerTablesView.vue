@@ -44,8 +44,8 @@ onMounted(async () => {
     <h1 class="owner-sub-title">Mesas</h1>
     <p class="owner-sub-desc">Administrá la capacidad y disponibilidad de tus mesas.</p>
 
-    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
-    <div v-else-if="tables.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+    <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
+    <div v-else-if="tables.length === 0" style="color:var(--text-muted);font-size:0.875rem;padding:2rem 0">
       No hay mesas configuradas.
     </div>
     <div v-else class="tables-grid">
@@ -75,7 +75,7 @@ onMounted(async () => {
 <style scoped>
 .tables-view { padding: 2.5rem; }
 .owner-sub-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
-.owner-sub-desc { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.owner-sub-desc { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2rem; }
 .tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
 .table-card { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.25rem; }
 .table-card--inactive { opacity: 0.45; }
@@ -83,8 +83,8 @@ onMounted(async () => {
 .table-card-capacity { font-size: 0.8125rem; color: var(--brand); margin-bottom: 0.625rem; }
 .table-card-name { font-size: 0.75rem; color: #333; margin-bottom: 0.5rem; }
 .table-card-row, .table-card-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-top: 1px solid #0a0a0a; }
-.table-card-label { font-size: 0.75rem; color: #2a2a2a; }
-.table-card-badge { font-size: 0.625rem; color: #2a2a2a; border: 1px solid #111; border-radius: 99px; padding: 2px 8px; }
+.table-card-label { font-size: 0.75rem; color: var(--text-muted); }
+.table-card-badge { font-size: 0.625rem; color: var(--text-muted); border: 1px solid #111; border-radius: 99px; padding: 2px 8px; }
 .table-card-badge--yes { color: var(--brand); border-color: rgba(249,115,22,0.2); }
 .owner-toggle { position: relative; width: 34px; height: 18px; cursor: pointer; }
 .owner-toggle input { opacity: 0; width: 0; height: 0; }

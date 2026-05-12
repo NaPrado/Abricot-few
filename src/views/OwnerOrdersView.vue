@@ -72,8 +72,8 @@ onMounted(async () => {
     <h1 class="owner-sub-title">Pedidos</h1>
     <p class="owner-sub-desc">Seguí y actualizá el estado de los pedidos.</p>
 
-    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
-    <div v-else-if="orders.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+    <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
+    <div v-else-if="orders.length === 0" style="color:var(--text-muted);font-size:0.875rem;padding:2rem 0">
       Sin pedidos.
     </div>
     <div v-else class="owner-orders-grid">
@@ -106,11 +106,11 @@ onMounted(async () => {
 <style scoped>
 .owner-orders-view { padding: 2.5rem; }
 .owner-sub-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
-.owner-sub-desc { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.owner-sub-desc { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2rem; }
 .owner-orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
 .owner-order-card { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.125rem; display: flex; flex-direction: column; gap: 0.75rem; }
 .owner-order-header { display: flex; justify-content: space-between; align-items: center; }
-.owner-order-time { font-size: 0.75rem; color: #2a2a2a; }
+.owner-order-time { font-size: 0.75rem; color: var(--text-muted); }
 .owner-order-status { font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 99px; }
 .owner-order-status--PENDING { color: #888; background: #0a0a0a; border: 1px solid #111; }
 .owner-order-status--CONFIRMED { color: var(--brand); background: rgba(249,115,22,0.06); border: 1px solid rgba(249,115,22,0.15); }
@@ -121,7 +121,7 @@ onMounted(async () => {
 .owner-order-items { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .owner-order-item { display: flex; justify-content: space-between; font-size: 0.8125rem; }
 .owner-order-item-name { color: #444; }
-.owner-order-item-qty { color: #2a2a2a; }
+.owner-order-item-qty { color: var(--text-muted); }
 .owner-order-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 0.625rem; border-top: 1px solid #0a0a0a; }
 .owner-order-total { font-size: 0.9375rem; font-weight: 700; color: #666; }
 .owner-order-advance-btn { background: transparent; border: 1px solid #161616; color: #333; border-radius: var(--radius-sm); padding: 4px 10px; font-size: 0.6875rem; font-family: inherit; cursor: pointer; transition: all var(--dur-fast); white-space: nowrap; }

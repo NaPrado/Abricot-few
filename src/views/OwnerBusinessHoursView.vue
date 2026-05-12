@@ -16,12 +16,14 @@ async function save() {
   saving.value = true
   success.value = false
   try {
-    await businessHoursService.updateByRestaurant(restaurantId, hours.value.map(h => ({
-      dayOfWeek: h.dayOfWeek,
-      opensAt: h.isClosed ? null : h.opensAt,
-      closesAt: h.isClosed ? null : h.closesAt,
-      isClosed: h.isClosed,
-    })))
+    await businessHoursService.updateByRestaurant(restaurantId, {
+      hours: hours.value.map(h => ({
+        dayOfWeek: h.dayOfWeek,
+        opensAt: h.isClosed ? null : h.opensAt,
+        closesAt: h.isClosed ? null : h.closesAt,
+        isClosed: h.isClosed,
+      })),
+    })
     success.value = true
   } catch {
     // silently fail
@@ -47,7 +49,7 @@ onMounted(async () => {
     <h1 class="owner-sub-title">Horarios</h1>
     <p class="owner-sub-desc">Configurá los horarios de apertura y cierre de tu restaurante.</p>
 
-    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
     <template v-else>
       <div class="hours-list">
         <div v-for="h in hours" :key="h.id" class="hours-row">
@@ -60,7 +62,7 @@ onMounted(async () => {
           <span class="hours-open-label">{{ h.isClosed ? 'Cerrado' : 'Abierto' }}</span>
           <template v-if="!h.isClosed">
             <input v-model="h.opensAt" class="hours-input" type="time" />
-            <span style="color:#1a1a1a">—</span>
+            <span style="color:var(--text-muted)">—</span>
             <input v-model="h.closesAt" class="hours-input" type="time" />
           </template>
           <template v-else>
@@ -80,11 +82,11 @@ onMounted(async () => {
 <style scoped>
 .hours-view { padding: 2.5rem; max-width: 640px; }
 .owner-sub-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
-.owner-sub-desc { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.owner-sub-desc { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2rem; }
 .hours-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 1.5rem; }
 .hours-row { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.25rem; background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-md); }
 .hours-day { font-size: 0.875rem; color: #666; width: 90px; flex-shrink: 0; }
-.hours-open-label { font-size: 0.75rem; color: #2a2a2a; width: 55px; }
+.hours-open-label { font-size: 0.75rem; color: var(--text-muted); width: 55px; }
 .hours-input { background: #080808; border: 1px solid #111; border-radius: var(--radius-sm); padding: 4px 8px; color: #ccc; font-size: 0.8125rem; font-family: inherit; outline: none; }
 .hours-closed-placeholder { flex: 1; color: #111; font-size: 0.8125rem; }
 .hours-save-btn { padding: 0.75rem 2rem; background: #e8e8e8; border: none; border-radius: var(--radius-md); color: #060606; font-weight: 700; font-size: 0.875rem; font-family: inherit; cursor: pointer; transition: opacity var(--dur-fast); }

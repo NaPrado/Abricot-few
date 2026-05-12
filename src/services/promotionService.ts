@@ -4,8 +4,6 @@ import type {
   CreatePromotionRequest,
   PaginationQuery,
   Promotion,
-  PromotionFeedQuery,
-  PromotionFeedResponse,
   PromotionListResponse,
 } from '@/types'
 
@@ -23,8 +21,4 @@ export const promotionService = {
   /** 204 No Content on success. */
   delete: (restaurantId: ApiId, promotionId: ApiId) =>
     http.delete<void>(`/restaurants/${restaurantId}/promotions/${promotionId}`),
-
-  /** Public feed (unchanged contract). */
-  getFeed: (query?: PromotionFeedQuery) =>
-    http.get<PromotionFeedResponse>('/promotions/feed', { authMode: 'none', query }),
 }

@@ -10,11 +10,11 @@ import type {
 
 export const tableService = {
   getByRestaurant: (restaurantId: ApiId) =>
-    http.get<Table[]>(`/restaurants/${restaurantId}/tables/`),
+    http.get<Table[]>(`/restaurants/${restaurantId}/tables`),
   create: (restaurantId: ApiId, payload: CreateTableRequest) =>
-    http.post<Table>(`/restaurants/${restaurantId}/tables/`, payload),
+    http.post<Table>(`/restaurants/${restaurantId}/tables`, payload),
   bulkCreate: (restaurantId: ApiId, payload: BulkCreateTablesRequest) =>
-    http.post<BulkCreateTablesResponse>(`/restaurants/${restaurantId}/tables/bulk`, payload),
+    http.post<BulkCreateTablesResponse>(`/restaurants/${restaurantId}/tables`, payload),
   getById: (restaurantId: ApiId, tableId: ApiId) =>
     http.get<Table>(`/restaurants/${restaurantId}/tables/${tableId}`),
   update: (restaurantId: ApiId, tableId: ApiId, payload: UpdateTableRequest) =>

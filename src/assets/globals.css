@@ -30,9 +30,9 @@
 
   /* ── Text ────────────────────────────────────────────────── */
   --text-primary:        #ffffff;
-  --text-secondary:      #a1a1aa;
-  --text-muted:          #71717a;
-  --text-placeholder:    #3f3f46;
+  --text-secondary:      #c4c4cc;
+  --text-muted:          #9ca3af;
+  --text-placeholder:    #6b7280;
 
   /* ── Semantic – danger ───────────────────────────────────── */
   --danger:              #ef4444;

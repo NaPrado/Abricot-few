@@ -19,7 +19,7 @@ const {
     <h1 class="my-reservations-title">Mis reservas</h1>
     <p class="my-reservations-sub">Historial y estado de tus reservas.</p>
 
-    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
     <div v-else-if="reservations.length === 0" class="my-reservations-empty">
       No tenés reservas todavía.
     </div>

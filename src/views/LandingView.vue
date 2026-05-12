@@ -183,8 +183,8 @@ const {
         <!-- Right: mini dashboard mockup -->
         <div class="landing-dash-mock">
           <div class="landing-dash-mock-header">
-            <span style="font-size:0.6875rem;color:#333;letter-spacing:0.1em;text-transform:uppercase">Panel de control</span>
-            <span style="font-size:0.6875rem;color:#222">Hoy</span>
+            <span style="font-size:0.6875rem;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase">Panel de control</span>
+            <span style="font-size:0.6875rem;color:var(--text-muted)">Hoy</span>
           </div>
 
           <div class="landing-dash-mock-row">

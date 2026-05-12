@@ -3,6 +3,8 @@ import { useRouter } from 'vue-router'
 import { lookupService, restaurantService, userService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
 import { useRestaurantContextStore } from '@/stores/restaurantContextStore'
+import { debugError, debugSection, debugWarn } from '@/utils/debug'
+import { extractRestaurantList } from '@/utils/restaurantResponses'
 import type { City, Country, Cuisine, Neighbourhood, PriceRange, Province, Restaurant } from '@/types'
 
 export function useRestaurantsView() {
@@ -38,12 +40,17 @@ export function useRestaurantsView() {
   const formDescription = ref('')
 
   function colorBg(id: string): string {
+    if (!id) {
+      debugWarn('restaurants-view', 'missing restaurant id for fallback color')
+      return '#111'
+    }
     const colors = ['#1a1208', '#0a0f1a', '#120a08', '#100808', '#080f0a', '#0f0f08']
     const idx = id.charCodeAt(0) % colors.length
     return colors[idx] ?? '#111'
   }
 
   function navigate(id: string) {
+    debugSection('restaurants-view', 'navigate to owner dashboard', { restaurantId: id })
     contextStore.setActive(id)
     void router.push(`/app/restaurants/${id}`)
   }
@@ -67,6 +74,7 @@ export function useRestaurantsView() {
   }
 
   async function loadBaseLookups() {
+    debugSection('restaurants-view', 'loading create modal lookups')
     const [c, cu, pr] = await Promise.all([
       lookupService.getCountries(),
       lookupService.getCuisines(),
@@ -75,14 +83,24 @@ export function useRestaurantsView() {
     countries.value = c
     cuisines.value = cu
     priceRanges.value = pr
+    debugSection('restaurants-view', 'create modal lookups loaded', {
+      countries: c.length,
+      cuisines: cu.length,
+      priceRanges: pr.length,
+    })
   }
 
   async function openCreate() {
+    debugSection('restaurants-view', 'open create modal', {
+      hasCountries: countries.value.length > 0,
+      restaurantCount: restaurants.value.length,
+    })
     resetCreateForm()
     showCreate.value = true
     try {
       if (!countries.value.length) await loadBaseLookups()
-    } catch {
+    } catch (error) {
+      debugError('restaurants-view', 'failed to load create modal lookups', { error })
       createError.value = 'No se pudieron cargar países y catálogos. Reintentá.'
     }
   }
@@ -148,10 +166,26 @@ export function useRestaurantsView() {
     const address = formAddress.value.trim()
     const phone = formPhone.value.trim()
     if (!name || !address || !phone || !selectedCityId.value) {
+      debugWarn('restaurants-view', 'create restaurant validation failed', {
+        hasName: Boolean(name),
+        hasAddress: Boolean(address),
+        hasPhone: Boolean(phone),
+        cityId: selectedCityId.value || null,
+      })
       createError.value = 'Completá nombre, dirección, teléfono y ciudad.'
       return
     }
     createLoading.value = true
+    debugSection('restaurants-view', 'create restaurant start', {
+      name,
+      address,
+      cityId: selectedCityId.value,
+      hasEmail: Boolean(formEmail.value.trim()),
+      hasDescription: Boolean(formDescription.value.trim()),
+      neighbourhoodId: selectedNeighbourhoodId.value || null,
+      priceRangeId: selectedPriceRangeId.value || null,
+      cuisineTypeIds: selectedCuisineIds.value,
+    })
     try {
       const created = await restaurantService.create({
         name,
@@ -165,13 +199,23 @@ export function useRestaurantsView() {
         cuisineTypeIds: selectedCuisineIds.value.length ? selectedCuisineIds.value : undefined,
       })
       if (authStore.user) {
-        restaurants.value = await userService.listRestaurants(authStore.user.id)
+        const response = await userService.listRestaurants(authStore.user.id)
+        restaurants.value = extractRestaurantList(response, 'restaurants-view')
+        debugSection('restaurants-view', 'owner restaurant list reloaded after create', {
+          count: restaurants.value.length,
+          response,
+        })
       }
       contextStore.setActive(created.id as string)
       showCreate.value = false
       resetCreateForm()
+      debugSection('restaurants-view', 'create restaurant success; navigating', {
+        createdId: created.id,
+        createdName: created.name,
+      })
       void router.push(`/app/restaurants/${created.id}`)
-    } catch {
+    } catch (error) {
+      debugError('restaurants-view', 'create restaurant failed', { error })
       createError.value = 'No se pudo crear el restaurante. Verificá los datos o probá más tarde.'
     } finally {
       createLoading.value = false
@@ -180,9 +224,21 @@ export function useRestaurantsView() {
 
   onMounted(async () => {
     if (!authStore.user) return
+    debugSection('restaurants-view', 'loading owner restaurant list', {
+      userId: authStore.user.id,
+    })
     try {
-      restaurants.value = await userService.listRestaurants(authStore.user.id)
-    } catch {
+      const response = await userService.listRestaurants(authStore.user.id)
+      restaurants.value = extractRestaurantList(response, 'restaurants-view')
+      debugSection('restaurants-view', 'owner restaurant list loaded', {
+        count: restaurants.value.length,
+        response,
+      })
+    } catch (error) {
+      debugError('restaurants-view', 'failed to load owner restaurant list', {
+        error,
+        userId: authStore.user.id,
+      })
       // silently degrade
     } finally {
       loading.value = false

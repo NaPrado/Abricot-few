@@ -4,5 +4,5 @@ import type { CountryIsoCodeType } from '../scalar'
 export interface CountryType {
   id: ApiIdType
   name: string
-  isoCode: CountryIsoCodeType
+  isoCode?: CountryIsoCodeType
 }

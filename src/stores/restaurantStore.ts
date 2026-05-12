@@ -39,10 +39,10 @@ export const useRestaurantStore = defineStore("restaurant", () => {
   }
 
   async function uploadPhoto(id: ApiId, file: File): Promise<void> {
-    const res = await restaurantService.uploadPhoto(id, file)
+    const updated = await restaurantService.uploadPhoto(id, file)
     const idx = restaurants.value.findIndex((r) => r.id === id)
     if (idx !== -1) {
-      Object.assign(restaurants.value[idx]!, { photoUrl: res.photoUrl })
+      restaurants.value[idx] = updated
     }
   }
 

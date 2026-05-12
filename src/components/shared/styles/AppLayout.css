@@ -67,14 +67,14 @@
 
 .app-layout-owner-role {
   font-size: 0.625rem;
-  color: #333;
+  color: var(--text-muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .app-layout-sidebar-section {
   font-size: 0.5625rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 1rem 0.75rem 0.5rem;
@@ -113,7 +113,7 @@
   margin: 0.5rem 0 0;
   font-size: 0.625rem;
   line-height: 1.35;
-  color: #333;
+  color: var(--text-muted);
 }
 
 .app-layout-sidebar-nav {
@@ -131,7 +131,7 @@
   text-align: left;
   background: transparent;
   border: none;
-  color: #444;
+  color: var(--text-secondary);
   font-size: 0.8125rem;
   padding: 0.625rem 0.75rem;
   border-radius: var(--radius-sm);
@@ -145,7 +145,7 @@
 
 .app-layout-nav-item:hover {
   background: rgba(255, 255, 255, 0.02);
-  color: #666;
+  color: var(--text-primary);
 }
 
 .app-layout-nav-item--active {

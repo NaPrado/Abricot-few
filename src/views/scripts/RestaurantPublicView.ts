@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { HttpError } from '@/services/http'
 import { restaurantService, availabilityService, reservationService, menuService, orderService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
+import { debugError, debugSection, debugWarn } from '@/utils/debug'
 import type { Restaurant, AvailabilitySlot, MenuDetail, MenuItem, ReviewScore } from '@/types'
 
 const TABS = ['Menú', 'Reservar', 'Para llevar'] as const
@@ -49,7 +50,8 @@ export function useRestaurantPublicView() {
   const colorBg = computed(() => {
     if (!restaurant.value) return '#111'
     const colors = ['#1a1208', '#0a0f1a', '#120a08', '#100808', '#080f0a', '#0f0f08']
-    const idx = (restaurant.value.id as string).charCodeAt(0) % colors.length
+    const id = String(restaurant.value.id ?? 'restaurant')
+    const idx = id.charCodeAt(0) % colors.length
     return colors[idx] ?? '#111'
   })
 
@@ -98,31 +100,63 @@ export function useRestaurantPublicView() {
     })
   }
 
-  async function loadRestaurant() {
+  async function loadRestaurant(): Promise<boolean> {
     loading.value = true
+    debugSection('restaurant-public', 'loading restaurant page', { restaurantId })
     try {
-      const [rest, menus] = await Promise.all([
-        restaurantService.getById(restaurantId),
-        menuService.getByRestaurant(restaurantId),
-      ])
+      const rest = await restaurantService.getById(restaurantId)
       restaurant.value = rest
-      if (menus.length > 0) {
-        const activeMenu = menus[0]!
-        menu.value = await menuService.getById(restaurantId, activeMenu.id)
-      }
-    } catch {
+      debugSection('restaurant-public', 'restaurant detail loaded', {
+        restaurantId: rest.id,
+        name: rest.name,
+      })
+    } catch (error) {
+      debugError('restaurant-public', 'restaurant detail failed; redirecting home', {
+        error,
+        restaurantId,
+      })
       void router.push('/')
+      loading.value = false
+      return false
+    }
+
+    try {
+      menu.value = await menuService.getActiveByRestaurant(restaurantId)
+      debugSection('restaurant-public', 'active menu loaded', {
+        restaurantId,
+        hasMenu: Boolean(menu.value),
+        menuId: menu.value?.id ?? null,
+      })
+    } catch (error) {
+      if (error instanceof HttpError && error.status === 404) {
+        debugWarn('restaurant-public', 'active menu not found; rendering restaurant without menu', {
+          restaurantId,
+        })
+      } else {
+        debugError('restaurant-public', 'active menu failed; rendering restaurant without menu', {
+          error,
+          restaurantId,
+        })
+      }
+      menu.value = null
     } finally {
       loading.value = false
     }
+
+    return true
   }
 
   async function loadSlots() {
     if (!bookingDate.value) return
+    if (!authStore.isAuthenticated) {
+      slots.value = []
+      selectedSlot.value = null
+      return
+    }
     try {
       const res = await availabilityService.getByRestaurant(restaurantId, {
         date: bookingDate.value,
-        party_size: partySize.value,
+        partySize: partySize.value,
       })
       slots.value = res.slots
       selectedSlot.value = null
@@ -153,14 +187,14 @@ export function useRestaurantPublicView() {
   }
 
   async function submitMyReview(score: ReviewScore) {
-    if (!authStore.isAuthenticated) {
+    if (!authStore.isAuthenticated || !authStore.user) {
       void router.push('/login')
       return
     }
     reviewLoading.value = true
     reviewError.value = ''
     try {
-      await restaurantService.putMyReview(restaurantId, { score })
+      await restaurantService.putReview(restaurantId, authStore.user.id, { score })
       lastSavedReviewScore.value = score
       await loadRestaurant()
     } catch (e) {
@@ -204,8 +238,9 @@ export function useRestaurantPublicView() {
   }
 
   onMounted(async () => {
-    await loadRestaurant()
-    await loadSlots()
+    if (await loadRestaurant()) {
+      await loadSlots()
+    }
   })
 
   return {

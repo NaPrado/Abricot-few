@@ -85,7 +85,7 @@
 
 .restaurant-desc {
   font-size: 0.875rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   line-height: 1.75;
   margin-bottom: 2rem;
 }
@@ -191,7 +191,7 @@
 
 .restaurant-menu-cat-name {
   font-size: 0.6875rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 0.75rem;
@@ -214,7 +214,7 @@
 
 .restaurant-menu-item-desc {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -265,7 +265,7 @@
 
 .restaurant-panel-label {
   font-size: 0.5625rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 6px;
@@ -400,7 +400,7 @@
 
 .restaurant-panel-success-sub {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
 }
 
 .restaurant-panel-error {
@@ -412,7 +412,7 @@
 
 .restaurant-no-slots {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   text-align: center;
   padding: 1rem 0;
 }
@@ -422,7 +422,7 @@
   justify-content: center;
   align-items: center;
   min-height: 40vh;
-  color: #2a2a2a;
+  color: var(--text-muted);
 }
 
 /* ── Menu item layout with cart controls ─────────────────── */
@@ -482,7 +482,7 @@
 /* ── Cart (Para llevar panel) ────────────────────────────── */
 .restaurant-cart-empty {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   text-align: center;
   padding: 1.25rem 0;
   line-height: 1.6;
@@ -548,7 +548,7 @@
 
 .restaurant-panel-cta-sub {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   margin-bottom: 1.25rem;
   line-height: 1.5;
 }

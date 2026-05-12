@@ -3,9 +3,9 @@ import type { AuthResponse, LoginRequest, RefreshTokenResponse, RegisterRequest 
 
 export const authService = {
   login: (payload: LoginRequest) =>
-    http.post<AuthResponse>('/auth/login', payload, { authMode: 'none' }),
+    http.post<AuthResponse>('/sessions', payload, { authMode: 'none' }),
   register: (payload: RegisterRequest) =>
-    http.post<AuthResponse>('/auth/register', payload, { authMode: 'none' }),
+    http.post<AuthResponse>('/users', payload, { authMode: 'none' }),
   refresh: () =>
-    http.post<RefreshTokenResponse>('/auth/refresh', undefined, { authMode: 'refresh' }),
+    http.post<RefreshTokenResponse>('/access-tokens', undefined, { authMode: 'refresh' }),
 }

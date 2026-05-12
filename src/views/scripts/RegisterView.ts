@@ -1,6 +1,7 @@
 import { ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { debugError, debugSection, redactAuthPayload } from '@/utils/debug'
 
 export function useRegisterView() {
   const router = useRouter()
@@ -26,20 +27,45 @@ export function useRegisterView() {
     e.preventDefault()
     error.value = ''
     loading.value = true
+    const requestedRole = role.value === 'owner' ? 'RESTAURANT_ADMIN' : 'CUSTOMER'
+    debugSection('register-view', 'submit start', redactAuthPayload({
+      name: name.value,
+      surname: surname.value,
+      email: email.value,
+      password: password.value,
+      role: requestedRole,
+      currentPath: route.fullPath,
+    }))
     try {
       await authStore.register({
         name: name.value,
         surname: surname.value,
         email: email.value,
         password: password.value,
-        role: role.value === 'owner' ? 'RESTAURANT_ADMIN' : 'CUSTOMER',
+        role: requestedRole,
+      })
+      const redirectPath = authStore.isOwner ? '/app/restaurants' : '/me/reservations'
+      debugSection('register-view', 'register completed; navigating', {
+        redirectPath,
+        storedRole: authStore.user?.role ?? null,
+        isOwner: authStore.isOwner,
+        isCustomer: authStore.isCustomer,
       })
       if (authStore.isOwner) {
-        void router.push('/app/restaurants')
+        await router.push('/app/restaurants')
       } else {
-        void router.push('/me/reservations')
+        await router.push('/me/reservations')
       }
-    } catch {
+      debugSection('register-view', 'navigation completed', {
+        currentPath: router.currentRoute.value.fullPath,
+      })
+    } catch (err) {
+      debugError('register-view', 'register flow failed', {
+        error: err,
+        requestedRole,
+        storedRole: authStore.user?.role ?? null,
+        currentPath: route.fullPath,
+      })
       error.value = 'No pudimos crear tu cuenta. Verificá los datos e intentá de nuevo.'
     } finally {
       loading.value = false

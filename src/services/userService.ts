@@ -17,5 +17,5 @@ export const userService = {
   updatePassword: (userId: ApiId, payload: UpdatePasswordRequest) =>
     http.put<UpdatePasswordResponse>(`/users/${userId}/password`, payload),
   listRestaurants: (userId: ApiId) =>
-    http.get<MyRestaurantsResponse>(`/users/${userId}/restaurants/`),
+    http.get<MyRestaurantsResponse>(`/users/${userId}/restaurants`),
 }

@@ -49,8 +49,8 @@ onMounted(async () => {
     <h1 class="notif-title">Notificaciones</h1>
     <p class="notif-sub">Elegí qué querés recibir de cada restaurante.</p>
 
-    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
-    <div v-else-if="prefs.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+    <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
+    <div v-else-if="prefs.length === 0" style="color:var(--text-muted);font-size:0.875rem;padding:2rem 0">
       Sin preferencias configuradas.
     </div>
     <div v-else class="notif-list">
@@ -88,7 +88,7 @@ onMounted(async () => {
 <style scoped>
 .notif-view { padding: 2.5rem; max-width: 640px; }
 .notif-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
-.notif-sub { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.notif-sub { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2rem; }
 .notif-list { display: flex; flex-direction: column; gap: 10px; }
 .notif-card { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.25rem; }
 .notif-card-name { font-size: 0.9375rem; font-weight: 600; color: #888; margin-bottom: 1rem; }

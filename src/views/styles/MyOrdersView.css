@@ -13,14 +13,14 @@
 
 .my-orders-sub {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   margin-bottom: 2rem;
 }
 
 .my-orders-empty {
   text-align: center;
   padding: 4rem 0;
-  color: #2a2a2a;
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
@@ -56,7 +56,7 @@
 
 .order-row-meta {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
 }
 
 .order-row-total {
@@ -167,7 +167,7 @@
 
 .order-timeline-label {
   font-size: 0.8125rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   padding-bottom: 1.5rem;
 }
 
@@ -183,7 +183,7 @@
 /* Items list */
 .order-items-title {
   font-size: 0.6875rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 0.75rem;

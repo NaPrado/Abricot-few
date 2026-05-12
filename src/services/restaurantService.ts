@@ -7,7 +7,6 @@ import type {
   RestaurantListResponse,
   RestaurantMyReviewPutRequest,
   RestaurantMyReviewResponse,
-  RestaurantPhotoUploadResponse,
   RestaurantUpdateRequest,
 } from '@/types'
 
@@ -16,8 +15,8 @@ export const restaurantService = {
   getAll: (query?: RestaurantListQuery) =>
     http.get<RestaurantListResponse>('/restaurants/', { authMode: 'none', query }),
   getById: (id: ApiId) => http.get<Restaurant>(`/restaurants/${id}`, { authMode: 'none' }),
-  putMyReview: (restaurantId: ApiId, body: RestaurantMyReviewPutRequest) =>
-    http.put<RestaurantMyReviewResponse>(`/restaurants/${restaurantId}/my-review`, body),
+  putReview: (restaurantId: ApiId, userId: ApiId, body: RestaurantMyReviewPutRequest) =>
+    http.put<RestaurantMyReviewResponse>(`/restaurants/${restaurantId}/reviews/${userId}`, body),
   create: (payload: RestaurantCreateRequest) =>
     http.post<Restaurant>('/restaurants/', payload),
   update: (id: ApiId, payload: RestaurantUpdateRequest) =>
@@ -26,7 +25,7 @@ export const restaurantService = {
     http.delete<void>(`/restaurants/${id}`),
   uploadPhoto: (id: ApiId, file: File) => {
     const formData = new FormData()
-    formData.append('photo', file)
-    return http.postForm<RestaurantPhotoUploadResponse>(`/restaurants/${id}/photo`, formData)
+    formData.append('file', file)
+    return http.putForm<Restaurant>(`/restaurants/${id}/photo`, formData)
   },
 }

@@ -1,6 +1,8 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurantService } from '@/services'
+import { debugError, debugSection } from '@/utils/debug'
+import { extractRestaurantList } from '@/utils/restaurantResponses'
 import type { Restaurant } from '@/types'
 
 const PRICE_OPTIONS = ['Todos', '$', '$$', '$$$', '$$$$']
@@ -28,7 +30,7 @@ export function useExploreView() {
   const filtered = computed(() => {
     let list = restaurants.value
     if (activeCuisine.value !== 'Todas') {
-      list = list.filter(r => r.cuisineTypes.some(c => c.label.includes(activeCuisine.value)))
+      list = list.filter(r => (r.cuisineTypes ?? []).some(c => c.label.includes(activeCuisine.value)))
     }
     if (activePrice.value !== 'Todos') {
       list = list.filter(r => r.priceRange?.label === activePrice.value)
@@ -38,14 +40,24 @@ export function useExploreView() {
 
   async function load() {
     loading.value = true
+    debugSection('explore-view', 'loading public restaurants', {
+      page: 1,
+      perPage: 24,
+      name: searchQuery.value || null,
+    })
     try {
       const res = await restaurantService.getAll({
         page: 1,
         perPage: 24,
         name: searchQuery.value || undefined,
       })
-      restaurants.value = res.data
-    } catch {
+      restaurants.value = extractRestaurantList(res, 'explore-view')
+      debugSection('explore-view', 'public restaurants loaded', {
+        count: restaurants.value.length,
+        response: res,
+      })
+    } catch (error) {
+      debugError('explore-view', 'failed to load public restaurants', { error })
       restaurants.value = []
     } finally {
       loading.value = false

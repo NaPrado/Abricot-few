@@ -5,13 +5,20 @@ import { BaseButton } from '@/components/base'
 import { AppNavbar, ToastContainer } from '@/components/shared'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
+import { debugError } from '@/utils/debug'
 
 const { t } = useI18n()
 const hasFatalError = ref(false)
 const route = useRoute()
 const authStore = useAuthStore()
 
-onErrorCaptured(() => {
+onErrorCaptured((error, instance, info) => {
+  debugError('app', 'error captured by root fallback', {
+    error,
+    info,
+    component: instance?.$options?.name ?? '(anonymous)',
+    path: route.fullPath,
+  })
   hasFatalError.value = true
   return false
 })

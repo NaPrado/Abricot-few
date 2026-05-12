@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { debugError, debugSection, redactAuthPayload } from '@/utils/debug'
 
 export function useLoginView() {
   const router = useRouter()
@@ -15,14 +16,32 @@ export function useLoginView() {
     e.preventDefault()
     error.value = ''
     loading.value = true
+    debugSection('login-view', 'submit start', redactAuthPayload({
+      email: email.value,
+      password: password.value,
+    }))
     try {
       await authStore.login({ email: email.value, password: password.value })
+      const redirectPath = authStore.isOwner ? '/app/restaurants' : '/me/reservations'
+      debugSection('login-view', 'login completed; navigating', {
+        redirectPath,
+        storedRole: authStore.user?.role ?? null,
+        isOwner: authStore.isOwner,
+        isCustomer: authStore.isCustomer,
+      })
       if (authStore.isOwner) {
-        void router.push('/app/restaurants')
+        await router.push('/app/restaurants')
       } else {
-        void router.push('/me/reservations')
+        await router.push('/me/reservations')
       }
-    } catch {
+      debugSection('login-view', 'navigation completed', {
+        currentPath: router.currentRoute.value.fullPath,
+      })
+    } catch (err) {
+      debugError('login-view', 'login flow failed', {
+        error: err,
+        storedRole: authStore.user?.role ?? null,
+      })
       error.value = 'Email o contraseña incorrectos.'
     } finally {
       loading.value = false

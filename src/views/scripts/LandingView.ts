@@ -1,6 +1,8 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { restaurantService } from '@/services'
+import { debugError, debugSection } from '@/utils/debug'
+import { extractRestaurantList } from '@/utils/restaurantResponses'
 import type { Restaurant } from '@/types'
 
 const HERO_PHRASES = [
@@ -40,7 +42,7 @@ export function useLandingView() {
   const filteredRestaurants = computed(() => {
     if (activeTag.value === 'Todos') return restaurants.value.slice(0, 6)
     return restaurants.value
-      .filter(r => r.cuisineTypes.some(c => c.label.includes(activeTag.value)))
+      .filter(r => (r.cuisineTypes ?? []).some(c => c.label.includes(activeTag.value)))
       .slice(0, 6)
   })
 
@@ -70,10 +72,16 @@ export function useLandingView() {
   }
 
   async function loadRestaurants() {
+    debugSection('landing-view', 'loading public restaurants')
     try {
       const res = await restaurantService.getAll({ page: 1, perPage: 12 })
-      restaurants.value = res.data
-    } catch {
+      restaurants.value = extractRestaurantList(res, 'landing-view')
+      debugSection('landing-view', 'public restaurants loaded', {
+        count: restaurants.value.length,
+        response: res,
+      })
+    } catch (error) {
+      debugError('landing-view', 'failed to load public restaurants', { error })
       // silently degrade — hero/sections still render
     } finally {
       loading.value = false

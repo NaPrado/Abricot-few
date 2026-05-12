@@ -6,6 +6,4 @@ export type { CreateReservationRequestType } from './CreateReservationRequestTyp
 export type { CreateAdminReservationRequestType } from './CreateAdminReservationRequestType'
 export type { RestaurantReservationsQueryType } from './RestaurantReservationsQueryType'
 export type { RestaurantReservationsResponseType } from './RestaurantReservationsResponseType'
-export type { ReservationLookupQueryType } from './ReservationLookupQueryType'
 export type { CancelReservationRequestType } from './CancelReservationRequestType'
-export type { ReassignReservationTablesRequestType } from './ReassignReservationTablesRequestType'

@@ -47,9 +47,9 @@ onMounted(async () => {
     <h1 class="owner-sub-title">Menú digital</h1>
     <p class="owner-sub-desc">Administrá la carta de tu restaurante.</p>
 
-    <div v-if="loading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+    <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
     <template v-else>
-      <div v-if="menus.length === 0" style="color:#2a2a2a;font-size:0.875rem;padding:2rem 0">
+      <div v-if="menus.length === 0" style="color:var(--text-muted);font-size:0.875rem;padding:2rem 0">
         No hay menús creados.
       </div>
       <div v-else class="owner-menus-layout">
@@ -73,7 +73,7 @@ onMounted(async () => {
 
         <!-- Menu detail -->
         <div class="owner-menus-detail">
-          <div v-if="detailLoading" style="color:#2a2a2a;font-size:0.875rem">Cargando…</div>
+          <div v-if="detailLoading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
           <template v-else-if="selectedMenu">
             <div
               v-for="category in selectedMenu.categories"
@@ -103,7 +103,7 @@ onMounted(async () => {
 <style scoped>
 .owner-menus-view { padding: 2.5rem; }
 .owner-sub-title { font-size: 1.5rem; font-weight: 700; color: #ccc; margin: 0 0 0.375rem; letter-spacing: -0.02em; }
-.owner-sub-desc { font-size: 0.8125rem; color: #2a2a2a; margin-bottom: 2rem; }
+.owner-sub-desc { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2rem; }
 .owner-menus-layout { display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; }
 .owner-menus-list { display: flex; flex-direction: column; gap: 4px; }
 .owner-menu-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-md); cursor: pointer; transition: border-color var(--dur-fast); }
@@ -113,10 +113,10 @@ onMounted(async () => {
 .owner-menu-activate-btn { background: transparent; border: 1px solid #111; color: #222; border-radius: 99px; padding: 2px 8px; font-size: 0.5625rem; font-family: inherit; cursor: pointer; }
 .owner-menus-detail { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.5rem; }
 .owner-menu-category { margin-bottom: 1.5rem; }
-.owner-menu-cat-name { font-size: 0.5625rem; color: #2a2a2a; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.owner-menu-cat-name { font-size: 0.5625rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.75rem; }
 .owner-menu-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #0a0a0a; gap: 1rem; }
 .owner-menu-row--unavailable { opacity: 0.4; }
 .owner-menu-row-name { font-size: 0.875rem; color: #888; font-weight: 500; }
-.owner-menu-row-desc { font-size: 0.75rem; color: #2a2a2a; margin-top: 2px; }
+.owner-menu-row-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
 .owner-menu-row-price { font-size: 0.875rem; font-weight: 700; color: #555; white-space: nowrap; }
 </style>

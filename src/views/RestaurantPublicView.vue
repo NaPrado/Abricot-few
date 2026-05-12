@@ -71,7 +71,7 @@ const {
               <span class="restaurant-rating">
                 <span style="color:#f97316">★</span> {{ restaurantRatingLabel(restaurant) }}
               </span>
-              <span v-if="restaurant.cuisineTypes[0]">{{ restaurant.cuisineTypes[0].label }}</span>
+              <span v-if="restaurant.cuisineTypes?.[0]">{{ restaurant.cuisineTypes[0]?.label }}</span>
               <span v-if="restaurant.priceRange">{{ restaurant.priceRange.label }}</span>
               <span>{{ restaurant.address }}</span>
             </div>
@@ -114,16 +114,16 @@ const {
 
           <!-- Food menu: shown for Menú and Para llevar tabs -->
           <div v-if="activeTab === 'Menú' || activeTab === 'Para llevar'">
-            <div v-if="!menu" style="color:#2a2a2a;font-size:0.875rem">Sin carta disponible.</div>
+            <div v-if="!menu" style="color:var(--text-muted);font-size:0.875rem">Sin carta disponible.</div>
             <div v-else>
               <div
-                v-for="category in menu.categories"
+                v-for="category in (menu.categories ?? [])"
                 :key="category.id"
                 class="restaurant-menu-category"
               >
                 <div class="restaurant-menu-cat-name">{{ category.name }}</div>
                 <div
-                  v-for="item in category.items"
+                  v-for="item in (category.items ?? [])"
                   :key="item.id"
                   class="restaurant-menu-item"
                 >
