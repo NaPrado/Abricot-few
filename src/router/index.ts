@@ -31,6 +31,11 @@ const router = createRouter({
       component: () => import('@/views/RestaurantPublicView.vue'),
       meta: { public: true },
     },
+    {
+      path: '/widgets/reservas/:restaurantId',
+      component: () => import('@/views/ReservationWidgetView.vue'),
+      meta: { public: true },
+    },
 
     // ── Owner shell (/app) ───────────────────────────────────────
     {

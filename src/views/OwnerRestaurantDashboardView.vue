@@ -8,9 +8,13 @@ const {
   recentReservations,
   recentOrders,
   loading,
+  widgetCopied,
+  widgetUrl,
+  widgetIframeSnippet,
   revenueMax,
   formatMoney,
   formatTime,
+  copyWidgetSnippet,
 } = useOwnerRestaurantDashboardView()
 </script>
 
@@ -22,6 +26,31 @@ const {
         <h1 class="owner-dash-title">{{ restaurant?.name ?? 'Dashboard' }}</h1>
         <p class="owner-dash-subtitle">Resumen de los últimos 7 días.</p>
       </div>
+
+      <section class="owner-widget-card" aria-labelledby="reservation-widget-title">
+        <div>
+          <p class="owner-widget-eyebrow">Widget de reservas</p>
+          <h2 id="reservation-widget-title">Reservas online para web y redes</h2>
+          <p class="owner-widget-copy">
+            Compartí el link directo o pegá el iframe en la web del restaurante. El cliente elige
+            fecha y horario, el sistema valida cupo y registra la reserva sin login.
+          </p>
+        </div>
+
+        <div class="owner-widget-actions">
+          <a class="owner-widget-link" :href="widgetUrl" target="_blank" rel="noopener noreferrer">
+            Abrir widget
+          </a>
+          <button class="owner-widget-button" type="button" @click="copyWidgetSnippet">
+            {{ widgetCopied ? 'Copiado' : 'Copiar iframe' }}
+          </button>
+        </div>
+
+        <label class="owner-widget-snippet">
+          <span>Código para insertar</span>
+          <textarea :value="widgetIframeSnippet" readonly rows="3" />
+        </label>
+      </section>
 
       <!-- KPIs -->
       <div class="owner-dash-kpis">

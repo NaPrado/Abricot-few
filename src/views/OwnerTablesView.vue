@@ -112,7 +112,12 @@ onMounted(loadTables)
         <h1 class="owner-sub-title">Mesas</h1>
         <p class="owner-sub-desc">Administrá la capacidad y disponibilidad de tus mesas.</p>
       </div>
-      <button type="button" class="tables-view-btn" @click="openCreateModal">
+      <button
+        v-if="!loading && tables.length > 0"
+        type="button"
+        class="tables-view-btn"
+        @click="openCreateModal"
+      >
         + Agregar mesas
       </button>
     </div>
