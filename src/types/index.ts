@@ -17,7 +17,7 @@ export * from './analytics'
 import type { AnalyticsPeriodType, AnalyticsQueryType, MetricsAnalyticsResponseType, OrdersAnalyticsResponseType, OrdersByStatusPointType, RevenueByDayPointType } from './analytics'
 import type { AuthResponseType, LoginRequestType, RefreshTokenResponseType, RegisterRequestType } from './auth'
 import type { AvailabilityQueryType, AvailabilityResponseType, AvailabilitySlotType, TableAssignmentType } from './availability'
-import type { BusinessHourInputType, BusinessHourType, UpdateBusinessHoursRequestType } from './businessHours'
+import type { BusinessHourInputType, BusinessHourRangeType, BusinessHourType, UpdateBusinessHoursRequestType } from './businessHours'
 import type { ApiErrorResponseType, ApiIdType, PaginatedResponseType, PaginationQueryType, QueryParamsType, QueryPrimitiveType, QueryValueType } from './common'
 import type { CityType, CountryType, CuisineType, NeighbourhoodType, PriceRangeType, ProvinceType } from './lookup'
 import type { CreateMenuCategoryRequestType, CreateMenuItemRequestType, CreateMenuRequestType, MenuCategoryType, MenuCategoryWithItemsType, MenuDetailType, MenuItemType, MenuType, UpdateMenuCategoryRequestType, UpdateMenuItemRequestType, UpdateMenuRequestType } from './menu'
@@ -47,6 +47,7 @@ export type TableAssignment = TableAssignmentType
 export type AvailabilitySlot = AvailabilitySlotType
 export type AvailabilityResponse = AvailabilityResponseType
 export type BusinessHour = BusinessHourType
+export type BusinessHourRange = BusinessHourRangeType
 export type BusinessHourInput = BusinessHourInputType
 export type UpdateBusinessHoursRequest = UpdateBusinessHoursRequestType
 export type ApiId = ApiIdType
