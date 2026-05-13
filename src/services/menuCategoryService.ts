@@ -4,12 +4,22 @@ import type {
   CreateMenuCategoryRequest,
   MenuCategory,
   MenuCategoryWithItems,
+  PaginatedResponse,
   UpdateMenuCategoryRequest,
 } from '@/types'
 
+type MenuCategoryListResponse = MenuCategory[] | PaginatedResponse<MenuCategory>
+
+function normalizeMenuCategoryList(response: MenuCategoryListResponse): MenuCategory[] {
+  if (Array.isArray(response)) return response
+  return response.data
+}
+
 export const menuCategoryService = {
   getByMenu: (restaurantId: ApiId, menuId: ApiId) =>
-    http.get<MenuCategory[]>(`/restaurants/${restaurantId}/menus/${menuId}/categories`),
+    http
+      .get<MenuCategoryListResponse>(`/restaurants/${restaurantId}/menus/${menuId}/categories`)
+      .then(normalizeMenuCategoryList),
   create: (restaurantId: ApiId, menuId: ApiId, payload: CreateMenuCategoryRequest) =>
     http.post<MenuCategory>(`/restaurants/${restaurantId}/menus/${menuId}/categories`, payload),
   getById: (restaurantId: ApiId, menuId: ApiId, categoryId: ApiId) =>
