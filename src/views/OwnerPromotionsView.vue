@@ -36,7 +36,7 @@ const {
       <div>
         <h1 class="owner-sub-title">Promociones</h1>
         <p class="owner-sub-desc">
-          Creá ofertas takeout. Para modificar una existente, eliminá y volvé a crear (la API no expone edición).
+          Creá ofertas para impulsar pedidos y destacar platos especiales de tu restaurante.
         </p>
       </div>
       <button type="button" class="owner-promos-new-btn" @click="openForm">+ Nueva promoción</button>
@@ -84,7 +84,8 @@ const {
       <div class="owner-promos-menu-section">
         <div class="owner-promos-menu-title">Platos en alcance (opcional)</div>
         <p class="owner-promos-menu-hint">
-          Si no marcás ninguno, el backend aplica la regla general del local. Los UUID deben ser ítems de este restaurante.
+          Elegí los platos donde querés aplicar esta promoción. Si no seleccionás ninguno,
+          se aplicará a todo el restaurante.
         </p>
         <div v-if="menuPickLoading" class="owner-promos-menu-loading">Cargando carta…</div>
         <div v-else-if="menuPickItems.length === 0" class="owner-promos-menu-empty">No hay ítems en la carta.</div>

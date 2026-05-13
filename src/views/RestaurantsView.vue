@@ -39,9 +39,16 @@ const {
     <div class="restaurants-view-head">
       <div class="restaurants-view-header">
         <h1 class="restaurants-view-title">Mis restaurantes</h1>
-        <p class="restaurants-view-sub">Seleccioná un local para ver su panel de control.</p>
+        <p v-if="restaurants.length > 0" class="restaurants-view-sub">
+          Seleccioná un local para ver su panel de control.
+        </p>
       </div>
-      <button type="button" class="restaurants-view-new-btn" @click="openCreate">
+      <button
+        v-if="restaurants.length > 0"
+        type="button"
+        class="restaurants-view-new-btn"
+        @click="openCreate"
+      >
         + Crear restaurante
       </button>
     </div>
