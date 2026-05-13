@@ -30,6 +30,12 @@ export function useOwnerRestaurantDashboardView() {
   const recentReservations = ref<Reservation[]>([])
   const recentOrders = ref<Order[]>([])
   const loading = ref(true)
+  const widgetCopied = ref(false)
+
+  const widgetUrl = computed(() => `${window.location.origin}/widgets/reservas/${restaurantId}`)
+  const widgetIframeSnippet = computed(() => (
+    `<iframe src="${widgetUrl.value}" width="100%" height="640" style="border:0;border-radius:8px" loading="lazy"></iframe>`
+  ))
 
   const revenueMax = computed(() => {
     const days = orders.value?.revenueByDay
@@ -48,6 +54,18 @@ export function useOwnerRestaurantDashboardView() {
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return '—'
     return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  async function copyWidgetSnippet(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(widgetIframeSnippet.value)
+      widgetCopied.value = true
+      window.setTimeout(() => {
+        widgetCopied.value = false
+      }, 2000)
+    } catch {
+      widgetCopied.value = false
+    }
   }
 
   onMounted(async () => {
@@ -100,8 +118,12 @@ export function useOwnerRestaurantDashboardView() {
     recentReservations,
     recentOrders,
     loading,
+    widgetCopied,
+    widgetUrl,
+    widgetIframeSnippet,
     revenueMax,
     formatMoney,
     formatTime,
+    copyWidgetSnippet,
   }
 }

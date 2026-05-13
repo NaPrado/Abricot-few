@@ -11,20 +11,26 @@ const hours = ref<BusinessHour[]>([])
 const loading = ref(true)
 const saving = ref(false)
 const success = ref(false)
-const error = ref('')
+const loadError = ref('')
+const saveError = ref('')
+
+function normalizeTime(value: string | null): string | null {
+  if (!value) return null
+  return value.slice(0, 5)
+}
 
 // Computed property to check if all open days have valid times
 const isValid = computed(() => {
   return hours.value.every(h => {
     if (h.isClosed) return true
-    return h.opensAt && h.closesAt && h.opensAt < h.closesAt
+    return h.opensAt && h.closesAt && h.opensAt !== h.closesAt
   })
 })
 
 async function save() {
   saving.value = true
   success.value = false
-  error.value = ''
+  saveError.value = ''
   try {
     // Validate that all open days have times
     for (const h of hours.value) {
@@ -32,31 +38,42 @@ async function save() {
         if (!h.opensAt || !h.closesAt) {
           throw new Error(`${h.dayName}: debes ingresar hora de apertura y cierre`)
         }
-        // Validate that opening time is before closing time
-        if (h.opensAt >= h.closesAt) {
-          throw new Error(`${h.dayName}: la hora de apertura debe ser anterior al cierre`)
+        if (h.opensAt === h.closesAt) {
+          throw new Error(`${h.dayName}: apertura y cierre no pueden ser iguales`)
         }
       }
     }
 
     const payload = {
       hours: hours.value.map(h => {
-        const hour: Record<string, any> = {
+        const hour: {
+          dayOfWeek: BusinessHour['dayOfWeek']
+          isClosed: boolean
+          opensAt?: string
+          closesAt?: string
+        } = {
           dayOfWeek: h.dayOfWeek,
           isClosed: h.isClosed,
         }
         // Only include opensAt/closesAt if not closed
         if (!h.isClosed) {
-          hour.opensAt = h.opensAt
-          hour.closesAt = h.closesAt
+          const opensAt = h.opensAt
+          const closesAt = h.closesAt
+          if (opensAt && closesAt) {
+            hour.opensAt = opensAt.slice(0, 5)
+            hour.closesAt = closesAt.slice(0, 5)
+          }
         }
         return hour
       }),
     }
-    
-    console.log('Saving business hours:', payload)
-    const result = await businessHoursService.updateByRestaurant(restaurantId, payload)
-    console.log('Save result:', result)
+
+    hours.value = (await businessHoursService.updateByRestaurant(restaurantId, payload))
+      .map(h => ({
+        ...h,
+        opensAt: normalizeTime(h.opensAt),
+        closesAt: normalizeTime(h.closesAt),
+      }))
     
     success.value = true
     // Clear success message after 3 seconds
@@ -64,8 +81,7 @@ async function save() {
       success.value = false
     }, 3000)
   } catch (e) {
-    console.error('Error saving business hours:', e)
-    error.value = e instanceof Error ? e.message : 'Error al guardar horarios'
+    saveError.value = e instanceof Error ? e.message : 'Error al guardar horarios'
   } finally {
     saving.value = false
   }
@@ -73,14 +89,16 @@ async function save() {
 
 onMounted(async () => {
   loading.value = true
-  error.value = ''
+  loadError.value = ''
   try {
-    console.log('Loading business hours for restaurant:', restaurantId)
-    hours.value = await businessHoursService.getByRestaurant(restaurantId)
-    console.log('Loaded hours:', hours.value)
+    hours.value = (await businessHoursService.getByRestaurant(restaurantId))
+      .map(h => ({
+        ...h,
+        opensAt: normalizeTime(h.opensAt),
+        closesAt: normalizeTime(h.closesAt),
+      }))
   } catch (e) {
-    console.error('Error loading business hours:', e)
-    error.value = e instanceof Error ? e.message : 'Error al cargar horarios'
+    loadError.value = e instanceof Error ? e.message : 'Error al cargar horarios'
   } finally {
     loading.value = false
   }
@@ -97,11 +115,11 @@ onMounted(async () => {
       <span>Cargando horarios…</span>
     </div>
 
-    <div v-else-if="error" class="hours-error">
+    <div v-else-if="loadError" class="hours-error">
       <span class="hours-error-icon">⚠</span>
       <div>
         <div class="hours-error-title">Error</div>
-        <div class="hours-error-message">{{ error }}</div>
+        <div class="hours-error-message">{{ loadError }}</div>
       </div>
     </div>
 
@@ -138,11 +156,18 @@ onMounted(async () => {
       </div>
 
       <div class="hours-actions">
+        <div v-if="saveError" class="hours-error hours-error--inline">
+          <span class="hours-error-icon">⚠</span>
+          <div>
+            <div class="hours-error-title">No se pudo guardar</div>
+            <div class="hours-error-message">{{ saveError }}</div>
+          </div>
+        </div>
         <div v-if="success" class="hours-success">
           <span class="hours-success-icon">✓</span>
           <span>Horarios guardados correctamente</span>
         </div>
-        <button class="hours-save-btn" :disabled="saving || !isValid" @click="save" :title="!isValid ? 'Completa todos los horarios de los días abiertos' : ''">
+        <button class="hours-save-btn" :disabled="saving || !isValid" @click="save" :title="!isValid ? 'Completá horarios válidos para los días abiertos' : ''">
           <span v-if="saving" class="hours-btn-spinner"></span>
           {{ saving ? 'Guardando…' : 'Guardar horarios' }}
         </button>
@@ -219,6 +244,10 @@ onMounted(async () => {
 .hours-error-message {
   font-size: 0.875rem;
   color: #ff8888;
+}
+
+.hours-error--inline {
+  margin-bottom: 0;
 }
 
 /* Container */

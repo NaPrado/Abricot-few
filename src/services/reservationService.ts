@@ -33,6 +33,15 @@ export const reservationService = {
       ...payload,
       source: 'ONLINE',
     }),
+  createPublic: (restaurantId: ApiId, payload: CreateReservationRequest) =>
+    http.post<Reservation>(
+      `/restaurants/${restaurantId}/public-reservations`,
+      {
+        ...payload,
+        source: 'ONLINE',
+      },
+      { authMode: 'none' },
+    ),
   createAdmin: (restaurantId: ApiId, payload: CreateAdminReservationRequest) =>
     http.post<Reservation>(`/restaurants/${restaurantId}/reservations`, payload),
   getByRestaurant: (restaurantId: ApiId, query?: RestaurantReservationsQuery) =>
