@@ -26,7 +26,7 @@ import type { CreateOrderRequestItemType, CreateOrderRequestType, OrderItemType,
 import type { CreatePromotionRequestType, DiscountTypeType, PromotionItemType, PromotionListResponseType, PromotionType } from './promotion'
 import type { CancelReservationRequestType, CreateAdminReservationRequestType, CreateReservationRequestType, ReservationSourceType, ReservationStatusType, ReservationTableType, ReservationType, RestaurantReservationsQueryType, RestaurantReservationsResponseType } from './reservation'
 import type { RestaurantCityType, RestaurantCountryType, RestaurantCreateRequestType, RestaurantCuisineTypeType, RestaurantListQueryType, RestaurantListResponseType, RestaurantMyReviewPutRequestType, RestaurantMyReviewResponseType, RestaurantNeighbourhoodType, RestaurantPriceRangeType, RestaurantProvinceType, RestaurantType, RestaurantUpdateRequestType, ReviewScoreType } from './restaurant'
-import type { BulkCreateTablesGroupType, BulkCreateTablesRequestType, BulkCreateTablesResponseType, CreateTableRequestType, TableType, UpdateTableRequestType } from './table'
+import type { BulkCreateTablesGroupType, BulkCreateTablesRequestType, BulkCreateTablesResponseType, CreateTableRequestType, PaginatedTableListResponseType, TableType, UpdateTableRequestType } from './table'
 import type { MyRestaurantsResponseType, UpdatePasswordRequestType, UpdatePasswordResponseType, UpdateUserMeRequestType, UserProfileResponseType, UserProfileType, UserRoleType, UserType } from './user'
 
 export type AnalyticsQuery = AnalyticsQueryType
@@ -117,6 +117,7 @@ export type UpdateTableRequest = UpdateTableRequestType
 export type BulkCreateTablesGroup = BulkCreateTablesGroupType
 export type BulkCreateTablesRequest = BulkCreateTablesRequestType
 export type BulkCreateTablesResponse = BulkCreateTablesResponseType
+export type PaginatedTableListResponse = PaginatedTableListResponseType
 export type UserProfileResponse = UserProfileResponseType
 export type UpdateUserMeRequest = UpdateUserMeRequestType
 export type UpdatePasswordRequest = UpdatePasswordRequestType

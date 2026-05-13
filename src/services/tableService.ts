@@ -4,13 +4,14 @@ import type {
   BulkCreateTablesRequest,
   BulkCreateTablesResponse,
   CreateTableRequest,
+  PaginatedTableListResponse,
   Table,
   UpdateTableRequest,
 } from '@/types'
 
 export const tableService = {
   getByRestaurant: (restaurantId: ApiId) =>
-    http.get<Table[]>(`/restaurants/${restaurantId}/tables`),
+    http.get<PaginatedTableListResponse>(`/restaurants/${restaurantId}/tables`),
   create: (restaurantId: ApiId, payload: CreateTableRequest) =>
     http.post<Table>(`/restaurants/${restaurantId}/tables`, payload),
   bulkCreate: (restaurantId: ApiId, payload: BulkCreateTablesRequest) =>
