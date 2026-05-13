@@ -243,3 +243,40 @@
   color: var(--text-muted);
   font-size: 0.875rem;
 }
+
+.explore-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.explore-page-btn {
+  background: transparent;
+  border: 1px solid #111;
+  color: #444;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--dur-fast);
+}
+
+.explore-page-btn:hover:not(:disabled) {
+  border-color: #333;
+  color: #aaa;
+}
+
+.explore-page-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.explore-page-info {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 4rem;
+  text-align: center;
+}

@@ -8,4 +8,5 @@ export interface RestaurantListQueryType extends PaginationQueryType {
   neighbourhoodId?: ApiIdType
   priceRangeId?: ApiIdType
   cuisineTypeIds?: ApiIdType | ApiIdType[]
+  sort?: string
 }
