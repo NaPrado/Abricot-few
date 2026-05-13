@@ -1,86 +1,130 @@
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, onMounted, ref, toRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { restaurantService } from '@/services'
+import { useLookupStore } from '@/stores/lookupStore'
 import { debugError, debugSection } from '@/utils/debug'
+import { ensureRestaurantLookupCatalogues, hydrateRestaurantList } from '@/utils/restaurantHydration'
 import { extractRestaurantList } from '@/utils/restaurantResponses'
-import {
-  ensureRestaurantLookupCatalogues,
-  hydrateRestaurantList,
-} from '@/utils/restaurantHydration'
 import type { Restaurant } from '@/types'
 
-const PRICE_OPTIONS = ['Todos', '$', '$$', '$$$', '$$$$']
-const CUISINE_TAGS = ['Todas', 'Parrilla', 'Japonés', 'Café', 'Vegano', 'Italiano', 'Mexicano', 'Árabe']
 const SORT_OPTIONS = [
-  { label: 'Relevancia', value: 'relevance' },
+  { label: 'Relevancia', value: 'name' },
   { label: 'Mejor calificación', value: 'rating' },
   { label: 'Más nuevos', value: 'newest' },
 ]
+const PER_PAGE = 24
 
 export function useExploreView() {
   const route = useRoute()
   const router = useRouter()
+  const lookupStore = useLookupStore()
 
   const restaurants = ref<Restaurant[]>([])
   const loading = ref(true)
+  const total = ref(0)
+
   const searchQuery = ref((route.query.q as string) ?? '')
-  const activeSort = ref('relevance')
-  const activeCuisine = ref('Todas')
-  const activePrice = ref('Todos')
-  const openNow = ref(false)
+  const activeSort = ref((route.query.sort as string) ?? 'name')
+  const selectedCuisineId = ref<string | null>((route.query.cuisine as string) ?? null)
+  const selectedPriceRangeId = ref<string | null>((route.query.price as string) ?? null)
+  const page = ref(Number(route.query.page) || 1)
 
-  const total = computed(() => restaurants.value.length)
-
-  const filtered = computed(() => {
-    let list = restaurants.value
-    if (activeCuisine.value !== 'Todas') {
-      list = list.filter(r => (r.cuisineTypes ?? []).some(c => c.label.includes(activeCuisine.value)))
-    }
-    if (activePrice.value !== 'Todos') {
-      list = list.filter(r => r.priceRange?.label === activePrice.value)
-    }
-    return list
-  })
+  const totalPages = computed(() => (total.value > 0 ? Math.ceil(total.value / PER_PAGE) : 1))
 
   async function load() {
     loading.value = true
-    debugSection('explore-view', 'loading public restaurants', {
-      page: 1,
-      perPage: 24,
-      name: searchQuery.value || null,
-    })
     try {
       await ensureRestaurantLookupCatalogues()
       const res = await restaurantService.getAll({
-        page: 1,
-        perPage: 24,
+        page: page.value,
+        perPage: PER_PAGE,
         name: searchQuery.value || undefined,
+        sort: activeSort.value,
+        cuisineTypeIds: selectedCuisineId.value ?? undefined,
+        priceRangeId: selectedPriceRangeId.value ?? undefined,
       })
       const list = extractRestaurantList(res, 'explore-view')
       restaurants.value = hydrateRestaurantList(list)
-      debugSection('explore-view', 'public restaurants loaded', {
-        count: restaurants.value.length,
-        response: res,
-      })
+      total.value = res.total
+      debugSection('explore-view', 'loaded', { count: restaurants.value.length, total: total.value })
     } catch (error) {
-      debugError('explore-view', 'failed to load public restaurants', { error })
+      debugError('explore-view', 'failed to load', { error })
       restaurants.value = []
+      total.value = 0
     } finally {
       loading.value = false
     }
   }
 
+  function syncUrl() {
+    void router.replace({
+      query: {
+        ...(searchQuery.value ? { q: searchQuery.value } : {}),
+        ...(activeSort.value !== 'name' ? { sort: activeSort.value } : {}),
+        ...(selectedCuisineId.value ? { cuisine: selectedCuisineId.value } : {}),
+        ...(selectedPriceRangeId.value ? { price: selectedPriceRangeId.value } : {}),
+        ...(page.value > 1 ? { page: String(page.value) } : {}),
+      },
+    })
+  }
+
   function handleSearch(e: Event) {
     e.preventDefault()
-    void router.replace({ query: { q: searchQuery.value || undefined } })
+    page.value = 1
+    syncUrl()
+    void load()
+  }
+
+  function selectCuisine(id: string | null) {
+    selectedCuisineId.value = id
+    page.value = 1
+    syncUrl()
+    void load()
+  }
+
+  function selectPrice(id: string | null) {
+    selectedPriceRangeId.value = id
+    page.value = 1
+    syncUrl()
+    void load()
+  }
+
+  function setSort(value: string) {
+    activeSort.value = value
+    page.value = 1
+    syncUrl()
+    void load()
+  }
+
+  function goToPage(p: number) {
+    page.value = p
+    syncUrl()
     void load()
   }
 
   watch(
-    () => route.query.q,
+    () => route.query,
     (q) => {
-      searchQuery.value = (q as string) ?? ''
-      void load()
+      const newQ = (q.q as string) ?? ''
+      const newSort = (q.sort as string) ?? 'name'
+      const newCuisine = (q.cuisine as string) ?? null
+      const newPrice = (q.price as string) ?? null
+      const newPage = Number(q.page) || 1
+
+      if (
+        newQ !== searchQuery.value ||
+        newSort !== activeSort.value ||
+        newCuisine !== selectedCuisineId.value ||
+        newPrice !== selectedPriceRangeId.value ||
+        newPage !== page.value
+      ) {
+        searchQuery.value = newQ
+        activeSort.value = newSort
+        selectedCuisineId.value = newCuisine
+        selectedPriceRangeId.value = newPrice
+        page.value = newPage
+        void load()
+      }
     },
   )
 
@@ -89,16 +133,20 @@ export function useExploreView() {
   return {
     restaurants,
     loading,
+    total,
+    totalPages,
+    page,
     searchQuery,
     activeSort,
-    activeCuisine,
-    activePrice,
-    openNow,
-    total,
-    filtered,
-    cuisineTags: CUISINE_TAGS,
-    priceOptions: PRICE_OPTIONS,
+    selectedCuisineId,
+    selectedPriceRangeId,
+    cuisines: toRef(lookupStore, 'cuisines'),
+    priceRanges: toRef(lookupStore, 'priceRanges'),
     sortOptions: SORT_OPTIONS,
     handleSearch,
+    selectCuisine,
+    selectPrice,
+    setSort,
+    goToPage,
   }
 }

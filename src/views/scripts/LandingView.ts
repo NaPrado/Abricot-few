@@ -1,6 +1,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { restaurantService } from '@/services'
+import { useLookupStore } from '@/stores/lookupStore'
 import { debugError, debugSection } from '@/utils/debug'
 import { extractRestaurantList } from '@/utils/restaurantResponses'
 import type { Restaurant } from '@/types'
@@ -16,6 +17,7 @@ const HERO_PHRASES = [
 
 export function useLandingView() {
   const router = useRouter()
+  const lookupStore = useLookupStore()
   const restaurants = ref<Restaurant[]>([])
   const loading = ref(true)
   const searchQuery = ref('')
@@ -26,8 +28,14 @@ export function useLandingView() {
   const phraseVisible = ref(true)
 
   const tags = ['Todos', 'Parrilla', 'Japonés', 'Café', 'Vegano']
-  const neighbourhoodOptions = ['Todos', 'Palermo', 'San Telmo', 'Recoleta', 'Belgrano']
-  const typeOptions = ['Todos', 'Parrilla', 'Japonés', 'Café', 'Vegano']
+  const neighbourhoodOptions = [
+    'Todos', 'Palermo', 'San Telmo', 'Recoleta', 'Belgrano', 'Caballito', 'Núñez',
+    'Villa Urquiza', 'San Nicolás', 'Monserrat', 'La Boca', 'Barracas', 'Puerto Madero',
+    'Almagro', 'Villa Crespo', 'Flores', 'Balvanera', 'Once', 'Liniers', 'Mataderos',
+    'Villa del Parque', 'Colegiales', 'Chacarita', 'Parque Patricios', 'Saavedra',
+    'Villa Real', 'Versalles',
+  ]
+  const typeOptions = computed(() => ['Todos', ...lookupStore.cuisines.map(c => c.label)])
 
   const phrase = computed<{ top: string; accent: string }>(() =>
     HERO_PHRASES[phraseIdx.value] ?? HERO_PHRASES[0] ?? { top: '', accent: '' },
@@ -60,7 +68,17 @@ export function useLandingView() {
 
   function handleSearch(e: Event) {
     e.preventDefault()
-    void router.push({ path: '/explore', query: { q: searchQuery.value } })
+    const selectedCuisine =
+      searchType.value !== 'Todos'
+        ? lookupStore.cuisines.find(c => c.label === searchType.value)
+        : undefined
+    void router.push({
+      path: '/explore',
+      query: {
+        ...(searchQuery.value ? { q: searchQuery.value } : {}),
+        ...(selectedCuisine ? { cuisine: selectedCuisine.id } : {}),
+      },
+    })
   }
 
   function navigateToExplore() {
@@ -90,6 +108,7 @@ export function useLandingView() {
 
   onMounted(() => {
     void loadRestaurants()
+    void lookupStore.ensureCuisines()
     startPhraseRotation()
   })
 
