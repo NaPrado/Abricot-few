@@ -233,9 +233,11 @@ const {
 
 /* Range row */
 .hours-range-row {
+  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 0.75rem;
+  padding-right: 36px; /* reserve space for the remove button without shrinking inputs */
 }
 
 .hours-time-group {
@@ -243,7 +245,6 @@ const {
   flex-direction: column;
   gap: 0.35rem;
   flex: 1;
-  min-width: 0;
 }
 
 .hours-time-label {
@@ -280,6 +281,9 @@ const {
 }
 
 .hours-range-remove {
+  position: absolute;
+  right: 0;
+  bottom: 1px;
   background: transparent;
   border: 1px solid #2a1515;
   color: #884444;
@@ -292,9 +296,7 @@ const {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   padding-bottom: 2px;
-  margin-bottom: 1px;
   transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
 }
 .hours-range-remove:hover { background: #2a1010; border-color: #aa3333; color: #ff6b6b; }
