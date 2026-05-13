@@ -3,6 +3,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { restaurantService } from '@/services'
 import { debugError, debugSection } from '@/utils/debug'
 import { extractRestaurantList } from '@/utils/restaurantResponses'
+import {
+  ensureRestaurantLookupCatalogues,
+  hydrateRestaurantList,
+} from '@/utils/restaurantHydration'
 import type { Restaurant } from '@/types'
 
 const PRICE_OPTIONS = ['Todos', '$', '$$', '$$$', '$$$$']
@@ -46,12 +50,14 @@ export function useExploreView() {
       name: searchQuery.value || null,
     })
     try {
+      await ensureRestaurantLookupCatalogues()
       const res = await restaurantService.getAll({
         page: 1,
         perPage: 24,
         name: searchQuery.value || undefined,
       })
-      restaurants.value = extractRestaurantList(res, 'explore-view')
+      const list = extractRestaurantList(res, 'explore-view')
+      restaurants.value = hydrateRestaurantList(list)
       debugSection('explore-view', 'public restaurants loaded', {
         count: restaurants.value.length,
         response: res,

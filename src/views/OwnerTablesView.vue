@@ -1,34 +1,38 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { HttpError } from '@/services/http'
 import { tableService } from '@/services'
+import { useToast } from '@/composables'
 import BaseModal from '@/components/base/BaseModal.vue'
-import type { Table, CreateTableRequest } from '@/types'
+import type { Table } from '@/types'
 
 const route = useRoute()
 const restaurantId = route.params.restaurantId as string
+const toast = useToast()
 
 const tables = ref<Table[]>([])
 const loading = ref(true)
 
-// Modal state
 const showCreateModal = ref(false)
 const createLoading = ref(false)
 const createError = ref('')
 
-// Form fields
 const formQuantity = ref(1)
 const formCapacity = ref(2)
 const formIsJoinable = ref(true)
-const formName = ref('')
 
 async function loadTables() {
   loading.value = true
   try {
     const response = await tableService.getByRestaurant(restaurantId)
-    tables.value = response.data
-  } catch {
-    // silently degrade
+    tables.value = response.data.slice().sort((a, b) => a.number - b.number)
+  } catch (e) {
+    if (e instanceof HttpError && (e.status === 401 || e.status === 403)) {
+      toast.show('No tenés permisos para ver las mesas.', 'error')
+    } else {
+      toast.show('No pudimos cargar las mesas.', 'error')
+    }
   } finally {
     loading.value = false
   }
@@ -41,19 +45,38 @@ async function toggleActive(table: Table) {
   try {
     await tableService.update(restaurantId, table.id, {
       number: table.number,
-      name: table.name ?? undefined,
+      ...(table.name ? { name: table.name } : {}),
       capacity: table.capacity,
       isJoinable: table.isJoinable,
       isActive: updated.isActive,
     })
-  } catch {
+  } catch (e) {
     if (idx !== -1) tables.value[idx] = table
+    if (e instanceof HttpError && e.status === 409) {
+      toast.show('Esa mesa ya tiene reservas activas y no se puede desactivar.', 'error')
+      return
+    }
+    toast.show('No pudimos actualizar la mesa.', 'error')
+  }
+}
+
+async function removeTable(table: Table) {
+  if (!window.confirm(`¿Eliminar la mesa ${table.number}?`)) return
+  try {
+    await tableService.delete(restaurantId, table.id)
+    tables.value = tables.value.filter(t => t.id !== table.id)
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 409) {
+      toast.show('La mesa tiene reservas activas y no se puede eliminar.', 'error')
+      return
+    }
+    toast.show('No pudimos eliminar la mesa.', 'error')
   }
 }
 
 async function submitCreateTables() {
   createError.value = ''
-  
+
   if (formQuantity.value < 1 || formCapacity.value < 1) {
     createError.value = 'La cantidad y capacidad deben ser mayor a 0'
     return
@@ -61,29 +84,37 @@ async function submitCreateTables() {
 
   createLoading.value = true
   try {
-    // Find the next available table number
-    const maxNumber = tables.value.length > 0 
-      ? Math.max(...tables.value.map(t => t.number))
-      : 0
-    
-    // Create tables sequentially
-    for (let i = 0; i < formQuantity.value; i++) {
-      const payload: CreateTableRequest = {
-        number: maxNumber + i + 1,
+    if (formQuantity.value === 1) {
+      const maxNumber = tables.value.reduce((max, t) => (t.number > max ? t.number : max), 0)
+      await tableService.create(restaurantId, {
+        number: maxNumber + 1,
         capacity: formCapacity.value,
         isJoinable: formIsJoinable.value,
         isActive: true,
-        name: formName.value ? `${formName.value} ${i + 1}` : undefined,
-      }
-      await tableService.create(restaurantId, payload)
+      })
+    } else {
+      await tableService.bulkCreate(restaurantId, {
+        groups: [
+          {
+            quantity: formQuantity.value,
+            capacity: formCapacity.value,
+            isJoinable: formIsJoinable.value,
+          },
+        ],
+      })
     }
-    
-    // Reload tables and close modal
+
     await loadTables()
     closeCreateModal()
-  } catch (error) {
-    createError.value = 'Error al crear mesas. Intenta de nuevo.'
-    console.error('Error creating tables:', error)
+    toast.show('Mesas creadas correctamente.', 'success')
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 409) {
+      createError.value = 'Hay números de mesa duplicados. Probá con otro rango.'
+    } else if (e instanceof HttpError && e.status === 400) {
+      createError.value = e.message || 'Datos inválidos para crear mesas.'
+    } else {
+      createError.value = 'No pudimos crear las mesas. Intentá de nuevo.'
+    }
   } finally {
     createLoading.value = false
   }
@@ -99,7 +130,6 @@ function closeCreateModal() {
   formQuantity.value = 1
   formCapacity.value = 2
   formIsJoinable.value = true
-  formName.value = ''
 }
 
 onMounted(loadTables)
@@ -148,6 +178,7 @@ onMounted(loadTables)
             <span class="owner-toggle-thumb" />
           </label>
         </div>
+        <button type="button" class="table-card-remove" @click="removeTable(t)">Eliminar</button>
       </div>
     </div>
 
@@ -177,17 +208,6 @@ onMounted(loadTables)
               min="1"
               max="20"
               required
-              autocomplete="off"
-            />
-          </label>
-
-          <label class="table-create-field">
-            <span>Nombre personalizado (opcional)</span>
-            <input
-              v-model="formName"
-              type="text"
-              placeholder="ej: Terraza, Ventanal"
-              maxlength="50"
               autocomplete="off"
             />
           </label>
@@ -364,6 +384,24 @@ onMounted(loadTables)
 .owner-toggle input:checked ~ .owner-toggle-thumb {
   transform: translateX(16px);
   background: #000;
+}
+
+.table-card-remove {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 0.6875rem;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.table-card-remove:hover {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.45);
 }
 
 /* Modal styles */

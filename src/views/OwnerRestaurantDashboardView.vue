@@ -15,6 +15,10 @@ const {
   formatMoney,
   formatTime,
   copyWidgetSnippet,
+  photoUploading,
+  deleteSubmitting,
+  uploadPhoto,
+  deleteRestaurant,
 } = useOwnerRestaurantDashboardView()
 </script>
 
@@ -23,8 +27,22 @@ const {
     <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando panel…</div>
     <template v-else>
       <div class="owner-dash-header">
-        <h1 class="owner-dash-title">{{ restaurant?.name ?? 'Dashboard' }}</h1>
-        <p class="owner-dash-subtitle">Resumen de los últimos 7 días.</p>
+        <div>
+          <h1 class="owner-dash-title">{{ restaurant?.name ?? 'Dashboard' }}</h1>
+          <p class="owner-dash-subtitle">Resumen de los últimos 7 días.</p>
+        </div>
+        <div class="owner-dash-header-actions">
+          <label class="owner-dash-action-btn" :class="{ 'owner-dash-action-btn--busy': photoUploading }">
+            <input type="file" accept="image/*" :disabled="photoUploading" hidden @change="uploadPhoto" />
+            <span>{{ photoUploading ? 'Subiendo…' : 'Cambiar foto' }}</span>
+          </label>
+          <button
+            type="button"
+            class="owner-dash-action-btn owner-dash-action-btn--danger"
+            :disabled="deleteSubmitting"
+            @click="deleteRestaurant"
+          >{{ deleteSubmitting ? 'Eliminando…' : 'Eliminar restaurante' }}</button>
+        </div>
       </div>
 
       <section class="owner-widget-card" aria-labelledby="reservation-widget-title">
@@ -189,3 +207,13 @@ const {
 </template>
 
 <style src="./styles/OwnerRestaurantDashboardView.css" scoped></style>
+<style scoped>
+.owner-dash-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.owner-dash-header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.owner-dash-action-btn { font-family: inherit; font-size: 0.75rem; padding: 0.5rem 0.875rem; border-radius: var(--radius-md); border: 1px solid var(--border-default); background: var(--bg-input); color: var(--text-secondary); cursor: pointer; transition: border-color var(--dur-fast); }
+.owner-dash-action-btn:hover { border-color: var(--brand-border-hover); color: var(--brand-hover); }
+.owner-dash-action-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.owner-dash-action-btn--busy { opacity: 0.7; }
+.owner-dash-action-btn--danger { border-color: rgba(239, 68, 68, 0.25); color: var(--danger); }
+.owner-dash-action-btn--danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.06); border-color: rgba(239, 68, 68, 0.45); }
+</style>

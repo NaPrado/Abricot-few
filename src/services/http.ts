@@ -3,6 +3,7 @@ import { debugError, debugSection, debugWarn, redactAuthPayload } from '@/utils/
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 export const AUTH_EXPIRED_EVENT = 'abricot:auth-expired'
+const ACCESS_TOKEN_REFRESH_PATH = '/access-tokens'
 
 type AuthMode = 'access' | 'refresh' | 'none'
 
@@ -11,6 +12,8 @@ interface HttpRequestOptions {
   /** Typed query DTOs are passed through at runtime; `object` avoids index-signature friction */
   query?: object
   headers?: Record<string, string>
+  /** Internal: set to true once a request has already been retried after a refresh. */
+  _retried?: boolean
 }
 
 export class HttpError extends Error {
@@ -52,6 +55,39 @@ function handleExpiredSession(): void {
   window.setTimeout(() => {
     authExpiredEventSent = false
   }, 250)
+}
+
+let refreshInFlight: Promise<string | null> | null = null
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (refreshInFlight) return refreshInFlight
+
+  const refreshToken = localStorage.getItem('refresh_token')
+  if (!refreshToken) return null
+
+  refreshInFlight = (async () => {
+    try {
+      const response = await fetch(`${BASE_URL}${ACCESS_TOKEN_REFRESH_PATH}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${refreshToken}` },
+      })
+      if (!response.ok) {
+        debugWarn('http', 'refresh failed', { status: response.status })
+        return null
+      }
+      const data = (await response.json().catch(() => null)) as { accessToken?: string } | null
+      if (!data?.accessToken) return null
+      localStorage.setItem('access_token', data.accessToken)
+      return data.accessToken
+    } catch (error) {
+      debugError('http', 'refresh threw', { error })
+      return null
+    } finally {
+      refreshInFlight = null
+    }
+  })()
+
+  return refreshInFlight
 }
 
 function appendPrimitive(searchParams: URLSearchParams, key: string, value: QueryPrimitive): void {
@@ -222,6 +258,14 @@ async function request<T>(
     data: summarizeData(data),
   })
 
+  if (response.status === 401 && authMode === 'access' && !options._retried && path !== ACCESS_TOKEN_REFRESH_PATH) {
+    const refreshed = await refreshAccessToken()
+    if (refreshed) {
+      debugSection('http', `${debugRequestId} retrying after refresh`, { method, url })
+      return request<T>(method, path, body, { ...options, _retried: true })
+    }
+  }
+
   if (response.status === 401 && authMode !== 'none') {
     handleExpiredSession()
   }
@@ -295,6 +339,14 @@ async function upload<T>(
     durationMs: Date.now() - startedAt,
     data: summarizeData(data),
   })
+
+  if (response.status === 401 && authMode === 'access' && !options._retried) {
+    const refreshed = await refreshAccessToken()
+    if (refreshed) {
+      debugSection('http', `${debugRequestId} retrying upload after refresh`, { method, url })
+      return upload<T>(method, path, formData, { ...options, _retried: true })
+    }
+  }
 
   if (response.status === 401 && authMode !== 'none') {
     handleExpiredSession()

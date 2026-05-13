@@ -11,6 +11,7 @@ const {
   colorBg,
   cancelReservation,
   navigateToRestaurant,
+  restaurantNameFor,
 } = useMyReservationsView()
 </script>
 
@@ -35,7 +36,7 @@ const {
           :style="{ background: colorBg(r.restaurantId as string) }"
         />
         <div>
-          <div class="reservation-card-name">{{ r.restaurantName }}</div>
+          <div class="reservation-card-name">{{ restaurantNameFor(r) }}</div>
           <div class="reservation-card-meta">
             {{ formatDate(r.date) }} · {{ formatTime(r.timeSlot) }} · {{ r.partySize }} personas
           </div>
@@ -60,7 +61,7 @@ const {
           </div>
 
           <div class="reservation-modal-body">
-            <div class="reservation-modal-restaurant">{{ selected.restaurantName }}</div>
+            <div class="reservation-modal-restaurant">{{ restaurantNameFor(selected) }}</div>
 
             <div class="reservation-modal-grid">
               <div>

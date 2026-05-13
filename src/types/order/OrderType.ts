@@ -6,7 +6,8 @@ import type { OrderStatusType } from './OrderStatusType'
 export interface OrderType {
   id: ApiIdType
   restaurantId: ApiIdType
-  restaurantName: string
+  /** Optional client-side enrichment; swagger admin/user list does not include it. */
+  restaurantName?: string
   userId: ApiIdType
   status: OrderStatusType
   totalAmount: MoneyAmountType

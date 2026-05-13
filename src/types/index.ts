@@ -25,7 +25,7 @@ import type { NotificationPreferenceType, UpdateNotificationPreferenceRequestTyp
 import type { CreateOrderRequestItemType, CreateOrderRequestType, OrderItemType, OrderStatusType, OrderType, RestaurantOrderPatchRequestType, RestaurantOrdersQueryType, RestaurantOrdersResponseType } from './order'
 import type { CreatePromotionRequestType, DiscountTypeType, PromotionItemType, PromotionListResponseType, PromotionType } from './promotion'
 import type { CancelReservationRequestType, CreateAdminReservationRequestType, CreateReservationRequestType, ReservationSourceType, ReservationStatusType, ReservationTableType, ReservationType, RestaurantReservationsQueryType, RestaurantReservationsResponseType } from './reservation'
-import type { RestaurantCityType, RestaurantCountryType, RestaurantCreateRequestType, RestaurantCuisineTypeType, RestaurantListQueryType, RestaurantListResponseType, RestaurantMyReviewPutRequestType, RestaurantMyReviewResponseType, RestaurantNeighbourhoodType, RestaurantPriceRangeType, RestaurantProvinceType, RestaurantType, RestaurantUpdateRequestType, ReviewScoreType } from './restaurant'
+import type { RestaurantAdminAddRequestType, RestaurantAdminListResponseType, RestaurantAdminType, RestaurantCityType, RestaurantCountryType, RestaurantCreateRequestType, RestaurantCuisineTypeType, RestaurantListQueryType, RestaurantListResponseType, RestaurantMyReviewPutRequestType, RestaurantMyReviewResponseType, RestaurantNeighbourhoodType, RestaurantPriceRangeType, RestaurantProvinceType, RestaurantType, RestaurantUpdateRequestType, ReviewScoreType } from './restaurant'
 import type { BulkCreateTablesGroupType, BulkCreateTablesRequestType, BulkCreateTablesResponseType, CreateTableRequestType, PaginatedTableListResponseType, TableType, UpdateTableRequestType } from './table'
 import type { MyRestaurantsResponseType, UpdatePasswordRequestType, UpdatePasswordResponseType, UpdateUserMeRequestType, UserProfileResponseType, UserProfileType, UserRoleType, UserType } from './user'
 
@@ -111,6 +111,9 @@ export type RestaurantUpdateRequest = RestaurantUpdateRequestType
 export type ReviewScore = ReviewScoreType
 export type RestaurantMyReviewPutRequest = RestaurantMyReviewPutRequestType
 export type RestaurantMyReviewResponse = RestaurantMyReviewResponseType
+export type RestaurantAdmin = RestaurantAdminType
+export type RestaurantAdminAddRequest = RestaurantAdminAddRequestType
+export type RestaurantAdminListResponse = RestaurantAdminListResponseType
 export type Table = TableType
 export type CreateTableRequest = CreateTableRequestType
 export type UpdateTableRequest = UpdateTableRequestType

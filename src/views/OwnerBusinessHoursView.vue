@@ -14,6 +14,16 @@ const success = ref(false)
 const loadError = ref('')
 const saveError = ref('')
 
+const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+
+function dayNameFor(dayOfWeek: BusinessHour['dayOfWeek']): string {
+  return DAY_NAMES[dayOfWeek] ?? `Día ${dayOfWeek}`
+}
+
+function withDayName(h: BusinessHour): BusinessHour {
+  return { ...h, dayName: h.dayName ?? dayNameFor(h.dayOfWeek) }
+}
+
 function normalizeTime(value: string | null): string | null {
   if (!value) return null
   return value.slice(0, 5)
@@ -35,11 +45,12 @@ async function save() {
     // Validate that all open days have times
     for (const h of hours.value) {
       if (!h.isClosed) {
+        const label = h.dayName ?? dayNameFor(h.dayOfWeek)
         if (!h.opensAt || !h.closesAt) {
-          throw new Error(`${h.dayName}: debes ingresar hora de apertura y cierre`)
+          throw new Error(`${label}: debes ingresar hora de apertura y cierre`)
         }
         if (h.opensAt === h.closesAt) {
-          throw new Error(`${h.dayName}: apertura y cierre no pueden ser iguales`)
+          throw new Error(`${label}: apertura y cierre no pueden ser iguales`)
         }
       }
     }
@@ -69,7 +80,7 @@ async function save() {
     }
 
     hours.value = (await businessHoursService.updateByRestaurant(restaurantId, payload))
-      .map(h => ({
+      .map(h => withDayName({
         ...h,
         opensAt: normalizeTime(h.opensAt),
         closesAt: normalizeTime(h.closesAt),
@@ -92,11 +103,12 @@ onMounted(async () => {
   loadError.value = ''
   try {
     hours.value = (await businessHoursService.getByRestaurant(restaurantId))
-      .map(h => ({
+      .map(h => withDayName({
         ...h,
         opensAt: normalizeTime(h.opensAt),
         closesAt: normalizeTime(h.closesAt),
       }))
+      .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
   } catch (e) {
     loadError.value = e instanceof Error ? e.message : 'Error al cargar horarios'
   } finally {
@@ -127,7 +139,7 @@ onMounted(async () => {
       <div class="hours-container">
         <div v-for="h in hours" :key="h.id" class="hours-day-card">
           <div class="hours-day-header">
-            <div class="hours-day-name">{{ h.dayName }}</div>
+            <div class="hours-day-name">{{ h.dayName ?? dayNameFor(h.dayOfWeek) }}</div>
             <label class="owner-toggle">
               <input type="checkbox" :checked="!h.isClosed" @change="h.isClosed = !h.isClosed" />
               <span class="owner-toggle-track" />

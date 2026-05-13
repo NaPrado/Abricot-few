@@ -4,6 +4,10 @@ import { HttpError } from '@/services/http'
 import { restaurantService, availabilityService, reservationService, menuService, orderService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
 import { debugError, debugSection, debugWarn } from '@/utils/debug'
+import {
+  ensureRestaurantLookupCatalogues,
+  hydrateRestaurantWithLookups,
+} from '@/utils/restaurantHydration'
 import type { Restaurant, AvailabilitySlot, MenuDetail, MenuItem, ReviewScore } from '@/types'
 
 const TABS = ['Menú', 'Reservar', 'Para llevar'] as const
@@ -104,8 +108,9 @@ export function useRestaurantPublicView() {
     loading.value = true
     debugSection('restaurant-public', 'loading restaurant page', { restaurantId })
     try {
+      await ensureRestaurantLookupCatalogues()
       const rest = await restaurantService.getById(restaurantId)
-      restaurant.value = rest
+      restaurant.value = hydrateRestaurantWithLookups(rest)
       debugSection('restaurant-public', 'restaurant detail loaded', {
         restaurantId: rest.id,
         name: rest.name,

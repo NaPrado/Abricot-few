@@ -1,7 +1,7 @@
+/** Swagger flow: PENDING -> CONFIRMED -> READY -> COMPLETED. CANCELLED is terminal. */
 export type OrderStatusType =
   | 'PENDING'
   | 'CONFIRMED'
-  | 'IN_PREPARATION'
   | 'READY'
   | 'COMPLETED'
   | 'CANCELLED'

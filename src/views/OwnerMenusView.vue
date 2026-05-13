@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { HttpError } from '@/services/http'
 import { menuCategoryService, menuItemService, menuService } from '@/services'
+import { useToast } from '@/composables'
 import type { Menu, MenuDetail } from '@/types'
 
 const route = useRoute()
 const restaurantId = route.params.restaurantId as string
+const toast = useToast()
 
 const menus = ref<Menu[]>([])
 const selectedMenu = ref<MenuDetail | null>(null)
@@ -123,6 +126,92 @@ async function ensureItemCategory(): Promise<string | null> {
   }
   itemCategoryId.value = category.id
   return category.id
+}
+
+async function deleteMenu(menu: Menu) {
+  if (!window.confirm(`¿Eliminar el menú «${menu.name}»? Se eliminarán también sus categorías e ítems.`)) return
+  try {
+    await menuService.delete(restaurantId, menu.id)
+    menus.value = menus.value.filter(m => m.id !== menu.id)
+    if (selectedMenu.value?.id === menu.id) selectedMenu.value = null
+    toast.show('Menú eliminado.', 'success')
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 409) {
+      toast.show('No se puede eliminar el menú activo.', 'error')
+      return
+    }
+    toast.show('No pudimos eliminar el menú.', 'error')
+  }
+}
+
+async function deleteCategory(categoryId: string) {
+  if (!selectedMenu.value) return
+  if (!window.confirm('¿Eliminar la categoría y todos sus platos?')) return
+  try {
+    await menuCategoryService.delete(restaurantId, selectedMenu.value.id, categoryId)
+    selectedMenu.value = {
+      ...selectedMenu.value,
+      categories: selectedMenu.value.categories.filter(c => c.id !== categoryId),
+    }
+    if (itemCategoryId.value === categoryId) itemCategoryId.value = ''
+    toast.show('Categoría eliminada.', 'success')
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 409) {
+      toast.show('La categoría tiene ítems con pedidos asociados.', 'error')
+      return
+    }
+    toast.show('No pudimos eliminar la categoría.', 'error')
+  }
+}
+
+async function deleteItem(categoryId: string, itemId: string) {
+  if (!selectedMenu.value) return
+  if (!window.confirm('¿Eliminar este plato?')) return
+  try {
+    await menuItemService.delete(restaurantId, selectedMenu.value.id, categoryId, itemId)
+    selectedMenu.value = {
+      ...selectedMenu.value,
+      categories: selectedMenu.value.categories.map(c =>
+        c.id === categoryId
+          ? { ...c, items: c.items.filter(it => it.id !== itemId) }
+          : c,
+      ),
+    }
+    toast.show('Plato eliminado.', 'success')
+  } catch {
+    toast.show('No pudimos eliminar el plato.', 'error')
+  }
+}
+
+async function toggleItemAvailability(categoryId: string, itemId: string, current: boolean) {
+  if (!selectedMenu.value) return
+  const cat = selectedMenu.value.categories.find(c => c.id === categoryId)
+  const item = cat?.items.find(i => i.id === itemId)
+  if (!item) return
+  try {
+    const updated = await menuItemService.update(
+      restaurantId,
+      selectedMenu.value.id,
+      categoryId,
+      itemId,
+      {
+        name: item.name,
+        price: Number(item.price),
+        isAvailable: !current,
+        ...(item.description ? { description: item.description } : {}),
+      },
+    )
+    selectedMenu.value = {
+      ...selectedMenu.value,
+      categories: selectedMenu.value.categories.map(c =>
+        c.id === categoryId
+          ? { ...c, items: c.items.map(i => (i.id === itemId ? updated : i)) }
+          : c,
+      ),
+    }
+  } catch {
+    toast.show('No pudimos actualizar la disponibilidad.', 'error')
+  }
 }
 
 async function createItem() {
@@ -253,6 +342,13 @@ onMounted(async () => {
               class="owner-menu-activate-btn"
               @click.stop="activateMenu(m.id as string)"
             >Activar</button>
+            <button
+              v-if="!m.isActive"
+              class="owner-menu-delete-btn"
+              type="button"
+              @click.stop="deleteMenu(m)"
+              aria-label="Eliminar menú"
+            >×</button>
           </div>
         </div>
 
@@ -351,7 +447,14 @@ onMounted(async () => {
               :key="category.id"
               class="owner-menu-category"
             >
-              <div class="owner-menu-cat-name">{{ category.name }}</div>
+              <div class="owner-menu-cat-head">
+                <div class="owner-menu-cat-name">{{ category.name }}</div>
+                <button
+                  type="button"
+                  class="owner-menu-delete-btn owner-menu-delete-btn--inline"
+                  @click="deleteCategory(category.id as string)"
+                >Eliminar</button>
+              </div>
               <template v-if="category.items.length > 0">
                 <div
                   v-for="item in category.items"
@@ -362,7 +465,19 @@ onMounted(async () => {
                     <div class="owner-menu-row-name">{{ item.name }}</div>
                     <div v-if="item.description" class="owner-menu-row-desc">{{ item.description }}</div>
                   </div>
-                  <div class="owner-menu-row-price">{{ formatMoney(item.price) }}</div>
+                  <div class="owner-menu-row-controls">
+                    <div class="owner-menu-row-price">{{ formatMoney(item.price) }}</div>
+                    <button
+                      type="button"
+                      class="owner-menu-row-toggle"
+                      @click="toggleItemAvailability(category.id as string, item.id as string, item.isAvailable)"
+                    >{{ item.isAvailable ? 'Pausar' : 'Activar' }}</button>
+                    <button
+                      type="button"
+                      class="owner-menu-delete-btn owner-menu-delete-btn--inline"
+                      @click="deleteItem(category.id as string, item.id as string)"
+                    >Eliminar</button>
+                  </div>
                 </div>
               </template>
               <div v-else class="owner-menu-category-empty">Sin platos cargados.</div>
@@ -429,6 +544,13 @@ onMounted(async () => {
 .owner-menu-row-name { color: var(--text-secondary); font-size: 0.9375rem; font-weight: 600; }
 .owner-menu-row-desc { color: var(--text-muted); font-size: 0.8125rem; margin-top: 0.125rem; max-width: 42rem; }
 .owner-menu-row-price { color: var(--text-primary); font-size: 0.9375rem; font-weight: 700; white-space: nowrap; }
+.owner-menu-row-controls { display: flex; align-items: center; gap: 0.5rem; }
+.owner-menu-row-toggle { background: transparent; border: 1px solid var(--border-default); color: var(--text-secondary); padding: 4px 10px; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.6875rem; cursor: pointer; }
+.owner-menu-row-toggle:hover { border-color: var(--brand-border-hover); color: var(--brand-hover); }
+.owner-menu-cat-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.owner-menu-delete-btn { background: transparent; border: 1px solid rgba(239, 68, 68, 0.25); color: var(--danger); padding: 2px 8px; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.6875rem; cursor: pointer; }
+.owner-menu-delete-btn:hover { background: rgba(239, 68, 68, 0.06); border-color: rgba(239, 68, 68, 0.45); }
+.owner-menu-delete-btn--inline { font-size: 0.625rem; }
 .owner-menu-empty { display: flex; min-height: 9rem; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; color: var(--text-muted); font-size: 0.875rem; text-align: center; }
 .owner-menu-empty--compact { min-height: 4rem; }
 .owner-menu-empty-title { color: var(--text-secondary); font-size: 1rem; font-weight: 700; }

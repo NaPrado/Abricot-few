@@ -7,7 +7,8 @@ import type { ReservationTableType } from './ReservationTableType'
 export interface ReservationType {
   id: ApiIdType
   restaurantId: ApiIdType
-  restaurantName: string
+  /** Optional client-side enrichment; swagger ReservationResponse omits it. */
+  restaurantName?: string
   userId: ApiIdType | null
   guestName: string | null
   guestPhone: string | null
@@ -20,5 +21,8 @@ export interface ReservationType {
   notes: ReservationNoteType | null
   confirmationCode: string
   createdAt: IsoDateTimeType
-  tables: ReservationTableType[]
+  /** Swagger canonical name. */
+  tableAssignment?: ReservationTableType[]
+  /** Legacy alias maintained for older payloads / UI compatibility. */
+  tables?: ReservationTableType[]
 }

@@ -1,13 +1,14 @@
 import { ref, onMounted } from 'vue'
 import { orderService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
+import { useRestaurantNames } from '@/composables'
 import type { Order } from '@/types'
 
-const STATUS_STEPS = ['PENDING', 'CONFIRMED', 'IN_PREPARATION', 'READY', 'COMPLETED'] as const
+/** Swagger flow: PENDING -> CONFIRMED -> READY -> COMPLETED. */
+const STATUS_STEPS = ['PENDING', 'CONFIRMED', 'READY', 'COMPLETED'] as const
 const STATUS_LABEL: Record<string, string> = {
   PENDING: 'Pendiente',
   CONFIRMED: 'Confirmado',
-  IN_PREPARATION: 'En preparación',
   READY: 'Listo para retirar',
   COMPLETED: 'Completado',
   CANCELLED: 'Cancelado',
@@ -15,13 +16,13 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_ES: Record<string, string> = {
   PENDING: 'Recibimos tu pedido',
   CONFIRMED: 'El restaurante lo confirmó',
-  IN_PREPARATION: 'Lo están preparando',
   READY: '¡Tu pedido está listo!',
   COMPLETED: 'Pedido entregado',
 }
 
 export function useMyOrdersView() {
   const authStore = useAuthStore()
+  const restaurantNames = useRestaurantNames()
 
   const orders = ref<Order[]>([])
   const loading = ref(true)
@@ -54,11 +55,16 @@ export function useMyOrdersView() {
     expandedId.value = expandedId.value === id ? null : id
   }
 
+  function restaurantNameFor(order: Order): string {
+    return order.restaurantName ?? restaurantNames.nameFor(order.restaurantId)
+  }
+
   onMounted(async () => {
     if (!authStore.user) return
     try {
       const res = await orderService.listByUser(authStore.user.id, { page: 1, perPage: 50 })
       orders.value = res.data
+      await restaurantNames.ensureMany(res.data.map(o => o.restaurantId))
     } catch {
       // silently degrade
     } finally {
@@ -77,5 +83,6 @@ export function useMyOrdersView() {
     formatDateTime,
     formatMoney,
     toggle,
+    restaurantNameFor,
   }
 }

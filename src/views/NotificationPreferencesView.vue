@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { HttpError } from '@/services/http'
 import { notificationPreferenceService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
+import { useRestaurantNames, useToast } from '@/composables'
 import type { NotificationPreference } from '@/types'
 
 const authStore = useAuthStore()
+const restaurantNames = useRestaurantNames()
+const toast = useToast()
 const prefs = ref<NotificationPreference[]>([])
 const loading = ref(true)
+const loadError = ref('')
 
 async function toggle(
   pref: NotificationPreference,
@@ -26,18 +31,32 @@ async function toggle(
         receiveReservationReminders: updated.receiveReservationReminders,
       },
     )
-  } catch {
-    // revert on failure
+  } catch (e) {
     if (idx !== -1) prefs.value[idx] = pref
+    if (e instanceof HttpError && e.status === 404) {
+      toast.show('Preferencia no encontrada para ese restaurante.', 'error')
+      return
+    }
+    if (e instanceof HttpError && (e.status === 401 || e.status === 403)) {
+      toast.show('No tenés permisos para actualizar esta preferencia.', 'error')
+      return
+    }
+    toast.show('No pudimos guardar la preferencia.', 'error')
   }
+}
+
+function nameFor(pref: NotificationPreference): string {
+  return pref.restaurantName ?? restaurantNames.nameFor(pref.restaurantId)
 }
 
 onMounted(async () => {
   if (!authStore.user) return
   try {
-    prefs.value = await notificationPreferenceService.listByUser(authStore.user.id)
-  } catch {
-    // silently degrade
+    const res = await notificationPreferenceService.listByUser(authStore.user.id)
+    prefs.value = res
+    await restaurantNames.ensureMany(res.map(p => p.restaurantId))
+  } catch (e) {
+    loadError.value = e instanceof HttpError ? e.message : 'No pudimos cargar tus preferencias.'
   } finally {
     loading.value = false
   }
@@ -50,12 +69,13 @@ onMounted(async () => {
     <p class="notif-sub">Elegí qué querés recibir de cada restaurante.</p>
 
     <div v-if="loading" style="color:var(--text-muted);font-size:0.875rem">Cargando…</div>
+    <div v-else-if="loadError" class="notif-error">{{ loadError }}</div>
     <div v-else-if="prefs.length === 0" style="color:var(--text-muted);font-size:0.875rem;padding:2rem 0">
       Sin preferencias configuradas.
     </div>
     <div v-else class="notif-list">
       <div v-for="pref in prefs" :key="pref.restaurantId as string" class="notif-card">
-        <div class="notif-card-name">{{ pref.restaurantName }}</div>
+        <div class="notif-card-name">{{ nameFor(pref) }}</div>
         <div class="notif-row">
           <span class="notif-row-label">Promociones</span>
           <label class="notif-toggle">
@@ -95,6 +115,7 @@ onMounted(async () => {
 .notif-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #0a0a0a; }
 .notif-row:last-child { border-bottom: none; }
 .notif-row-label { font-size: 0.8125rem; color: #333; }
+.notif-error { padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: var(--danger-hover); font-size: 0.8125rem; }
 .notif-toggle { position: relative; width: 34px; height: 18px; cursor: pointer; }
 .notif-toggle input { opacity: 0; width: 0; height: 0; }
 .notif-toggle-track { position: absolute; inset: 0; background: #111; border-radius: 99px; transition: background var(--dur-fast); }

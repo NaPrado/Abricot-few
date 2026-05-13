@@ -1,28 +1,11 @@
 import { http } from './http'
 import type { ApiId, CreateMenuRequest, Menu, MenuDetail, PaginatedResponse, UpdateMenuRequest } from '@/types'
 
-type ActiveMenuResponse = MenuDetail | MenuDetail[] | { data: MenuDetail[] | MenuDetail } | null | undefined
 type MenuListResponse = Menu[] | PaginatedResponse<Menu>
 
 function normalizeMenuList(response: MenuListResponse): Menu[] {
   if (Array.isArray(response)) return response
   return response.data
-}
-
-function normalizeActiveMenu(response: ActiveMenuResponse): MenuDetail | null {
-  if (!response) return null
-
-  if (Array.isArray(response)) {
-    return response[0] ?? null
-  }
-
-  if ('data' in response) {
-    const { data } = response
-    if (Array.isArray(data)) return data[0] ?? null
-    return data ?? null
-  }
-
-  return response
 }
 
 export const menuService = {
@@ -31,13 +14,24 @@ export const menuService = {
     http
       .get<MenuListResponse>(`/restaurants/${restaurantId}/menus`)
       .then(normalizeMenuList),
-  getActiveByRestaurant: (restaurantId: ApiId) =>
-    http
-      .get<ActiveMenuResponse>(`/restaurants/${restaurantId}/menus`, {
-        authMode: 'none',
-        query: { isActive: true, include: 'categories,items' },
-      })
-      .then(normalizeActiveMenu),
+  /**
+   * Public-facing active menu fetch:
+   *   1. GET ?isActive=true → basic Menu rows
+   *   2. GET /menus/:id → nested categories + items
+   * Both calls are public per swagger (no `authMode` change).
+   */
+  getActiveByRestaurant: async (restaurantId: ApiId): Promise<MenuDetail | null> => {
+    const list = await http.get<MenuListResponse>(`/restaurants/${restaurantId}/menus`, {
+      authMode: 'none',
+      query: { isActive: true },
+    })
+    const menus = normalizeMenuList(list)
+    const active = menus.find(m => m.isActive) ?? menus[0]
+    if (!active) return null
+    return http.get<MenuDetail>(`/restaurants/${restaurantId}/menus/${active.id}`, {
+      authMode: 'none',
+    })
+  },
   create: (restaurantId: ApiId, payload: CreateMenuRequest) =>
     http.post<Menu>(`/restaurants/${restaurantId}/menus`, payload),
   getById: (restaurantId: ApiId, menuId: ApiId) =>

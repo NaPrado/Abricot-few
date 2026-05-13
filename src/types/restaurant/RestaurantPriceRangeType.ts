@@ -3,8 +3,8 @@ import type { NonNegativeIntType } from '../scalar'
 
 export interface RestaurantPriceRangeType {
   id: ApiIdType
-  slug: string
+  slug?: string
   label: string
-  description: string
-  sortOrder: NonNegativeIntType
+  description?: string
+  sortOrder?: NonNegativeIntType
 }

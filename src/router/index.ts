@@ -80,6 +80,10 @@ const router = createRouter({
           path: 'restaurants/:restaurantId/stats',
           component: () => import('@/views/OwnerAnalyticsView.vue'),
         },
+        {
+          path: 'restaurants/:restaurantId/admins',
+          component: () => import('@/views/OwnerAdminsView.vue'),
+        },
       ],
     },
 

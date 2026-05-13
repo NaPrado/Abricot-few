@@ -2,6 +2,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { reservationService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
+import { useRestaurantNames } from '@/composables'
 import type { Reservation } from '@/types'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -14,6 +15,7 @@ const STATUS_LABEL: Record<string, string> = {
 export function useMyReservationsView() {
   const authStore = useAuthStore()
   const router = useRouter()
+  const restaurantNames = useRestaurantNames()
 
   const reservations = ref<Reservation[]>([])
   const loading = ref(true)
@@ -39,6 +41,10 @@ export function useMyReservationsView() {
     return colors[idx] ?? '#111'
   }
 
+  function restaurantNameFor(reservation: Reservation): string {
+    return reservation.restaurantName ?? restaurantNames.nameFor(reservation.restaurantId)
+  }
+
   async function cancelReservation(id: string) {
     try {
       await reservationService.cancel(id)
@@ -60,6 +66,7 @@ export function useMyReservationsView() {
     try {
       const res = await reservationService.listByUser(authStore.user.id, { page: 1, perPage: 50 })
       reservations.value = res.data
+      await restaurantNames.ensureMany(res.data.map(r => r.restaurantId))
     } catch {
       // silently degrade
     } finally {
@@ -77,5 +84,6 @@ export function useMyReservationsView() {
     colorBg,
     cancelReservation,
     navigateToRestaurant,
+    restaurantNameFor,
   }
 }

@@ -12,6 +12,7 @@ const {
   formatDateTime,
   formatMoney,
   toggle,
+  restaurantNameFor,
 } = useMyOrdersView()
 </script>
 
@@ -29,7 +30,7 @@ const {
         <!-- Header -->
         <div class="order-row-header" @click="toggle(order.id as string)">
           <div>
-            <div class="order-row-restaurant">{{ order.restaurantName }}</div>
+            <div class="order-row-restaurant">{{ restaurantNameFor(order) }}</div>
             <div class="order-row-meta">{{ formatDateTime(order.createdAt) }} · {{ order.items?.length ?? 0 }} ítems</div>
           </div>
           <span class="order-row-total">{{ formatMoney(order.totalAmount) }}</span>
@@ -88,9 +89,12 @@ const {
           <!-- Items -->
           <div>
             <div class="order-items-title">Detalle del pedido</div>
+            <div v-if="!order.items?.length" class="order-item-row order-item-row--empty">
+              Sin detalle disponible.
+            </div>
             <div v-for="item in order.items ?? []" :key="item.id" class="order-item-row">
               <span>
-                <span class="order-item-name">{{ item.menuItemName }}</span>
+                <span class="order-item-name">{{ item.menuItemName ?? `Ítem ${item.menuItemId.slice(0, 6)}` }}</span>
                 <span class="order-item-qty">×{{ item.quantity }}</span>
               </span>
               <span class="order-item-price">{{ formatMoney(Number(item.unitPrice) * item.quantity) }}</span>
