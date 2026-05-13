@@ -3,6 +3,7 @@
   min-height: 100vh;
   background: var(--bg-base);
   color: #e0e0e0;
+  overflow-x: hidden;
 }
 
 /* ── HERO ─────────────────────────────────────────────────── */
@@ -13,7 +14,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .landing-hero-bg {
@@ -138,6 +139,7 @@
   overflow: visible;
   box-shadow: 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
   position: relative;
+  z-index: 20;
 }
 
 .landing-search-field {
@@ -199,6 +201,34 @@
 .landing-search-btn:hover {
   background: var(--brand-hover);
   box-shadow: var(--brand-glow);
+}
+
+@media (max-width: 760px) {
+  .landing-hero-inner {
+    padding: 72px 16px 48px;
+  }
+
+  .landing-hero-title-wrap {
+    height: auto;
+    min-height: 150px;
+  }
+
+  .landing-search-card {
+    flex-direction: column;
+    border-radius: var(--radius-md);
+  }
+
+  .landing-search-divider {
+    width: auto;
+    height: 1px;
+    align-self: stretch;
+    margin: 0 1rem;
+  }
+
+  .landing-search-btn {
+    justify-content: center;
+    min-height: 52px;
+  }
 }
 
 /* ── Featured section ─────────────────────────────────────── */
