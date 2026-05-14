@@ -209,3 +209,29 @@
 .order-item-price {
   color: #444;
 }
+
+.order-view-btn {
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  padding: 0.625rem 0;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  display: block;
+  transition: opacity var(--dur-fast);
+}
+
+.order-view-btn:hover {
+  opacity: 0.75;
+}
+
+.order-view-btn--muted {
+  color: #444;
+}
+
+.order-view-btn--muted:hover {
+  color: #666;
+  opacity: 1;
+}

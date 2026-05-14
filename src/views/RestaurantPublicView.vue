@@ -20,6 +20,7 @@ const {
   orderLoading,
   orderSuccess,
   orderError,
+  orderNotes,
   cartTotal,
   colorBg,
   availableSlots,
@@ -33,6 +34,7 @@ const {
   cartQty,
   formatMoney,
   placeOrder,
+  goToOrderTracking,
   reviewLoading,
   reviewError,
   lastSavedReviewScore,
@@ -126,17 +128,19 @@ const {
                   v-for="item in (category.items ?? [])"
                   :key="item.id"
                   class="restaurant-menu-item"
+                  :class="{ 'restaurant-menu-item--unavailable': item.isAvailable === false }"
                 >
                   <div class="restaurant-menu-item-info">
                     <div class="restaurant-menu-item-name">{{ item.name }}</div>
                     <div class="restaurant-menu-item-desc">{{ item.description }}</div>
+                    <div v-if="item.isAvailable === false" class="restaurant-menu-item-unavail">No disponible</div>
                   </div>
                   <div class="restaurant-menu-item-right">
                     <div class="restaurant-menu-item-price">
                       ${{ Math.round(Number(item.price)).toLocaleString('es-AR') }}
                     </div>
                     <!-- Add-to-cart controls (Para llevar mode only) -->
-                    <div v-if="activeTab === 'Para llevar'" class="restaurant-menu-item-controls">
+                    <div v-if="activeTab === 'Para llevar' && item.isAvailable !== false" class="restaurant-menu-item-controls">
                       <button
                         class="restaurant-menu-qty-btn"
                         :disabled="cartQty(item.id as string) === 0"
@@ -232,15 +236,29 @@ const {
 
           <!-- Para llevar tab → cart -->
           <template v-else>
-            <template v-if="orderSuccess">
+            <!-- Not authenticated: prompt login -->
+            <template v-if="!authStore.isAuthenticated">
+              <div class="restaurant-cart-empty">
+                <div style="margin-bottom:0.75rem">Iniciá sesión para hacer un pedido para llevar.</div>
+                <router-link to="/login" class="restaurant-confirm-btn restaurant-confirm-btn--link">
+                  Iniciar sesión
+                </router-link>
+              </div>
+            </template>
+
+            <template v-else-if="orderSuccess">
               <div class="restaurant-panel-success">
                 <div class="restaurant-panel-success-icon">✓</div>
                 <div class="restaurant-panel-success-title">¡Pedido confirmado!</div>
                 <div class="restaurant-panel-success-sub">
-                  Podés seguir el estado en "Mis Pedidos".
+                  Podés seguir el estado en tiempo real.
                 </div>
+                <button class="restaurant-confirm-btn" style="margin-top:1.25rem" @click="goToOrderTracking">
+                  Seguir mi pedido
+                </button>
               </div>
             </template>
+
             <template v-else>
               <div v-if="cart.length === 0" class="restaurant-cart-empty">
                 Seleccioná ítems del menú para armar tu pedido.
@@ -263,6 +281,18 @@ const {
                 <div class="restaurant-cart-total">
                   <span>Total</span>
                   <span>{{ formatMoney(cartTotal) }}</span>
+                </div>
+
+                <!-- Order notes -->
+                <div class="restaurant-panel-field" style="margin-top:0.25rem">
+                  <div class="restaurant-panel-label">Notas del pedido</div>
+                  <textarea
+                    v-model="orderNotes"
+                    class="restaurant-panel-input restaurant-panel-textarea"
+                    placeholder="Ej: sin cebolla, alergia al maní…"
+                    maxlength="1000"
+                    rows="2"
+                  />
                 </div>
               </div>
               <p v-if="orderError" class="restaurant-panel-error">{{ orderError }}</p>

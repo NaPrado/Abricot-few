@@ -1,8 +1,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { HttpError } from '@/services/http'
-import { restaurantService, availabilityService, reservationService, menuService, orderService } from '@/services'
+import {
+  restaurantService,
+  availabilityService,
+  reservationService,
+  menuService,
+  orderService,
+} from '@/services'
 import { useAuthStore } from '@/stores/authStore'
+import { useCartStore } from '@/stores/cartStore'
 import { debugError, debugSection, debugWarn } from '@/utils/debug'
 import {
   ensureRestaurantLookupCatalogues,
@@ -13,17 +20,11 @@ import type { Restaurant, AvailabilitySlot, MenuDetail, MenuItem, ReviewScore } 
 const TABS = ['Menú', 'Reservar', 'Para llevar'] as const
 type Tab = typeof TABS[number]
 
-interface CartEntry {
-  id: string
-  name: string
-  price: number
-  qty: number
-}
-
 export function useRestaurantPublicView() {
   const route = useRoute()
   const router = useRouter()
   const authStore = useAuthStore()
+  const cartStore = useCartStore()
 
   const restaurantId = route.params.restaurantId as string
 
@@ -40,10 +41,10 @@ export function useRestaurantPublicView() {
   const bookingSuccess = ref(false)
   const bookingError = ref('')
 
-  const cart = ref<CartEntry[]>([])
   const orderLoading = ref(false)
   const orderSuccess = ref(false)
   const orderError = ref('')
+  const createdOrderId = ref<string | null>(null)
 
   const reviewLoading = ref(false)
   const reviewError = ref('')
@@ -61,37 +62,32 @@ export function useRestaurantPublicView() {
 
   const availableSlots = computed(() => slots.value.filter(s => s.isAvailable))
 
-  const cartTotal = computed(() =>
-    cart.value.reduce((sum, e) => sum + e.price * e.qty, 0)
-  )
+  const cart = computed(() => cartStore.items)
+  const cartTotal = computed(() => cartStore.total)
+  const orderNotes = computed({
+    get: () => cartStore.orderNotes,
+    set: (v: string) => cartStore.setOrderNotes(v),
+  })
 
   function cartQty(itemId: string): number {
-    return cart.value.find(e => e.id === itemId)?.qty ?? 0
+    return cartStore.qty(itemId)
   }
 
   function addToCart(item: MenuItem) {
-    const id = item.id as string
-    const entry = cart.value.find(e => e.id === id)
-    if (entry) {
-      entry.qty++
-    } else {
-      cart.value.push({ id, name: item.name, price: Number(item.price), qty: 1 })
-    }
+    cartStore.ensureRestaurant(restaurantId)
+    cartStore.add({
+      id: item.id as string,
+      name: item.name,
+      price: Number(item.price),
+    })
   }
 
   function removeFromCart(itemId: string) {
-    const idx = cart.value.findIndex(e => e.id === itemId)
-    if (idx === -1) return
-    if (cart.value[idx]!.qty > 1) {
-      cart.value[idx]!.qty--
-    } else {
-      cart.value.splice(idx, 1)
-    }
+    cartStore.decrement(itemId)
   }
 
   function incrementInCart(itemId: string) {
-    const entry = cart.value.find(e => e.id === itemId)
-    if (entry) entry.qty++
+    cartStore.increment(itemId)
   }
 
   function formatMoney(n: number): string {
@@ -100,7 +96,10 @@ export function useRestaurantPublicView() {
 
   function formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('es-AR', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     })
   }
 
@@ -111,10 +110,6 @@ export function useRestaurantPublicView() {
       await ensureRestaurantLookupCatalogues()
       const rest = await restaurantService.getById(restaurantId)
       restaurant.value = hydrateRestaurantWithLookups(rest)
-      debugSection('restaurant-public', 'restaurant detail loaded', {
-        restaurantId: rest.id,
-        name: rest.name,
-      })
     } catch (error) {
       debugError('restaurant-public', 'restaurant detail failed; redirecting home', {
         error,
@@ -127,21 +122,14 @@ export function useRestaurantPublicView() {
 
     try {
       menu.value = await menuService.getActiveByRestaurant(restaurantId)
-      debugSection('restaurant-public', 'active menu loaded', {
-        restaurantId,
-        hasMenu: Boolean(menu.value),
-        menuId: menu.value?.id ?? null,
-      })
     } catch (error) {
-      if (error instanceof HttpError && error.status === 404) {
-        debugWarn('restaurant-public', 'active menu not found; rendering restaurant without menu', {
-          restaurantId,
-        })
-      } else {
-        debugError('restaurant-public', 'active menu failed; rendering restaurant without menu', {
+      if (!(error instanceof HttpError && error.status === 404)) {
+        debugError('restaurant-public', 'active menu failed; rendering without menu', {
           error,
           restaurantId,
         })
+      } else {
+        debugWarn('restaurant-public', 'active menu not found', { restaurantId })
       }
       menu.value = null
     } finally {
@@ -171,8 +159,9 @@ export function useRestaurantPublicView() {
   }
 
   async function confirmReservation() {
-    if (!selectedSlot.value || !authStore.isAuthenticated) {
-      if (!authStore.isAuthenticated) void router.push('/login')
+    if (!selectedSlot.value) return
+    if (!authStore.isAuthenticated) {
+      void router.push('/login')
       return
     }
     bookingLoading.value = true
@@ -218,19 +207,47 @@ export function useRestaurantPublicView() {
       void router.push('/login')
       return
     }
-    if (cart.value.length === 0) return
+    if (cartStore.items.length === 0) return
     orderLoading.value = true
     orderError.value = ''
     try {
-      await orderService.create(restaurantId, {
-        items: cart.value.map(e => ({ menuItemId: e.id, quantity: e.qty })),
+      const order = await orderService.create(restaurantId, {
+        items: cartStore.items.map(e => ({
+          menuItemId: e.id,
+          quantity: e.qty,
+          notes: e.notes || null,
+        })),
+        notes: cartStore.orderNotes || undefined,
       })
+      createdOrderId.value = order.id as string
       orderSuccess.value = true
-      cart.value = []
-    } catch {
+      cartStore.clear()
+    } catch (e) {
+      if (e instanceof HttpError) {
+        if (e.status === 401) {
+          void router.push('/login')
+          return
+        }
+        if (e.status === 404) {
+          orderError.value = 'El restaurante no tiene menú activo. Intentá más tarde.'
+          return
+        }
+        if (e.status === 400) {
+          orderError.value = e.message || 'Pedido inválido. Revisá los ítems seleccionados.'
+          return
+        }
+      }
       orderError.value = 'No fue posible procesar el pedido. Intentá de nuevo.'
     } finally {
       orderLoading.value = false
+    }
+  }
+
+  function goToOrderTracking() {
+    if (createdOrderId.value) {
+      void router.push(`/me/orders/${createdOrderId.value}`)
+    } else {
+      void router.push('/me/orders')
     }
   }
 
@@ -243,6 +260,7 @@ export function useRestaurantPublicView() {
   }
 
   onMounted(async () => {
+    cartStore.ensureRestaurant(restaurantId)
     if (await loadRestaurant()) {
       await loadSlots()
     }
@@ -263,6 +281,7 @@ export function useRestaurantPublicView() {
     orderLoading,
     orderSuccess,
     orderError,
+    orderNotes,
     cartTotal,
     colorBg,
     availableSlots,
@@ -277,6 +296,7 @@ export function useRestaurantPublicView() {
     incrementInCart,
     cartQty,
     placeOrder,
+    goToOrderTracking,
     reviewLoading,
     reviewError,
     lastSavedReviewScore,

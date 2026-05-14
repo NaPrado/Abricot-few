@@ -14,24 +14,11 @@ export const menuService = {
     http
       .get<MenuListResponse>(`/restaurants/${restaurantId}/menus`)
       .then(normalizeMenuList),
-  /**
-   * Public-facing active menu fetch:
-   *   1. GET ?isActive=true → basic Menu rows
-   *   2. GET /menus/:id → nested categories + items
-   * Both calls are public per swagger (no `authMode` change).
-   */
-  getActiveByRestaurant: async (restaurantId: ApiId): Promise<MenuDetail | null> => {
-    const list = await http.get<MenuListResponse>(`/restaurants/${restaurantId}/menus`, {
+  getActiveByRestaurant: (restaurantId: ApiId): Promise<MenuDetail> =>
+    http.get<MenuDetail>(`/restaurants/${restaurantId}/menus`, {
       authMode: 'none',
       query: { isActive: true },
-    })
-    const menus = normalizeMenuList(list)
-    const active = menus.find(m => m.isActive) ?? menus[0]
-    if (!active) return null
-    return http.get<MenuDetail>(`/restaurants/${restaurantId}/menus/${active.id}`, {
-      authMode: 'none',
-    })
-  },
+    }),
   create: (restaurantId: ApiId, payload: CreateMenuRequest) =>
     http.post<Menu>(`/restaurants/${restaurantId}/menus`, payload),
   getById: (restaurantId: ApiId, menuId: ApiId) =>

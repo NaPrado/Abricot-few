@@ -1,10 +1,10 @@
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { orderService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
 import { useRestaurantNames } from '@/composables'
 import type { Order } from '@/types'
 
-/** Swagger flow: PENDING -> CONFIRMED -> READY -> COMPLETED. */
 const STATUS_STEPS = ['PENDING', 'CONFIRMED', 'READY', 'COMPLETED'] as const
 const STATUS_LABEL: Record<string, string> = {
   PENDING: 'Pendiente',
@@ -19,10 +19,12 @@ const STATUS_ES: Record<string, string> = {
   READY: '¡Tu pedido está listo!',
   COMPLETED: 'Pedido entregado',
 }
+const ACTIVE_STATUSES = new Set(['PENDING', 'CONFIRMED', 'READY'])
 
 export function useMyOrdersView() {
   const authStore = useAuthStore()
   const restaurantNames = useRestaurantNames()
+  const router = useRouter()
 
   const orders = ref<Order[]>([])
   const loading = ref(true)
@@ -30,6 +32,10 @@ export function useMyOrdersView() {
 
   function statusLabel(s: string): string {
     return STATUS_LABEL[s] ?? s
+  }
+
+  function isActive(s: string): boolean {
+    return ACTIVE_STATUSES.has(s)
   }
 
   function statusStepIndex(s: string): number {
@@ -42,7 +48,10 @@ export function useMyOrdersView() {
 
   function formatDateTime(iso: string): string {
     return new Date(iso).toLocaleString('es-AR', {
-      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
     })
   }
 
@@ -57,6 +66,10 @@ export function useMyOrdersView() {
 
   function restaurantNameFor(order: Order): string {
     return order.restaurantName ?? restaurantNames.nameFor(order.restaurantId)
+  }
+
+  function viewOrder(orderId: string) {
+    void router.push(`/me/orders/${orderId}`)
   }
 
   onMounted(async () => {
@@ -78,11 +91,13 @@ export function useMyOrdersView() {
     expandedId,
     steps: STATUS_STEPS,
     statusLabel,
+    isActive,
     statusStepIndex,
     stepDescription,
     formatDateTime,
     formatMoney,
     toggle,
     restaurantNameFor,
+    viewOrder,
   }
 }

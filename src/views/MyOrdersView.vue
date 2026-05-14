@@ -7,12 +7,14 @@ const {
   expandedId,
   steps,
   statusLabel,
+  isActive,
   statusStepIndex,
   stepDescription,
   formatDateTime,
   formatMoney,
   toggle,
   restaurantNameFor,
+  viewOrder,
 } = useMyOrdersView()
 </script>
 
@@ -31,7 +33,7 @@ const {
         <div class="order-row-header" @click="toggle(order.id as string)">
           <div>
             <div class="order-row-restaurant">{{ restaurantNameFor(order) }}</div>
-            <div class="order-row-meta">{{ formatDateTime(order.createdAt) }} · {{ order.items?.length ?? 0 }} ítems</div>
+            <div class="order-row-meta">{{ formatDateTime(order.createdAt) }} · {{ order.items?.length ?? '—' }} ítems</div>
           </div>
           <span class="order-row-total">{{ formatMoney(order.totalAmount) }}</span>
           <span
@@ -86,19 +88,35 @@ const {
             </div>
           </div>
 
-          <!-- Items -->
+          <!-- Items + actions -->
           <div>
             <div class="order-items-title">Detalle del pedido</div>
-            <div v-if="!order.items?.length" class="order-item-row order-item-row--empty">
-              Sin detalle disponible.
+            <div v-if="!order.items?.length" class="order-item-row order-item-row--empty" style="color:var(--text-muted)">
+              Sin detalle de ítems disponible.
             </div>
             <div v-for="item in order.items ?? []" :key="item.id" class="order-item-row">
               <span>
-                <span class="order-item-name">{{ item.menuItemName ?? `Ítem ${item.menuItemId.slice(0, 6)}` }}</span>
+                <span class="order-item-name">{{ item.menuItemName ?? `Ítem ${String(item.menuItemId).slice(0, 8)}` }}</span>
                 <span class="order-item-qty">×{{ item.quantity }}</span>
               </span>
               <span class="order-item-price">{{ formatMoney(Number(item.unitPrice) * item.quantity) }}</span>
             </div>
+
+            <!-- View detail button for active orders -->
+            <button
+              v-if="isActive(order.status)"
+              class="order-view-btn"
+              @click.stop="viewOrder(order.id as string)"
+            >
+              Seguir pedido en tiempo real →
+            </button>
+            <button
+              v-else
+              class="order-view-btn order-view-btn--muted"
+              @click.stop="viewOrder(order.id as string)"
+            >
+              Ver detalle completo →
+            </button>
           </div>
         </div>
       </div>
