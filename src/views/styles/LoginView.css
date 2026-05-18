@@ -8,7 +8,7 @@
 
 .auth-card {
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
   background: #050505;
   border: 1px solid #111;
   border-radius: var(--radius-lg);
@@ -23,7 +23,7 @@
   text-align: center;
   cursor: pointer;
   margin-bottom: 2rem;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
 }
 
 .auth-title {
@@ -31,7 +31,7 @@
   font-weight: 700;
   color: #ccc;
   margin: 0 0 0.375rem;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   text-align: center;
 }
 
@@ -40,6 +40,81 @@
   color: #333;
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.auth-cognito-panel {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.auth-section-title {
+  margin: 0;
+  color: #d8d8d8;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.auth-cognito-btn {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.875rem 1rem;
+  background: #e8e8e8;
+  border: none;
+  border-radius: var(--radius-md);
+  color: #060606;
+  font-weight: 800;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity var(--dur-fast);
+}
+
+.auth-cognito-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.auth-cognito-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.auth-dev-diagnostic {
+  color: #f7c46c;
+  background: rgba(247, 196, 108, 0.07);
+  border: 1px solid rgba(247, 196, 108, 0.18);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.auth-dev-diagnostic strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #ffd27a;
+}
+
+.auth-dev-diagnostic ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.auth-legacy-panel {
+  margin-top: 1.25rem;
+  border-top: 1px solid #141414;
+  padding-top: 1rem;
+}
+
+.auth-legacy-panel summary {
+  color: #777;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.auth-legacy-panel[open] summary {
+  margin-bottom: 1rem;
 }
 
 .auth-form {
@@ -96,10 +171,10 @@
 .auth-submit-btn {
   width: 100%;
   padding: 0.875rem;
-  background: #e8e8e8;
-  border: none;
+  background: #080808;
+  border: 1px solid #1f1f1f;
   border-radius: var(--radius-md);
-  color: #060606;
+  color: #d6d6d6;
   font-weight: 700;
   font-size: 0.875rem;
   font-family: inherit;
@@ -110,48 +185,13 @@
 }
 
 .auth-submit-btn:hover:not(:disabled) {
-  opacity: 0.9;
+  border-color: #333;
+  color: #fff;
 }
 
 .auth-submit-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 1.25rem 0;
-  color: #3a3a3a;
-  font-size: 0.75rem;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #141414;
-}
-
-.auth-cognito-btn {
-  width: 100%;
-  padding: 0.875rem;
-  background: #080808;
-  border: 1px solid #1f1f1f;
-  border-radius: var(--radius-md);
-  color: #d6d6d6;
-  font-weight: 700;
-  font-size: 0.875rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color var(--dur-fast), color var(--dur-fast);
-}
-
-.auth-cognito-btn:hover {
-  border-color: #333;
-  color: #fff;
 }
 
 .auth-footer {

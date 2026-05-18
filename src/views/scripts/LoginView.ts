@@ -2,17 +2,19 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { debugError, debugSection, redactAuthPayload } from '@/utils/debug'
-import { buildCognitoLoginUrl, isCognitoConfigured } from '@/services'
+import { buildCognitoLoginUrl, getCognitoConfigDiagnostics } from '@/services'
 
 export function useLoginView() {
   const router = useRouter()
   const authStore = useAuthStore()
+  const cognitoConfig = getCognitoConfigDiagnostics()
 
   const email = ref('')
   const password = ref('')
   const error = ref('')
   const loading = ref(false)
-  const cognitoAvailable = isCognitoConfigured()
+  const cognitoReady = cognitoConfig.isConfigured
+  const cognitoDiagnostics = cognitoConfig.diagnostics
 
   async function handleSubmit(e: Event) {
     e.preventDefault()
@@ -60,6 +62,8 @@ export function useLoginView() {
 
   function handleCognitoLogin(): void {
     error.value = ''
+    if (!cognitoReady) return
+
     try {
       window.location.assign(buildCognitoLoginUrl())
     } catch (err) {
@@ -73,7 +77,8 @@ export function useLoginView() {
     password,
     error,
     loading,
-    cognitoAvailable,
+    cognitoReady,
+    cognitoDiagnostics,
     handleSubmit,
     handleCognitoLogin,
     goToRegister,

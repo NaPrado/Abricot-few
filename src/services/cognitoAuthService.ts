@@ -22,6 +22,26 @@ export interface AuthTestResponse {
   }
 }
 
+type CognitoEnvName =
+  | 'VITE_COGNITO_DOMAIN'
+  | 'VITE_COGNITO_CLIENT_ID'
+  | 'VITE_COGNITO_REDIRECT_URI'
+  | 'VITE_COGNITO_SCOPES'
+
+const REQUIRED_COGNITO_ENV: CognitoEnvName[] = [
+  'VITE_COGNITO_DOMAIN',
+  'VITE_COGNITO_CLIENT_ID',
+  'VITE_COGNITO_REDIRECT_URI',
+  'VITE_COGNITO_SCOPES',
+]
+
+export interface CognitoConfigDiagnostics {
+  isConfigured: boolean
+  missingVariables: CognitoEnvName[]
+  invalidMessages: string[]
+  diagnostics: string[]
+}
+
 function readEnv(name: keyof ImportMetaEnv): string {
   const value = import.meta.env[name]
   return typeof value === 'string' ? value.trim() : ''
@@ -35,23 +55,54 @@ function normalizeCognitoDomain(domain: string): string {
     : `https://${trimmed}`
 }
 
+function validateRedirectUri(redirectUri: string): string[] {
+  if (!redirectUri) return []
+
+  try {
+    const url = new URL(redirectUri)
+    const issues: string[] = []
+    if (url.protocol !== 'https:') {
+      issues.push('VITE_COGNITO_REDIRECT_URI debe usar HTTPS.')
+    }
+    if (!url.pathname.endsWith('/callback') || url.pathname.endsWith('/auth/callback')) {
+      issues.push('VITE_COGNITO_REDIRECT_URI debe apuntar a API Gateway /callback, no a /auth/callback.')
+    }
+    return issues
+  } catch {
+    return ['VITE_COGNITO_REDIRECT_URI no es una URL valida.']
+  }
+}
+
+export function getCognitoConfigDiagnostics(): CognitoConfigDiagnostics {
+  const missingVariables = REQUIRED_COGNITO_ENV.filter((name) => !readEnv(name))
+  const invalidMessages = validateRedirectUri(readEnv('VITE_COGNITO_REDIRECT_URI'))
+  const diagnostics = [
+    ...missingVariables.map((name) => `Falta ${name}.`),
+    ...invalidMessages,
+  ]
+
+  return {
+    isConfigured: diagnostics.length === 0,
+    missingVariables,
+    invalidMessages,
+    diagnostics,
+  }
+}
+
 export function isCognitoConfigured(): boolean {
-  return Boolean(
-    readEnv('VITE_COGNITO_DOMAIN') &&
-      readEnv('VITE_COGNITO_CLIENT_ID') &&
-      readEnv('VITE_COGNITO_REDIRECT_URI'),
-  )
+  return getCognitoConfigDiagnostics().isConfigured
 }
 
 export function buildCognitoLoginUrl(): string {
+  const diagnostics = getCognitoConfigDiagnostics()
+  if (!diagnostics.isConfigured) {
+    throw new Error(diagnostics.diagnostics.join(' '))
+  }
+
   const domain = normalizeCognitoDomain(readEnv('VITE_COGNITO_DOMAIN'))
   const clientId = readEnv('VITE_COGNITO_CLIENT_ID')
   const redirectUri = readEnv('VITE_COGNITO_REDIRECT_URI')
   const scopes = readEnv('VITE_COGNITO_SCOPES') || 'openid email profile'
-
-  if (!domain || !clientId || !redirectUri) {
-    throw new Error('Cognito Hosted UI is not configured.')
-  }
 
   const params = new URLSearchParams({
     client_id: clientId,
