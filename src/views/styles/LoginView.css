@@ -118,6 +118,42 @@
   cursor: not-allowed;
 }
 
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  color: #3a3a3a;
+  font-size: 0.75rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #141414;
+}
+
+.auth-cognito-btn {
+  width: 100%;
+  padding: 0.875rem;
+  background: #080808;
+  border: 1px solid #1f1f1f;
+  border-radius: var(--radius-md);
+  color: #d6d6d6;
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--dur-fast), color var(--dur-fast);
+}
+
+.auth-cognito-btn:hover {
+  border-color: #333;
+  color: #fff;
+}
+
 .auth-footer {
   margin-top: 1.5rem;
   text-align: center;

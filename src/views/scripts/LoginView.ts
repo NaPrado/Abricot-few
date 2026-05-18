@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { debugError, debugSection, redactAuthPayload } from '@/utils/debug'
+import { buildCognitoLoginUrl, isCognitoConfigured } from '@/services'
 
 export function useLoginView() {
   const router = useRouter()
@@ -11,6 +12,7 @@ export function useLoginView() {
   const password = ref('')
   const error = ref('')
   const loading = ref(false)
+  const cognitoAvailable = isCognitoConfigured()
 
   async function handleSubmit(e: Event) {
     e.preventDefault()
@@ -56,5 +58,25 @@ export function useLoginView() {
     void router.push('/')
   }
 
-  return { email, password, error, loading, handleSubmit, goToRegister, goToLanding }
+  function handleCognitoLogin(): void {
+    error.value = ''
+    try {
+      window.location.assign(buildCognitoLoginUrl())
+    } catch (err) {
+      debugError('login-view', 'cognito login URL build failed', { error: err })
+      error.value = 'Cognito no esta configurado para este entorno.'
+    }
+  }
+
+  return {
+    email,
+    password,
+    error,
+    loading,
+    cognitoAvailable,
+    handleSubmit,
+    handleCognitoLogin,
+    goToRegister,
+    goToLanding,
+  }
 }

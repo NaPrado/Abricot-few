@@ -4,8 +4,21 @@ import { authService } from '@/services'
 import { isOwnerRole, normalizeAuthUser } from '@/utils/authRole'
 import { debugError, debugSection, redactAuthPayload } from '@/utils/debug'
 import type { User, LoginRequest, RegisterRequest } from '@/types'
+import type { CognitoTokenHash } from '@/services'
 
 const ACTIVE_RESTAURANT_STORAGE_KEY = 'abricot_active_restaurant_id'
+const COGNITO_STORAGE_KEYS = [
+  'id_token',
+  'cognito_id_token',
+  'cognito_expires_in',
+  'cognito_expires_at',
+] as const
+
+function clearCognitoStorage(): void {
+  for (const key of COGNITO_STORAGE_KEYS) {
+    localStorage.removeItem(key)
+  }
+}
 
 function readStoredUser(): User | null {
   try {
@@ -85,6 +98,31 @@ export const useAuthStore = defineStore("auth", () => {
     _persist(res.accessToken, res.refreshToken, res.user)
   }
 
+  function persistCognitoTokens(payload: CognitoTokenHash): void {
+    debugSection('auth-store', 'persist cognito token session', {
+      hasAccessToken: Boolean(payload.accessToken),
+      hasIdToken: Boolean(payload.idToken),
+      hasRefreshToken: Boolean(payload.refreshToken),
+      expiresIn: payload.expiresIn ?? null,
+    })
+
+    token.value = payload.accessToken
+    localStorage.setItem("access_token", payload.accessToken)
+    if (payload.refreshToken) {
+      localStorage.setItem("refresh_token", payload.refreshToken)
+    }
+    if (payload.idToken) {
+      localStorage.setItem("id_token", payload.idToken)
+      localStorage.setItem("cognito_id_token", payload.idToken)
+    }
+    if (payload.expiresIn) {
+      const expiresAt = Date.now() + payload.expiresIn * 1000
+      localStorage.setItem("cognito_expires_in", String(payload.expiresIn))
+      localStorage.setItem("cognito_expires_at", String(expiresAt))
+    }
+    localStorage.removeItem(ACTIVE_RESTAURANT_STORAGE_KEY)
+  }
+
   function logout(): void {
     debugSection('auth-store', 'logout', {
       userId: user.value?.id ?? null,
@@ -97,7 +135,8 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.removeItem("refresh_token")
     localStorage.removeItem("user")
     localStorage.removeItem(ACTIVE_RESTAURANT_STORAGE_KEY)
+    clearCognitoStorage()
   }
 
-  return { token, user, isAuthenticated, isOwner, isCustomer, login, register, logout }
+  return { token, user, isAuthenticated, isOwner, isCustomer, login, register, persistCognitoTokens, logout }
 })

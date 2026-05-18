@@ -4,12 +4,21 @@ import { debugSection, debugWarn } from '@/utils/debug'
 import { normalizeUserRole } from '@/utils/authRole'
 
 const ACTIVE_RESTAURANT_STORAGE_KEY = 'abricot_active_restaurant_id'
+const COGNITO_STORAGE_KEYS = [
+  'id_token',
+  'cognito_id_token',
+  'cognito_expires_in',
+  'cognito_expires_at',
+] as const
 
 function clearAuthStorage(): void {
   localStorage.removeItem('access_token')
   localStorage.removeItem('refresh_token')
   localStorage.removeItem('user')
   localStorage.removeItem(ACTIVE_RESTAURANT_STORAGE_KEY)
+  for (const key of COGNITO_STORAGE_KEYS) {
+    localStorage.removeItem(key)
+  }
 }
 
 function parseStoredRole(userRaw: string | null): UserRoleType | null {

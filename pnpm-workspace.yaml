@@ -1,0 +1,32 @@
+# ---------------------------------------------------------------------------
+# pnpm 11 project settings
+# Non-auth/non-registry config migrated from .npmrc and package.json#pnpm.
+# ---------------------------------------------------------------------------
+
+# Enforce the engines field in package.json.
+engineStrict: true
+
+# SHA-512 integrity check on every installed package.
+verifyStoreIntegrity: true
+
+# Allow lockfile updates locally; set to true in CI.
+frozenLockfile: false
+
+# Suppress funding messages.
+fund: false
+
+# Vue ecosystem lags on peer declarations — warn, don't fail.
+strictPeerDependencies: false
+
+# Supply chain: block packages published less than 1 day ago.
+minimumReleaseAge: '1 day'
+
+# Block dependencies with non-standard tarball formats (git refs, local paths, etc.).
+blockExoticSubdeps: true
+
+# Packages allowed to run install scripts.
+# Replaces package.json#pnpm.onlyBuiltDependencies (removed in pnpm 11).
+allowBuilds:
+  - esbuild
+  - "@tailwindcss/oxide"
+  - oxlint

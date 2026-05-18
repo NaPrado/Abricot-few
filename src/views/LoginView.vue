@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import { useLoginView } from './scripts/LoginView'
 
-const { email, password, error, loading, handleSubmit, goToRegister, goToLanding } = useLoginView()
+const {
+  email,
+  password,
+  error,
+  loading,
+  cognitoAvailable,
+  handleSubmit,
+  handleCognitoLogin,
+  goToRegister,
+  goToLanding,
+} = useLoginView()
 </script>
 
 <template>
@@ -45,6 +55,19 @@ const { email, password, error, loading, handleSubmit, goToRegister, goToLanding
           {{ loading ? 'Ingresando…' : 'Ingresar' }}
         </button>
       </form>
+
+      <div v-if="cognitoAvailable" class="auth-divider">
+        <span>o</span>
+      </div>
+
+      <button
+        v-if="cognitoAvailable"
+        class="auth-cognito-btn"
+        type="button"
+        @click="handleCognitoLogin"
+      >
+        Ingresar con Cognito
+      </button>
 
       <p class="auth-footer">
         ¿No tenés cuenta?

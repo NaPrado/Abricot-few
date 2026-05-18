@@ -47,6 +47,10 @@ function handleExpiredSession(): void {
   localStorage.removeItem('access_token')
   localStorage.removeItem('refresh_token')
   localStorage.removeItem('user')
+  localStorage.removeItem('id_token')
+  localStorage.removeItem('cognito_id_token')
+  localStorage.removeItem('cognito_expires_in')
+  localStorage.removeItem('cognito_expires_at')
 
   if (authExpiredEventSent) return
   authExpiredEventSent = true

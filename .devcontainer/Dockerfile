@@ -11,7 +11,7 @@ RUN apt-get update \
 
 # Enable corepack and pin pnpm so the image is reproducible.
 # Upgrade this pin deliberately — never let it float.
-RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+RUN corepack enable && corepack prepare pnpm@11.1.2 --activate
 
 # Tell pnpm where its content-addressable store lives.
 # This path is backed by the "abricot-pnpm-store" Docker volume declared in
