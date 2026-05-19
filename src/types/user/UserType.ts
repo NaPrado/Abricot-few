@@ -9,4 +9,5 @@ export interface UserType {
   surname: PersonNameType
   role: UserRoleType
   createdAt: IsoDateTimeType
+  cognitoSub?: string | null
 }

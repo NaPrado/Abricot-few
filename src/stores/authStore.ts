@@ -123,6 +123,25 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.removeItem(ACTIVE_RESTAURANT_STORAGE_KEY)
   }
 
+  function persistLocalUser(userData: User): void {
+    const normalizedUser = normalizeAuthUser(userData)
+    if (!normalizedUser) {
+      debugError('auth-store', 'invalid local user payload received after cognito provisioning', {
+        userData,
+      })
+      throw new Error('Invalid local user payload')
+    }
+
+    debugSection('auth-store', 'persist local user after cognito provisioning', {
+      userId: normalizedUser.id,
+      role: normalizedUser.role,
+      email: normalizedUser.email,
+    })
+
+    user.value = normalizedUser
+    localStorage.setItem("user", JSON.stringify(normalizedUser))
+  }
+
   function logout(): void {
     debugSection('auth-store', 'logout', {
       userId: user.value?.id ?? null,
@@ -138,5 +157,5 @@ export const useAuthStore = defineStore("auth", () => {
     clearCognitoStorage()
   }
 
-  return { token, user, isAuthenticated, isOwner, isCustomer, login, register, persistCognitoTokens, logout }
+  return { token, user, isAuthenticated, isOwner, isCustomer, login, register, persistCognitoTokens, persistLocalUser, logout }
 })

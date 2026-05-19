@@ -10,6 +10,8 @@ import type {
 
 /** All paths use `{userId}` (UUID) from the authenticated user, e.g. `authStore.user.id`. */
 export const userService = {
+  provisionFromCognito: () =>
+    http.post<UserProfileResponse>('/users', undefined, { authMode: 'id' }),
   getById: (userId: ApiId) =>
     http.get<UserProfileResponse>(`/users/${userId}`),
   update: (userId: ApiId, payload: UpdateUserMeRequest) =>

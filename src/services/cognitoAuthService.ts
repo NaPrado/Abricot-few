@@ -145,5 +145,5 @@ export function parseCognitoCallbackHash(hash: string): CognitoTokenHash | Cogni
 }
 
 export const cognitoAuthService = {
-  authTest: () => http.get<AuthTestResponse>('/auth-test'),
+  authTest: () => http.get<AuthTestResponse>('/auth-test', { authMode: 'access' }),
 }

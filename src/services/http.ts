@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 export const AUTH_EXPIRED_EVENT = 'abricot:auth-expired'
 const ACCESS_TOKEN_REFRESH_PATH = '/access-tokens'
 
-type AuthMode = 'access' | 'refresh' | 'none'
+type AuthMode = 'access' | 'refresh' | 'id' | 'none'
 
 interface HttpRequestOptions {
   authMode?: AuthMode
@@ -30,6 +30,7 @@ export class HttpError extends Error {
 
 function getTokenStorageKey(authMode: AuthMode): string | null {
   if (authMode === 'none') return null
+  if (authMode === 'id') return 'id_token'
   return authMode === 'refresh' ? 'refresh_token' : 'access_token'
 }
 
