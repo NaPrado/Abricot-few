@@ -1,6 +1,6 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { restaurantService } from '@/services'
+import { redirectToCognitoSignup, restaurantService } from '@/services'
 import { useLookupStore } from '@/stores/lookupStore'
 import { debugError, debugSection } from '@/utils/debug'
 import { extractRestaurantList } from '@/utils/restaurantResponses'
@@ -86,7 +86,11 @@ export function useLandingView() {
   }
 
   function navigateToRegisterOwner() {
-    void router.push('/register?role=owner')
+    try {
+      redirectToCognitoSignup()
+    } catch {
+      void router.push('/login')
+    }
   }
 
   async function loadRestaurants() {

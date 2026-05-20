@@ -93,7 +93,7 @@ export function isCognitoConfigured(): boolean {
   return getCognitoConfigDiagnostics().isConfigured
 }
 
-export function buildCognitoLoginUrl(): string {
+function buildCognitoHostedUiUrl(path: 'login' | 'signup'): string {
   const diagnostics = getCognitoConfigDiagnostics()
   if (!diagnostics.isConfigured) {
     throw new Error(diagnostics.diagnostics.join(' '))
@@ -111,7 +111,19 @@ export function buildCognitoLoginUrl(): string {
     redirect_uri: redirectUri,
   })
 
-  return `${domain}/login?${params.toString()}`
+  return `${domain}/${path}?${params.toString()}`
+}
+
+export function buildCognitoLoginUrl(): string {
+  return buildCognitoHostedUiUrl('login')
+}
+
+export function buildCognitoSignupUrl(): string {
+  return buildCognitoHostedUiUrl('signup')
+}
+
+export function redirectToCognitoSignup(): void {
+  window.location.assign(buildCognitoSignupUrl())
 }
 
 export function parseCognitoCallbackHash(hash: string): CognitoTokenHash | CognitoCallbackError {

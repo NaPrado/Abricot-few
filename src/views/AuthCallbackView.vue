@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useAuthCallbackView } from './scripts/AuthCallbackView'
 
-const { detail, secondaryDetail, loading, canRunAuthTest, claims, runAuthTest, goToLogin } =
-  useAuthCallbackView()
+const { detail, secondaryDetail, goToLogin } = useAuthCallbackView()
 </script>
 
 <template>
@@ -12,17 +11,6 @@ const { detail, secondaryDetail, loading, canRunAuthTest, claims, runAuthTest, g
       <h1 class="auth-callback-title">Callback de autenticacion</h1>
       <p class="auth-callback-detail">{{ detail }}</p>
       <p v-if="secondaryDetail" class="auth-callback-secondary-detail">{{ secondaryDetail }}</p>
-
-      <button
-        class="auth-callback-action"
-        type="button"
-        :disabled="!canRunAuthTest"
-        @click="runAuthTest"
-      >
-        {{ loading ? 'Probando...' : 'Probar /auth-test' }}
-      </button>
-
-      <pre v-if="claims" class="auth-callback-claims">{{ claims }}</pre>
 
       <button class="auth-callback-link" type="button" @click="goToLogin">
         Volver al login

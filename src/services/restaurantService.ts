@@ -18,7 +18,7 @@ export const restaurantService = {
   putReview: (restaurantId: ApiId, userId: ApiId, body: RestaurantMyReviewPutRequest) =>
     http.put<RestaurantMyReviewResponse>(`/restaurants/${restaurantId}/reviews/${userId}`, body),
   create: (payload: RestaurantCreateRequest) =>
-    http.post<Restaurant>('/restaurants/', payload),
+    http.post<Restaurant>('/restaurants', payload),
   update: (id: ApiId, payload: RestaurantUpdateRequest) =>
     http.put<Restaurant>(`/restaurants/${id}`, payload),
   delete: (id: ApiId) =>

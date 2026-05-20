@@ -12,6 +12,7 @@ const {
   isActive,
   closeMenu,
   logout,
+  goToSignup,
 } = useAppNavbar()
 </script>
 
@@ -86,7 +87,7 @@ const {
 
       <template v-else>
         <RouterLink to="/login" class="app-navbar-login">Ingresar</RouterLink>
-        <RouterLink to="/register" class="app-navbar-register">Registrarse</RouterLink>
+        <button type="button" class="app-navbar-register" @click="goToSignup">Registrarse</button>
       </template>
     </div>
   </nav>

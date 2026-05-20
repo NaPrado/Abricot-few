@@ -27,7 +27,7 @@ import type { CreatePromotionRequestType, DiscountTypeType, PromotionItemType, P
 import type { CancelReservationRequestType, CreateAdminReservationRequestType, CreateReservationRequestType, ReservationSourceType, ReservationStatusType, ReservationTableType, ReservationType, RestaurantReservationsQueryType, RestaurantReservationsResponseType } from './reservation'
 import type { RestaurantAdminAddRequestType, RestaurantAdminListResponseType, RestaurantAdminType, RestaurantCityType, RestaurantCountryType, RestaurantCreateRequestType, RestaurantCuisineTypeType, RestaurantListQueryType, RestaurantListResponseType, RestaurantMyReviewPutRequestType, RestaurantMyReviewResponseType, RestaurantNeighbourhoodType, RestaurantPriceRangeType, RestaurantProvinceType, RestaurantType, RestaurantUpdateRequestType, ReviewScoreType } from './restaurant'
 import type { BulkCreateTablesGroupType, BulkCreateTablesRequestType, BulkCreateTablesResponseType, CreateTableRequestType, PaginatedTableListResponseType, TableType, UpdateTableRequestType } from './table'
-import type { MyRestaurantsResponseType, UpdatePasswordRequestType, UpdatePasswordResponseType, UpdateUserMeRequestType, UserProfileResponseType, UserProfileType, UserRoleType, UserType } from './user'
+import type { MyRestaurantsResponseType, ProvisionUserResponseType, UpdatePasswordRequestType, UpdatePasswordResponseType, UpdateUserMeRequestType, UserProfileResponseType, UserProfileType, UserRoleType, UserType } from './user'
 
 export type AnalyticsQuery = AnalyticsQueryType
 export type AnalyticsPeriod = AnalyticsPeriodType
@@ -123,6 +123,7 @@ export type BulkCreateTablesRequest = BulkCreateTablesRequestType
 export type BulkCreateTablesResponse = BulkCreateTablesResponseType
 export type PaginatedTableListResponse = PaginatedTableListResponseType
 export type UserProfileResponse = UserProfileResponseType
+export type ProvisionUserResponse = ProvisionUserResponseType
 export type UpdateUserMeRequest = UpdateUserMeRequestType
 export type UpdatePasswordRequest = UpdatePasswordRequestType
 export type UpdatePasswordResponse = UpdatePasswordResponseType

@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { redirectToCognitoSignup } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
 
 export function useAppNavbar() {
@@ -31,5 +32,24 @@ export function useAppNavbar() {
     void router.push('/login')
   }
 
-  return { menuOpen, isOwner, isAuthenticated, user, userInitial, userName, isActive, closeMenu, logout }
+  function goToSignup() {
+    try {
+      redirectToCognitoSignup()
+    } catch {
+      void router.push('/login')
+    }
+  }
+
+  return {
+    menuOpen,
+    isOwner,
+    isAuthenticated,
+    user,
+    userInitial,
+    userName,
+    isActive,
+    closeMenu,
+    logout,
+    goToSignup,
+  }
 }

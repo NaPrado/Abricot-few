@@ -9,6 +9,7 @@ interface LookupResponse<T> {
 
 function getLookup<T>(type: LookupType, parentId?: ApiId): Promise<LookupResponse<T>> {
   return http.get<LookupResponse<T>>('/lookups', {
+    authMode: 'none',
     query: {
       type,
       parentId,

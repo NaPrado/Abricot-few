@@ -18,13 +18,23 @@ const router = createRouter({
     },
     {
       path: '/register',
-      component: () => import('@/views/RegisterView.vue'),
+      component: () => import('@/views/RegisterRedirectView.vue'),
       meta: { public: true },
     },
     {
       path: '/auth/callback',
       component: () => import('@/views/AuthCallbackView.vue'),
       meta: { public: true },
+    },
+    {
+      path: '/onboarding/account-type',
+      component: () => import('@/views/AccountTypeOnboardingView.vue'),
+      meta: { requiresCognitoAuth: true, requiresLocalUser: false },
+    },
+    {
+      path: '/onboarding/restaurant',
+      component: () => import('@/views/OwnerRestaurantOnboardingView.vue'),
+      meta: { requiresCognitoAuth: true, requiresLocalUser: true },
     },
     {
       path: '/explore',

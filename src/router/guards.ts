@@ -34,17 +34,26 @@ function parseStoredRole(userRaw: string | null): UserRoleType | null {
   return null
 }
 
+function hasCognitoToken(): boolean {
+  return Boolean(localStorage.getItem('access_token') || localStorage.getItem('id_token'))
+}
+
 export function registerGuards(router: Router): void {
   router.beforeEach((to, from) => {
     const token = localStorage.getItem('access_token')
     const userRaw = localStorage.getItem('user')
     const role = parseStoredRole(userRaw)
     const allowed = to.meta.roles as UserRoleType[] | undefined
+    const requiresCognito = Boolean(to.meta.requiresCognitoAuth)
+    const requiresLocalUser = Boolean(to.meta.requiresLocalUser)
+    const requiresAuth = Boolean(to.meta.requiresAuth)
 
     debugSection('router', 'beforeEach', {
       from: from.fullPath,
       to: to.fullPath,
-      requiresAuth: Boolean(to.meta.requiresAuth),
+      requiresAuth,
+      requiresCognitoAuth: requiresCognito,
+      requiresLocalUser,
       public: Boolean(to.meta.public),
       allowedRoles: allowed ?? null,
       hasToken: Boolean(token),
@@ -52,7 +61,22 @@ export function registerGuards(router: Router): void {
       normalizedRole: role,
     })
 
-    if (to.meta.requiresAuth && (!token || !role)) {
+    if (requiresCognito && !hasCognitoToken()) {
+      debugWarn('router', 'missing cognito token; redirecting to login', { to: to.fullPath })
+      return '/login?expired=1'
+    }
+
+    if (requiresLocalUser && (!token || !role)) {
+      debugWarn('router', 'missing local user for protected route; redirecting to login', {
+        to: to.fullPath,
+        hasToken: Boolean(token),
+        normalizedRole: role,
+      })
+      clearAuthStorage()
+      return '/login?expired=1'
+    }
+
+    if (requiresAuth && (!token || !role)) {
       debugWarn('router', 'missing auth state for protected route; redirecting to login', {
         to: to.fullPath,
         hasToken: Boolean(token),
@@ -62,9 +86,8 @@ export function registerGuards(router: Router): void {
       return '/login?expired=1'
     }
 
-    // Redirect logged-in users away from auth pages
-    if (to.meta.public && token && role && (to.path === '/login' || to.path === '/register')) {
-      const redirectPath = role === 'CUSTOMER' ? '/me/reservations' : '/app/restaurants'
+    if (to.meta.public && token && role && to.path === '/login') {
+      const redirectPath = role === 'CUSTOMER' ? '/explore' : '/app/restaurants'
       debugSection('router', 'logged-in user on auth page; redirecting', {
         role,
         to: to.fullPath,
@@ -73,9 +96,8 @@ export function registerGuards(router: Router): void {
       return redirectPath
     }
 
-    // Role-based access: check meta.roles if present
     if (allowed && role && !allowed.includes(role)) {
-      const redirectPath = role === 'CUSTOMER' ? '/me/reservations' : '/app/restaurants'
+      const redirectPath = role === 'CUSTOMER' ? '/explore' : '/app/restaurants'
       debugWarn('router', 'role not allowed for route', {
         role,
         allowed,
