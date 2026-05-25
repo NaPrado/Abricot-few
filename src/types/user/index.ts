@@ -1,4 +1,5 @@
 export type { UserRoleType } from './UserRoleType'
+export type { UserSnsSubscriptionStatusType } from './UserSnsSubscriptionStatusType'
 export type { UserType } from './UserType'
 export type { UserProfileType } from './UserProfileType'
 export type { UserProfileResponseType } from './UserProfileResponseType'

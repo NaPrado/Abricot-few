@@ -40,6 +40,7 @@ export function useRestaurantPublicView() {
   const bookingLoading = ref(false)
   const bookingSuccess = ref(false)
   const bookingError = ref('')
+  const subscriptionRefreshLoading = ref(false)
 
   const orderLoading = ref(false)
   const orderSuccess = ref(false)
@@ -61,6 +62,8 @@ export function useRestaurantPublicView() {
   })
 
   const availableSlots = computed(() => slots.value.filter(s => s.isAvailable))
+  const snsSubscriptionStatus = computed(() => authStore.user?.snsSubscriptionStatus ?? null)
+  const canReserveWithEmail = computed(() => snsSubscriptionStatus.value === 'CONFIRMED')
 
   const cart = computed(() => cartStore.items)
   const cartTotal = computed(() => cartStore.total)
@@ -164,6 +167,10 @@ export function useRestaurantPublicView() {
       void router.push('/login')
       return
     }
+    if (!canReserveWithEmail.value) {
+      bookingError.value = 'Confirmá la suscripción de email de AWS SNS antes de reservar.'
+      return
+    }
     bookingLoading.value = true
     bookingError.value = ''
     try {
@@ -173,10 +180,31 @@ export function useRestaurantPublicView() {
         partySize: partySize.value,
       })
       bookingSuccess.value = true
-    } catch {
+    } catch (e) {
+      if (e instanceof HttpError && e.status === 403) {
+        await authStore.refreshLocalUser().catch(() => null)
+        bookingError.value = e.message || 'Confirmá la suscripción de email de AWS SNS antes de reservar.'
+        return
+      }
       bookingError.value = 'No fue posible confirmar la reserva. Intentá de nuevo.'
     } finally {
       bookingLoading.value = false
+    }
+  }
+
+  async function refreshEmailSubscription() {
+    if (!authStore.isAuthenticated) {
+      void router.push('/login')
+      return
+    }
+    subscriptionRefreshLoading.value = true
+    bookingError.value = ''
+    try {
+      await authStore.refreshLocalUser()
+    } catch {
+      bookingError.value = 'No pudimos verificar la suscripción. Intentá de nuevo.'
+    } finally {
+      subscriptionRefreshLoading.value = false
     }
   }
 
@@ -277,6 +305,9 @@ export function useRestaurantPublicView() {
     bookingLoading,
     bookingSuccess,
     bookingError,
+    subscriptionRefreshLoading,
+    snsSubscriptionStatus,
+    canReserveWithEmail,
     cart,
     orderLoading,
     orderSuccess,
@@ -290,6 +321,7 @@ export function useRestaurantPublicView() {
     formatMoney,
     loadSlots,
     confirmReservation,
+    refreshEmailSubscription,
     adjustParty,
     addToCart,
     removeFromCart,

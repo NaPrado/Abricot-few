@@ -27,7 +27,7 @@ import type { CreatePromotionRequestType, DiscountTypeType, PromotionItemType, P
 import type { CancelReservationRequestType, CreateAdminReservationRequestType, CreateReservationRequestType, ReservationSourceType, ReservationStatusType, ReservationTableType, ReservationType, RestaurantReservationsQueryType, RestaurantReservationsResponseType } from './reservation'
 import type { RestaurantAdminAddRequestType, RestaurantAdminListResponseType, RestaurantAdminType, RestaurantCityType, RestaurantCountryType, RestaurantCreateRequestType, RestaurantCuisineTypeType, RestaurantListQueryType, RestaurantListResponseType, RestaurantMyReviewPutRequestType, RestaurantMyReviewResponseType, RestaurantNeighbourhoodType, RestaurantPriceRangeType, RestaurantProvinceType, RestaurantType, RestaurantUpdateRequestType, ReviewScoreType } from './restaurant'
 import type { BulkCreateTablesGroupType, BulkCreateTablesRequestType, BulkCreateTablesResponseType, CreateTableRequestType, PaginatedTableListResponseType, TableType, UpdateTableRequestType } from './table'
-import type { MyRestaurantsResponseType, ProvisionUserResponseType, UpdatePasswordRequestType, UpdatePasswordResponseType, UpdateUserMeRequestType, UserProfileResponseType, UserProfileType, UserRoleType, UserType } from './user'
+import type { MyRestaurantsResponseType, ProvisionUserResponseType, UpdatePasswordRequestType, UpdatePasswordResponseType, UpdateUserMeRequestType, UserProfileResponseType, UserProfileType, UserRoleType, UserSnsSubscriptionStatusType, UserType } from './user'
 
 export type AnalyticsQuery = AnalyticsQueryType
 export type AnalyticsPeriod = AnalyticsPeriodType
@@ -36,6 +36,7 @@ export type RevenueByDayPoint = RevenueByDayPointType
 export type OrdersAnalyticsResponse = OrdersAnalyticsResponseType
 export type MetricsAnalyticsResponse = MetricsAnalyticsResponseType
 export type UserRole = UserRoleType
+export type UserSnsSubscriptionStatus = UserSnsSubscriptionStatusType
 export type User = UserType
 export type UserProfile = UserProfileType
 export type AuthResponse = AuthResponseType
