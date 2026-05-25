@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { userService } from '@/services'
+import { HttpError } from '@/services/http'
 import { useAuthStore } from '@/stores/authStore'
 import { debugError, debugSection } from '@/utils/debug'
 import {
@@ -39,7 +40,10 @@ export function useAccountTypeOnboardingView() {
       await router.replace(path)
     } catch (err) {
       debugError('account-type-onboarding', 'provision failed', { error: err, accountType })
-      error.value = 'No se pudo crear tu cuenta local. Reintentá.'
+      error.value =
+        err instanceof HttpError
+          ? err.message
+          : 'No se pudo crear tu cuenta local. Reintentá.'
     } finally {
       loading.value = false
     }
