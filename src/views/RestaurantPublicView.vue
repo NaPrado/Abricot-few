@@ -16,6 +16,9 @@ const {
   bookingLoading,
   bookingSuccess,
   bookingError,
+  subscriptionRefreshLoading,
+  snsSubscriptionStatus,
+  canReserveWithEmail,
   cart,
   orderLoading,
   orderSuccess,
@@ -27,6 +30,7 @@ const {
   tabs,
   loadSlots,
   confirmReservation,
+  refreshEmailSubscription,
   adjustParty,
   addToCart,
   removeFromCart,
@@ -180,6 +184,14 @@ const {
 
           <!-- Reservar tab → reservation form -->
           <template v-else-if="activeTab === 'Reservar'">
+            <template v-if="!authStore.isAuthenticated">
+              <div class="restaurant-cart-empty">
+                <div style="margin-bottom:0.75rem">Iniciá sesión para reservar una mesa.</div>
+                <router-link to="/login" class="restaurant-confirm-btn restaurant-confirm-btn--link">
+                  Iniciar sesión
+                </router-link>
+              </div>
+            </template>
             <template v-if="bookingSuccess">
               <div class="restaurant-panel-success">
                 <div class="restaurant-panel-success-icon">✓</div>
@@ -189,7 +201,25 @@ const {
                 </div>
               </div>
             </template>
-            <template v-else>
+            <template v-else-if="authStore.isAuthenticated && !canReserveWithEmail">
+              <div class="restaurant-cart-empty">
+                <div style="margin-bottom:0.75rem">
+                  Confirmá la suscripción de email de AWS SNS antes de reservar.
+                </div>
+                <div style="margin-bottom:0.75rem;color:var(--text-muted);font-size:0.875rem">
+                  Estado actual: {{ snsSubscriptionStatus || 'PENDING_CONFIRMATION' }}.
+                </div>
+                <button
+                  class="restaurant-confirm-btn"
+                  :disabled="subscriptionRefreshLoading"
+                  @click="refreshEmailSubscription"
+                >
+                  {{ subscriptionRefreshLoading ? 'Verificando…' : 'Ya confirmé, verificar' }}
+                </button>
+              </div>
+              <p v-if="bookingError" class="restaurant-panel-error">{{ bookingError }}</p>
+            </template>
+            <template v-else-if="authStore.isAuthenticated">
               <div class="restaurant-panel-field">
                 <div class="restaurant-panel-label">Fecha</div>
                 <input
@@ -226,7 +256,7 @@ const {
               <p v-if="bookingError" class="restaurant-panel-error">{{ bookingError }}</p>
               <button
                 class="restaurant-confirm-btn"
-                :disabled="!selectedSlot || bookingLoading"
+                :disabled="!selectedSlot || bookingLoading || !canReserveWithEmail"
                 @click="confirmReservation"
               >
                 {{ bookingLoading ? 'Confirmando…' : 'Confirmar reserva' }}
