@@ -33,7 +33,13 @@ const {
         </div>
         <div class="owner-dash-header-actions">
           <label class="owner-dash-action-btn" :class="{ 'owner-dash-action-btn--busy': photoUploading }">
-            <input type="file" accept="image/*" :disabled="photoUploading" hidden @change="uploadPhoto" />
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              :disabled="photoUploading"
+              hidden
+              @change="uploadPhoto"
+            />
             <span>{{ photoUploading ? 'Subiendo…' : 'Cambiar foto' }}</span>
           </label>
           <button

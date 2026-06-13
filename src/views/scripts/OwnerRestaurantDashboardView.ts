@@ -15,9 +15,16 @@ import {
   hydrateRestaurantWithLookups,
 } from '@/utils/restaurantHydration'
 import type { Restaurant, MetricsAnalyticsResponse, OrdersAnalyticsResponse, Reservation, Order } from '@/types'
+import type { ImageMaxSizeType, ImageMimeType } from '@/types'
 
 const TODAY = new Date().toISOString().split('T')[0] as string
 const SEVEN_DAYS_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] as string
+const MAX_PHOTO_SIZE_BYTES: ImageMaxSizeType = 5 * 1024 * 1024
+const ALLOWED_PHOTO_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+] as const satisfies readonly ImageMimeType[]
 
 function settledDebug(result: PromiseSettledResult<unknown>): Record<string, unknown> {
   if (result.status === 'fulfilled') {
@@ -25,6 +32,10 @@ function settledDebug(result: PromiseSettledResult<unknown>): Record<string, unk
   }
 
   return { status: result.status, reason: result.reason }
+}
+
+function isAllowedPhotoMimeType(mimeType: string): mimeType is ImageMimeType {
+  return ALLOWED_PHOTO_MIME_TYPES.includes(mimeType as ImageMimeType)
 }
 
 export function useOwnerRestaurantDashboardView() {
@@ -132,19 +143,40 @@ export function useOwnerRestaurantDashboardView() {
     target.value = ''
     if (!file) return
 
+    if (!isAllowedPhotoMimeType(file.type)) {
+      toast.show('Formato de imagen no soportado.', 'error')
+      return
+    }
+    if (file.size > MAX_PHOTO_SIZE_BYTES) {
+      toast.show('La imagen es demasiado grande.', 'error')
+      return
+    }
+
     photoUploading.value = true
     try {
       const updated = await restaurantService.uploadPhoto(restaurantId, file)
       restaurant.value = hydrateRestaurantWithLookups(updated)
       toast.show('Foto actualizada.', 'success')
     } catch (e) {
-      if (e instanceof HttpError && e.status === 413) {
-        toast.show('La imagen es demasiado grande.', 'error')
-      } else if (e instanceof HttpError && e.status === 415) {
-        toast.show('Formato de imagen no soportado.', 'error')
-      } else {
-        toast.show('No pudimos subir la foto.', 'error')
+      if (e instanceof HttpError) {
+        if (e.status === 400) {
+          toast.show('Seleccioná una imagen para subir.', 'error')
+          return
+        }
+        if (e.status === 413) {
+          toast.show('La imagen es demasiado grande.', 'error')
+          return
+        }
+        if (e.status === 415) {
+          toast.show('Formato de imagen no soportado.', 'error')
+          return
+        }
+        if (e.status === 401 || e.status === 403) {
+          toast.show('No tenés permisos para cambiar la foto.', 'error')
+          return
+        }
       }
+      toast.show('No pudimos subir la foto.', 'error')
     } finally {
       photoUploading.value = false
     }

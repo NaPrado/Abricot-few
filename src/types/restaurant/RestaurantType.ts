@@ -18,6 +18,7 @@ export interface RestaurantType {
   phone: PhoneType
   email: EmailType | null
   description: LongTextType | null
+  /** Main restaurant image URL, reused by the UI as logo or public display image. */
   photoUrl: string | null
   allowTableJoining?: boolean
   defaultSlotDurationMinutes?: PositiveIntType

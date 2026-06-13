@@ -1,3 +1,3 @@
-export interface RestaurantPhotoUploadResponseType {
-  photoUrl: string
-}
+import type { RestaurantType } from './RestaurantType'
+
+export type RestaurantPhotoUploadResponseType = RestaurantType
