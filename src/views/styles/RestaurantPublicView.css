@@ -223,6 +223,33 @@
   font-weight: 700;
   color: #888;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.restaurant-menu-item-price-base {
+  text-decoration: line-through;
+  color: #666;
+  font-weight: 600;
+}
+
+.restaurant-menu-item-price-promo {
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.restaurant-menu-item-promo-badge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand);
+  background: var(--brand-dim);
+  border: 1px solid var(--brand-border-hover);
+  border-radius: 6px;
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
 }
 
 /* ── Booking panel ───────────────────────────────────────── */

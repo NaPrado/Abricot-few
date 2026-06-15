@@ -466,7 +466,14 @@ onMounted(async () => {
                     <div v-if="item.description" class="owner-menu-row-desc">{{ item.description }}</div>
                   </div>
                   <div class="owner-menu-row-controls">
-                    <div class="owner-menu-row-price">{{ formatMoney(item.price) }}</div>
+                    <div class="owner-menu-row-price">
+                      <template v-if="item.discountedPrice != null">
+                        <span class="owner-menu-row-price-base">{{ formatMoney(item.price) }}</span>
+                        <span class="owner-menu-row-price-promo">{{ Number(item.discountedPrice) === 0 ? 'Gratis' : formatMoney(item.discountedPrice) }}</span>
+                        <span v-if="item.discount" class="owner-menu-row-promo-badge">{{ item.discount.title }}</span>
+                      </template>
+                      <template v-else>{{ formatMoney(item.price) }}</template>
+                    </div>
                     <button
                       type="button"
                       class="owner-menu-row-toggle"
@@ -543,7 +550,10 @@ onMounted(async () => {
 .owner-menu-row--unavailable { opacity: 0.48; }
 .owner-menu-row-name { color: var(--text-secondary); font-size: 0.9375rem; font-weight: 600; }
 .owner-menu-row-desc { color: var(--text-muted); font-size: 0.8125rem; margin-top: 0.125rem; max-width: 42rem; }
-.owner-menu-row-price { color: var(--text-primary); font-size: 0.9375rem; font-weight: 700; white-space: nowrap; }
+.owner-menu-row-price { display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); font-size: 0.9375rem; font-weight: 700; white-space: nowrap; }
+.owner-menu-row-price-base { text-decoration: line-through; color: var(--text-muted); font-weight: 600; }
+.owner-menu-row-price-promo { color: var(--brand); font-weight: 800; }
+.owner-menu-row-promo-badge { font-size: 0.625rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--brand); background: var(--brand-dim); border: 1px solid var(--brand-border-hover); border-radius: 6px; padding: 0.1rem 0.4rem; }
 .owner-menu-row-controls { display: flex; align-items: center; gap: 0.5rem; }
 .owner-menu-row-toggle { background: transparent; border: 1px solid var(--border-default); color: var(--text-secondary); padding: 4px 10px; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.6875rem; cursor: pointer; }
 .owner-menu-row-toggle:hover { border-color: var(--brand-border-hover); color: var(--brand-hover); }

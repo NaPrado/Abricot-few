@@ -95,6 +95,24 @@ export const useAuthStore = defineStore("auth", () => {
     return profile
   }
 
+  /**
+   * Fresh GET /users/{id} with the Cognito access-token JWT. The backend re-checks
+   * the SNS subscription on this read and persists the resulting status, so this is
+   * the call the "Ya confirmé, verificar" gate must use — provisioning via
+   * POST /users (refreshLocalUser) does NOT trigger the SNS sync. Persists to the
+   * store so every view sees the refreshed status.
+   */
+  async function reloadAuthenticatedUser(): Promise<User> {
+    const currentUserId = user.value?.id
+    if (!currentUserId) {
+      throw new Error('No authenticated user to reload')
+    }
+    const { userService } = await import('@/services/userService')
+    const profile = await userService.getById(currentUserId)
+    persistLocalUser(profile)
+    return profile
+  }
+
   function logout(): void {
     debugSection('auth-store', 'logout', {
       userId: user.value?.id ?? null,
@@ -119,6 +137,7 @@ export const useAuthStore = defineStore("auth", () => {
     persistCognitoTokens,
     persistLocalUser,
     refreshLocalUser,
+    reloadAuthenticatedUser,
     logout,
   }
 })

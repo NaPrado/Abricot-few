@@ -1,6 +1,7 @@
 export type { MenuType } from './MenuType'
 export type { MenuCategoryType } from './MenuCategoryType'
 export type { MenuItemType } from './MenuItemType'
+export type { MenuItemDiscountType } from './MenuItemDiscountType'
 export type { MenuCategoryWithItemsType } from './MenuCategoryWithItemsType'
 export type { MenuDetailType } from './MenuDetailType'
 export type { CreateMenuRequestType } from './CreateMenuRequestType'

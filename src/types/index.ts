@@ -20,7 +20,7 @@ import type { AvailabilityQueryType, AvailabilityResponseType, AvailabilitySlotT
 import type { BusinessHourInputType, BusinessHourRangeType, BusinessHourType, UpdateBusinessHoursRequestType } from './businessHours'
 import type { ApiErrorResponseType, ApiIdType, PaginatedResponseType, PaginationQueryType, QueryParamsType, QueryPrimitiveType, QueryValueType } from './common'
 import type { CityType, CountryType, CuisineType, NeighbourhoodType, PriceRangeType, ProvinceType } from './lookup'
-import type { CreateMenuCategoryRequestType, CreateMenuItemRequestType, CreateMenuRequestType, MenuCategoryType, MenuCategoryWithItemsType, MenuDetailType, MenuItemType, MenuType, UpdateMenuCategoryRequestType, UpdateMenuItemRequestType, UpdateMenuRequestType } from './menu'
+import type { CreateMenuCategoryRequestType, CreateMenuItemRequestType, CreateMenuRequestType, MenuCategoryType, MenuCategoryWithItemsType, MenuDetailType, MenuItemDiscountType, MenuItemType, MenuType, UpdateMenuCategoryRequestType, UpdateMenuItemRequestType, UpdateMenuRequestType } from './menu'
 import type { NotificationPreferenceType, UpdateNotificationPreferenceRequestType } from './notificationPreference'
 import type { CreateOrderRequestItemType, CreateOrderRequestType, OrderItemType, OrderStatusType, OrderType, RestaurantOrderPatchRequestType, RestaurantOrdersQueryType, RestaurantOrdersResponseType } from './order'
 import type { CreatePromotionRequestType, DiscountTypeType, PromotionItemType, PromotionListResponseType, PromotionType } from './promotion'
@@ -71,6 +71,7 @@ export type Neighbourhood = NeighbourhoodType
 export type Menu = MenuType
 export type MenuCategory = MenuCategoryType
 export type MenuItem = MenuItemType
+export type MenuItemDiscount = MenuItemDiscountType
 export type MenuCategoryWithItems = MenuCategoryWithItemsType
 export type MenuDetail = MenuDetailType
 export type CreateMenuRequest = CreateMenuRequestType

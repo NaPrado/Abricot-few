@@ -17,8 +17,8 @@ const {
   bookingSuccess,
   bookingError,
   subscriptionRefreshLoading,
-  snsSubscriptionStatus,
   canReserveWithEmail,
+  emailConfirmationHint,
   cart,
   orderLoading,
   orderSuccess,
@@ -141,7 +141,16 @@ const {
                   </div>
                   <div class="restaurant-menu-item-right">
                     <div class="restaurant-menu-item-price">
-                      ${{ Math.round(Number(item.price)).toLocaleString('es-AR') }}
+                      <template v-if="item.discountedPrice != null">
+                        <span class="restaurant-menu-item-price-base">${{ Math.round(Number(item.price)).toLocaleString('es-AR') }}</span>
+                        <span class="restaurant-menu-item-price-promo">
+                          {{ Number(item.discountedPrice) === 0 ? 'Gratis' : `$${Math.round(Number(item.discountedPrice)).toLocaleString('es-AR')}` }}
+                        </span>
+                        <span v-if="item.discount" class="restaurant-menu-item-promo-badge">{{ item.discount.title }}</span>
+                      </template>
+                      <template v-else>
+                        ${{ Math.round(Number(item.price)).toLocaleString('es-AR') }}
+                      </template>
                     </div>
                     <!-- Add-to-cart controls (Para llevar mode only) -->
                     <div v-if="activeTab === 'Para llevar' && item.isAvailable !== false" class="restaurant-menu-item-controls">
@@ -204,10 +213,10 @@ const {
             <template v-else-if="authStore.isAuthenticated && !canReserveWithEmail">
               <div class="restaurant-cart-empty">
                 <div style="margin-bottom:0.75rem">
-                  Confirmá la suscripción de email de AWS SNS antes de reservar.
+                  Para reservar, confirmá tu email
                 </div>
                 <div style="margin-bottom:0.75rem;color:var(--text-muted);font-size:0.875rem">
-                  Estado actual: {{ snsSubscriptionStatus || 'PENDING_CONFIRMATION' }}.
+                  {{ emailConfirmationHint }}
                 </div>
                 <button
                   class="restaurant-confirm-btn"

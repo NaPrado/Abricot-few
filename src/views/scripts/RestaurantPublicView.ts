@@ -64,6 +64,11 @@ export function useRestaurantPublicView() {
   const availableSlots = computed(() => slots.value.filter(s => s.isAvailable))
   const snsSubscriptionStatus = computed(() => authStore.user?.snsSubscriptionStatus ?? null)
   const canReserveWithEmail = computed(() => snsSubscriptionStatus.value === 'CONFIRMED')
+  const emailConfirmationHint = computed(() =>
+    snsSubscriptionStatus.value === 'FAILED'
+      ? 'No pudimos confirmar tu email. Reintentá la suscripción desde tu perfil.'
+      : 'Revisá tu bandeja de entrada (y la carpeta de spam) y tocá el enlace de confirmación. Después volvé acá y verificá.',
+  )
 
   const cart = computed(() => cartStore.items)
   const cartTotal = computed(() => cartStore.total)
@@ -168,7 +173,7 @@ export function useRestaurantPublicView() {
       return
     }
     if (!canReserveWithEmail.value) {
-      bookingError.value = 'Confirmá la suscripción de email de AWS SNS antes de reservar.'
+      bookingError.value = 'Confirmá tu email antes de reservar.'
       return
     }
     bookingLoading.value = true
@@ -182,8 +187,8 @@ export function useRestaurantPublicView() {
       bookingSuccess.value = true
     } catch (e) {
       if (e instanceof HttpError && e.status === 403) {
-        await authStore.refreshLocalUser().catch(() => null)
-        bookingError.value = e.message || 'Confirmá la suscripción de email de AWS SNS antes de reservar.'
+        await authStore.reloadAuthenticatedUser().catch(() => null)
+        bookingError.value = e.message || 'Confirmá tu email antes de reservar.'
         return
       }
       bookingError.value = 'No fue posible confirmar la reserva. Intentá de nuevo.'
@@ -200,7 +205,15 @@ export function useRestaurantPublicView() {
     subscriptionRefreshLoading.value = true
     bookingError.value = ''
     try {
-      await authStore.refreshLocalUser()
+      // Fresh GET /users/{id}: the backend re-checks SNS on this read and persists
+      // the status. canReserveWithEmail unblocks reactively once it is CONFIRMED.
+      const profile = await authStore.reloadAuthenticatedUser()
+      const status = profile.snsSubscriptionStatus ?? null
+      if (status === 'CONFIRMED') return
+      bookingError.value =
+        status === 'FAILED'
+          ? 'La suscripción falló. Volvé a registrar tu email para reservar.'
+          : 'Aún pendiente: revisá tu email y confirmá la suscripción.'
     } catch {
       bookingError.value = 'No pudimos verificar la suscripción. Intentá de nuevo.'
     } finally {
@@ -308,6 +321,7 @@ export function useRestaurantPublicView() {
     subscriptionRefreshLoading,
     snsSubscriptionStatus,
     canReserveWithEmail,
+    emailConfirmationHint,
     cart,
     orderLoading,
     orderSuccess,
