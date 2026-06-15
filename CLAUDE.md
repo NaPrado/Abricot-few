@@ -1,47 +1,72 @@
-# Abricot Project Guidelines
+# Abricot Frontend — Claude Guidelines
+
+Abricot is a Cloud-native B2B SaaS for restaurants (online orders + reservations).
+This repo is the **SPA frontend** only: Vue 3 + TypeScript, built and hosted in an
+S3 website bucket. It talks to a serverless backend (API Gateway HTTP API → Lambda).
+
+## ⚠️ API source of truth = the DEPLOYED BACKEND (not `.mcp/`)
+
+The authoritative API contract is the **deployed backend**, defined by:
+
+1. The Lambda **custom dispatcher** — `lambdas/{service}/handler.py` (the backend
+   is NOT Flask; routing is a hand-written dispatcher per service), and
+2. The API Gateway **route map** — `infra/locals.tf`,
+
+both in the **`Abricot-be`** repo.
+
+**`.mcp/` in THIS repo is DEPRECATED for contracts.** Those docs are aspirational
+and have diverged from reality twice, causing route bugs. When the frontend and a
+`.mcp/` doc disagree, **the frontend code + deployed backend win**. Never wire a new
+call from a `.mcp/` route. See `.claude/working-in-this-repo.md` and
+`.claude/api-contract.md` (which flags the known-wrong `.mcp/` routes).
+
+Two cautionary tales (real bugs):
+- **Menu activate** — `.mcp/` said `PATCH /restaurants/{id}/menus/{menuId}/activate`.
+  No such route exists. Real: `PATCH /restaurants/{id}/menus/{menuId}` with body
+  `{ isActive: true | false }` (`src/services/menuService.ts:30`).
+- **Photo upload** — `POST /restaurants/{id}/photo` (multipart) only worked once the
+  backend dispatcher got a `/photo` branch; the Flask-only version 404'd. The
+  multipart field is **`file`**, not `photo` as `.mcp/` claims
+  (`src/services/restaurantService.ts:28`).
 
 ## Tech Stack
-- Frontend Framework: Vue 3 (Composition API, `<script setup>`).
-- Build Tool: Vite.
-- Language: TypeScript (Strict mode).
-- State Management: Pinia (If needed for the SPA demo).
-- Routing: Vue Router.
-- Styling: Tailwind CSS (or defined UI library).
-- Backend/Cloud: (DEMO phase) Mocked API services simulating Cloud Serverless functions/Database, preparing for eventual real Cloud integration.
+- Vue 3.5 (Composition API, `<script setup>`) · Vite · TypeScript (strict, no `any`)
+- Pinia (stores) · Vue Router · Tailwind CSS v4 · vue-i18n · Chart.js (vue-chartjs)
+- Package manager: **pnpm**. Backend: AWS serverless (Cognito, API GW, Lambda, S3, SNS).
 
-## Project Context: Abricot (B2B SaaS for Restaurants)
-Abricot is a platform that simplifies and centralizes online orders and reservations for restaurants. The system is designed to be a Cloud-native SaaS to handle elastic demand efficiently without manual intervention from restaurant staff.
+## Architecture (see `.claude/architecture.md` for detail)
+- `src/services/*` — one module per backend resource; all go through the `http`
+  client (`src/services/http.ts`). Components/stores never call `fetch` directly.
+- `src/stores/*` — Pinia (`auth`, `cart`, `restaurant`, `restaurantContext`, `lookups`).
+- `src/types/*` — strict interfaces for every business entity; `*Type` suffix,
+  re-exported without the suffix via `src/types/index.ts`.
+- `src/views/*` + `src/components/*` — non-trivial `<script setup>` logic lives in a
+  colocated `scripts/` module (`useViewName` / `useComponentName`). Vue 3.5+ forbids
+  `<script setup src="...">`, so import the composable instead.
+- Routing splits **owner** (`/app/...`, roles `RESTAURANT_ADMIN`/`SUPER_ADMIN`) from
+  **customer** (`/me/...`, role `CUSTOMER`) plus public routes.
 
-## Core Business Features
-1. **Real-Time Dashboard:** Admin panel for restaurant owners to configure schedules, tables, and capacity. Prevents overbooking.
-2. **Self-Service Booking Engine:** Embeddable widget for clients. Validates capacity and confirms automatically.
-3. **Online Orders & Payments:** Digital menu and cart system. Integrates with payment gateways (e.g., Mercado Pago) and sends orders straight to the kitchen.
-4. **Automated Notifications:** State changes ("Preparing", "Ready") sent to clients to reduce operational overhead.
-5. **Demand Analytics:** Dashboard for historical data, peak hours identification, and predictive resource allocation.
-
-## Current Project Status
-- **Frontend:** Initial Vite + Vue 3 setup completed. 
-- **Phase:** Structuring the DEMO. Focusing on building the SPA views and mocking the backend interactions to showcase the cloud-value proposition.
+## Key domain rules (see `.claude/api-contract.md`)
+- **Images**: render the API-provided `photoUrl` directly. The backend returns a
+  presigned URL. **NEVER construct S3 URLs client-side.**
+- **Menu draft/active model**: `create` makes a **draft** (`isActive=false`). Owners
+  read drafts via `GET /restaurants/{id}/admin/menus`; activation flips `isActive`.
+  Customers only ever see the active menu via `GET /restaurants/{id}/menus?isActive=true`.
+- **Reservations require a confirmed SNS email subscription**: the public restaurant
+  page gates booking on `user.snsSubscriptionStatus === 'CONFIRMED'`
+  (`src/views/scripts/RestaurantPublicView.ts:66`).
 
 ## Development Rules
-- **Architecture:** SPA optimized for a DEMO showcase. Keep component logic modular to allow easy migration to real cloud endpoints later. For **views** and **components**, put non-trivial `<script setup>` logic in a colocated **`scripts/`** module (`useViewName` / `useComponentName`) and keep the `.vue` file to template, macros, and wiring — see `.mcp/FRONTEND_PRACTICES.md` §5 (Vue 3.5+ forbids `<script setup src="...">`).
-- **Strict TypeScript:** No `any`. Define interfaces for all business entities (Reservations, Orders, Restaurants, Menu Items).
-- **Clean Code:** Use early returns, functional programming where possible, and descriptive variables.
-- **Language:** Code and comments in English. UI text and mock data in Spanish (Argentina).
-
-## Token Efficiency & Workflow (Strict CLI Rules)
-- DO NOT generate automated tests (Jest/Cypress/Vitest) unless explicitly requested.
-- Do not generate huge boilerplate without asking for confirmation first.
-- Use `sed` or targeted edits for minor changes instead of rewriting whole files.
-- Limit context: Only read the specific `.vue` or `.ts` files needed for the current task.
+- **Strict TypeScript**: no `any`. Define interfaces for all business entities.
+- **Clean code**: early returns, functional style, descriptive names. Refactor flawed
+  architecture rather than patching. Write code a senior engineer would approve.
+- **Language**: code + comments in English; UI text and mock data in Spanish (AR).
+- **No automated tests** (Jest/Cypress/Vitest) unless explicitly requested.
+- Prefer targeted edits over rewriting whole files. Ask before large boilerplate.
+- Only read the specific files needed for the task.
 
 ## Verification (non-negotiable)
-- Do NOT report success unless:
-  - TypeScript compilation passes (`npm run build-only` or `vue-tsc --noEmit`).
-  - Linter passes (`npm run lint`).
-- Fix ALL errors before responding.
-
-## Code Quality
-- Leverage Vue's Composition API and composables (`useReservation`, `useOrders`) to separate business logic from UI components.
-- Do not apply quick fixes or patches. If architecture is flawed, refactor it.
-- Write code a senior engineer would approve.
+Do NOT report success unless **type-check and lint pass**:
+- `pnpm type-check` (or `pnpm build`) and `pnpm lint`.
+In this repo the operator runs commands — propose them, wait for output, then claim
+success only against real output. See `.claude/working-in-this-repo.md`.
