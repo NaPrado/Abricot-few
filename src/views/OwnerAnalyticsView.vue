@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { analyticsService } from '@/services'
-import type { MetricsAnalyticsResponse, OrdersAnalyticsResponse } from '@/types'
+import type { DashboardAnalyticsResponse, OrdersAnalyticsResponse } from '@/types'
 
 const route = useRoute()
 const restaurantId = route.params.restaurantId as string
@@ -10,14 +10,19 @@ const restaurantId = route.params.restaurantId as string
 const TODAY = new Date().toISOString().split('T')[0] as string
 const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] as string
 
+const dashboard = ref<DashboardAnalyticsResponse | null>(null)
+// Kept only to feed "Pedidos por estado" — report=dashboard has no per-status breakdown.
 const orders = ref<OrdersAnalyticsResponse | null>(null)
-const metrics = ref<MetricsAnalyticsResponse | null>(null)
 const loading = ref(true)
 
-function revenueMax(data: OrdersAnalyticsResponse): number {
-  const days = data.revenueByDay
-  if (!days?.length) return 1
-  return Math.max(...days.map(d => Number(d.revenue)), 1)
+const averageTicket = computed(() => {
+  const totals = dashboard.value?.totals
+  return totals && totals.orders > 0 ? Number(totals.revenue) / totals.orders : 0
+})
+
+function revenueMax(data: DashboardAnalyticsResponse): number {
+  if (!data.byDay.length) return 1
+  return Math.max(...data.byDay.map(d => Number(d.revenue)), 1)
 }
 
 function statusMax(data: OrdersAnalyticsResponse): number {
@@ -36,12 +41,12 @@ function formatMoney(n: string | number): string {
 onMounted(async () => {
   loading.value = true
   try {
-    const [ord, met] = await Promise.all([
+    const [dash, ord] = await Promise.all([
+      analyticsService.getDashboard(restaurantId, { start: THIRTY_DAYS_AGO, end: TODAY }),
       analyticsService.getOrders(restaurantId, { start: THIRTY_DAYS_AGO, end: TODAY }),
-      analyticsService.getMetrics(restaurantId, { start: THIRTY_DAYS_AGO, end: TODAY }),
     ])
+    dashboard.value = dash
     orders.value = ord
-    metrics.value = met
   } catch {
     // silently degrade
   } finally {
@@ -61,33 +66,33 @@ onMounted(async () => {
     <template v-else>
       <div class="analytics-card" style="margin-bottom:10px">
         <div class="analytics-card-label">Facturacion diaria</div>
-        <div v-if="!orders" style="color:var(--text-secondary);font-size:0.8125rem">Sin datos.</div>
-        <div v-else-if="!(orders.revenueByDay?.length)" style="color:var(--text-secondary);font-size:0.8125rem">Sin datos.</div>
+        <div v-if="!dashboard" style="color:var(--text-secondary);font-size:0.8125rem">Sin datos.</div>
+        <div v-else-if="!dashboard.byDay.length" style="color:var(--text-secondary);font-size:0.8125rem">Sin datos.</div>
         <div v-else class="analytics-bars" style="height:120px">
           <div
-            v-for="(day, i) in orders.revenueByDay"
+            v-for="(day, i) in dashboard.byDay"
             :key="day.date ?? i"
             class="analytics-bar-col"
           >
             <div
               class="analytics-bar"
-              :class="{ 'analytics-bar--accent': i === (orders.revenueByDay?.length ?? 0) - 1 }"
-              :style="{ height: `${Math.max(2, (Number(day.revenue) / revenueMax(orders)) * 100)}%` }"
+              :class="{ 'analytics-bar--accent': i === dashboard.byDay.length - 1 }"
+              :style="{ height: `${Math.max(2, (Number(day.revenue) / revenueMax(dashboard)) * 100)}%` }"
             />
           </div>
         </div>
-        <div v-if="orders" class="analytics-summary-row">
+        <div v-if="dashboard" class="analytics-summary-row">
           <div class="analytics-summary-item">
             <span class="analytics-summary-label">Total facturado</span>
-            <span class="analytics-summary-val">{{ formatMoney(orders.totalRevenue) }}</span>
+            <span class="analytics-summary-val">{{ formatMoney(dashboard.totals.revenue) }}</span>
           </div>
           <div class="analytics-summary-item">
             <span class="analytics-summary-label">Pedidos totales</span>
-            <span class="analytics-summary-val">{{ orders.totalOrders }}</span>
+            <span class="analytics-summary-val">{{ dashboard.totals.orders }}</span>
           </div>
           <div class="analytics-summary-item">
             <span class="analytics-summary-label">Ticket promedio</span>
-            <span class="analytics-summary-val">{{ formatMoney(orders.averageOrderValue) }}</span>
+            <span class="analytics-summary-val">{{ formatMoney(averageTicket) }}</span>
           </div>
         </div>
       </div>
@@ -95,23 +100,19 @@ onMounted(async () => {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="analytics-card">
           <div class="analytics-card-label">Metricas generales</div>
-          <div v-if="!metrics" style="color:var(--text-secondary);font-size:0.8125rem">Sin datos.</div>
+          <div v-if="!dashboard" style="color:var(--text-secondary);font-size:0.8125rem">Sin datos.</div>
           <div v-else class="analytics-metrics-grid">
             <div>
               <span class="analytics-summary-label">Reservas</span>
-              <span class="analytics-summary-val">{{ metrics.totalReservations }}</span>
+              <span class="analytics-summary-val">{{ dashboard.totals.reservations }}</span>
             </div>
             <div>
               <span class="analytics-summary-label">Pedidos</span>
-              <span class="analytics-summary-val">{{ metrics.totalOrders }}</span>
+              <span class="analytics-summary-val">{{ dashboard.totals.orders }}</span>
             </div>
             <div>
               <span class="analytics-summary-label">Facturacion</span>
-              <span class="analytics-summary-val">{{ formatMoney(metrics.totalRevenue) }}</span>
-            </div>
-            <div v-if="metrics.totalCovers !== undefined">
-              <span class="analytics-summary-label">Cubiertos</span>
-              <span class="analytics-summary-val">{{ metrics.totalCovers }}</span>
+              <span class="analytics-summary-val">{{ formatMoney(dashboard.totals.revenue) }}</span>
             </div>
           </div>
         </div>

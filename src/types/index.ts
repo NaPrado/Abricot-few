@@ -14,7 +14,7 @@ export * from './promotion'
 export * from './notificationPreference'
 export * from './analytics'
 
-import type { AnalyticsPeriodType, AnalyticsQueryType, MetricsAnalyticsResponseType, OrdersAnalyticsResponseType, OrdersByStatusPointType, RevenueByDayPointType } from './analytics'
+import type { AnalyticsPeriodType, AnalyticsQueryType, DashboardAnalyticsResponseType, DashboardByDayPointType, DashboardDaySourceType, DashboardTotalsType, MetricsAnalyticsResponseType, OrdersAnalyticsResponseType, OrdersByStatusPointType, RevenueByDayPointType } from './analytics'
 import type { AuthResponseType, LoginRequestType, RefreshTokenResponseType, RegisterRequestType } from './auth'
 import type { AvailabilityQueryType, AvailabilityResponseType, AvailabilitySlotType, TableAssignmentType } from './availability'
 import type { BusinessHourInputType, BusinessHourRangeType, BusinessHourType, UpdateBusinessHoursRequestType } from './businessHours'
@@ -35,6 +35,10 @@ export type OrdersByStatusPoint = OrdersByStatusPointType
 export type RevenueByDayPoint = RevenueByDayPointType
 export type OrdersAnalyticsResponse = OrdersAnalyticsResponseType
 export type MetricsAnalyticsResponse = MetricsAnalyticsResponseType
+export type DashboardTotals = DashboardTotalsType
+export type DashboardDaySource = DashboardDaySourceType
+export type DashboardByDayPoint = DashboardByDayPointType
+export type DashboardAnalyticsResponse = DashboardAnalyticsResponseType
 export type UserRole = UserRoleType
 export type UserSnsSubscriptionStatus = UserSnsSubscriptionStatusType
 export type User = UserType

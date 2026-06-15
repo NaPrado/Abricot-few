@@ -28,7 +28,7 @@ export const menuService = {
   delete: (restaurantId: ApiId, menuId: ApiId) =>
     http.delete<void>(`/restaurants/${restaurantId}/menus/${menuId}`),
   activate: (restaurantId: ApiId, menuId: ApiId) =>
-    http.patch<Menu>(`/restaurants/${restaurantId}/menus/${menuId}/activate`),
+    http.patch<Menu>(`/restaurants/${restaurantId}/menus/${menuId}`, { isActive: true }),
   deactivate: (restaurantId: ApiId, menuId: ApiId) =>
     http.patch<Menu>(`/restaurants/${restaurantId}/menus/${menuId}`, { isActive: false }),
 }
