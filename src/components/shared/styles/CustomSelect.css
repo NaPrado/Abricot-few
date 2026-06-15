@@ -5,7 +5,8 @@
 }
 
 .custom-select-trigger {
-  padding: 1rem 1.25rem;
+  /* Match .landing-search-field padding so label + value line up across the search bar */
+  padding: 1.125rem 1.5rem;
   cursor: pointer;
   user-select: none;
   min-height: 100%;
@@ -143,7 +144,7 @@
   }
 
   .custom-select-trigger {
-    padding: 1rem 1.5rem;
+    padding: 1.125rem 1.5rem;
   }
 
   .custom-select-dropdown {

@@ -4,7 +4,7 @@ import { useAppLayout } from './scripts/AppLayout'
 
 const route = useRoute()
 const {
-  isOwner,
+  isAdminLayout,
   userInitial,
   userName,
   ownerNavItems,
@@ -19,8 +19,8 @@ const {
 
 <template>
   <div class="app-layout-root">
-  <!-- Owner: sidebar + main -->
-  <div v-if="isOwner" class="app-layout-owner">
+  <!-- Admin shell: sidebar + main -->
+  <div v-if="isAdminLayout" class="app-layout-owner">
     <aside class="app-layout-sidebar">
       <div class="app-layout-sidebar-top">
         <div class="app-layout-sidebar-logo">abricot</div>

@@ -4,13 +4,11 @@ import { useRoute } from 'vue-router'
 import { BaseButton } from '@/components/base'
 import { AppNavbar, ToastContainer } from '@/components/shared'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/authStore'
 import { debugError } from '@/utils/debug'
 
 const { t } = useI18n()
 const hasFatalError = ref(false)
 const route = useRoute()
-const authStore = useAuthStore()
 
 onErrorCaptured((error, instance, info) => {
   debugError('app', 'error captured by root fallback', {
@@ -27,11 +25,11 @@ const hideNavbar = computed(() => {
   return route.path === '/login' || route.path === '/auth/callback'
 })
 
-const hideNavbarForOwner = computed(() => {
-  return authStore.isOwner && route.path.startsWith('/app')
-})
+// The admin shell renders its own sidebar nav, so the global top navbar is suppressed
+// there by route meta (not by role — prevents a wrong header during auth hydration).
+const usesAdminLayout = computed(() => route.meta.layout === 'admin')
 
-const showNavbar = computed(() => !hideNavbar.value && !hideNavbarForOwner.value)
+const showNavbar = computed(() => !hideNavbar.value && !usesAdminLayout.value)
 
 // Key on the parent route path for nested routes so AppLayout isn't destroyed
 // when navigating between /me/reservations ↔ /me/orders (or /app/* children).

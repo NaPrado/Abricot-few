@@ -83,10 +83,13 @@ export function useRestaurantPublicView() {
 
   function addToCart(item: MenuItem) {
     cartStore.ensureRestaurant(restaurantId)
+    // Charge the effective price: the active-promo price when present (incl. "0.00"
+    // for FREE_ITEM), otherwise the base price. Keeps cart line + total aligned with
+    // what the backend actually bills.
     cartStore.add({
       id: item.id as string,
       name: item.name,
-      price: Number(item.price),
+      price: item.discountedPrice != null ? Number(item.discountedPrice) : Number(item.price),
     })
   }
 

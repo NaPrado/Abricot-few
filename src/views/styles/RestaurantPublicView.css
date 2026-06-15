@@ -4,11 +4,8 @@
   padding-top: 60px;
 }
 
-/* ── Gallery ─────────────────────────────────────────────── */
+/* ── Hero ────────────────────────────────────────────────── */
 .restaurant-gallery {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 6px;
   height: 360px;
   padding: 1rem 1.5rem 0;
   max-width: 1200px;
@@ -16,19 +13,8 @@
 }
 
 .restaurant-gallery-main {
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-  overflow: hidden;
-  position: relative;
-}
-
-.restaurant-gallery-stack {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 6px;
-}
-
-.restaurant-gallery-thumb {
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  height: 100%;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   position: relative;
 }

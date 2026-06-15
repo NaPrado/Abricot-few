@@ -56,7 +56,7 @@ const router = createRouter({
     {
       path: '/app',
       component: AppLayout,
-      meta: { requiresAuth: true, roles: ['RESTAURANT_ADMIN', 'SUPER_ADMIN'] },
+      meta: { requiresAuth: true, roles: ['RESTAURANT_ADMIN', 'SUPER_ADMIN'], layout: 'admin' },
       children: [
         { path: '', redirect: '/app/restaurants' },
         {
@@ -106,7 +106,7 @@ const router = createRouter({
     {
       path: '/me',
       component: AppLayout,
-      meta: { requiresAuth: true, roles: ['CUSTOMER'] },
+      meta: { requiresAuth: true, roles: ['CUSTOMER'], layout: 'customer' },
       children: [
         { path: '', redirect: '/me/reservations' },
         {

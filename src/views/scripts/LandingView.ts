@@ -19,6 +19,7 @@ export function useLandingView() {
   const router = useRouter()
   const lookupStore = useLookupStore()
   const restaurants = ref<Restaurant[]>([])
+  const restaurantCount = ref(0)
   const loading = ref(true)
   const searchQuery = ref('')
   const searchNeighbourhood = ref('Todos')
@@ -98,8 +99,11 @@ export function useLandingView() {
     try {
       const res = await restaurantService.getAll({ page: 1, perPage: 12 })
       restaurants.value = extractRestaurantList(res, 'landing-view')
+      // `total` is the catalogue-wide count (not just this page) — powers the real stat.
+      restaurantCount.value = res.total ?? restaurants.value.length
       debugSection('landing-view', 'public restaurants loaded', {
         count: restaurants.value.length,
+        total: restaurantCount.value,
         response: res,
       })
     } catch (error) {
@@ -122,6 +126,7 @@ export function useLandingView() {
 
   return {
     restaurants,
+    restaurantCount,
     loading,
     searchQuery,
     searchNeighbourhood,

@@ -31,6 +31,9 @@ export function useAppLayout() {
   const ownerRestaurantsLoading = ref(false)
 
   const isOwner = computed(() => authStore.isOwner)
+  /** Which shell to render — driven by the matched route's meta, not by role, so the
+   *  admin shell never falls back to the customer header while auth state hydrates. */
+  const isAdminLayout = computed(() => route.meta.layout === 'admin')
   const user = computed(() => authStore.user)
   const userInitial = computed(() => user.value?.name?.[0]?.toUpperCase() ?? '?')
   const userName = computed(() => {
@@ -38,19 +41,7 @@ export function useAppLayout() {
     return `${user.value.name} ${user.value.surname}`.trim()
   })
 
-  watch(
-    () => route.params.restaurantId as string | undefined,
-    (id) => {
-      debugSection('app-layout', 'route restaurant param changed', {
-        restaurantId: id ?? null,
-        path: route.fullPath,
-      })
-      if (id) contextStore.setActive(id)
-    },
-    { immediate: true },
-  )
-
-  onMounted(async () => {
+  async function loadOwnerRestaurants() {
     if (!isOwner.value || !user.value) return
     ownerRestaurantsLoading.value = true
     debugSection('app-layout', 'loading owner restaurants', {
@@ -73,7 +64,28 @@ export function useAppLayout() {
     } finally {
       ownerRestaurantsLoading.value = false
     }
-  })
+  }
+
+  watch(
+    () => route.params.restaurantId as string | undefined,
+    (id) => {
+      debugSection('app-layout', 'route restaurant param changed', {
+        restaurantId: id ?? null,
+        path: route.fullPath,
+      })
+      if (!id) return
+      contextStore.setActive(id)
+      // The picker list is fetched once on mount; a restaurant created afterwards
+      // (RestaurantsView navigates straight to it) is absent. Refresh so the
+      // "Local activo" selector lists every restaurant, matching "Mis locales".
+      if (ownerRestaurants.value.length > 0 && !ownerRestaurants.value.some(r => r.id === id)) {
+        void loadOwnerRestaurants()
+      }
+    },
+    { immediate: true },
+  )
+
+  onMounted(loadOwnerRestaurants)
 
   /** Single restaurant context for nav when URL has no :restaurantId (e.g. list view). */
   const navRestaurantId = computed(() => {
@@ -134,7 +146,7 @@ export function useAppLayout() {
   }
 
   return {
-    isOwner,
+    isAdminLayout,
     user,
     userInitial,
     userName,

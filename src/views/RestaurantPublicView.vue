@@ -51,7 +51,7 @@ const {
   <div class="restaurant-view">
     <div v-if="loading" class="restaurant-loading">Cargando…</div>
     <template v-else-if="restaurant">
-      <!-- Gallery -->
+      <!-- Hero: single full-width photo (restaurants have one photoUrl) -->
       <div class="restaurant-gallery">
         <div
           class="restaurant-gallery-main"
@@ -61,10 +61,6 @@ const {
               : colorBg,
           }"
         />
-        <div class="restaurant-gallery-stack">
-          <div class="restaurant-gallery-thumb" :style="{ background: '#0a0a0a' }" />
-          <div class="restaurant-gallery-thumb" :style="{ background: '#060606' }" />
-        </div>
       </div>
 
       <!-- Body -->

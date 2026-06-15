@@ -5,6 +5,7 @@ import { useLandingView } from './scripts/LandingView'
 
 const {
   loading,
+  restaurantCount,
   searchQuery,
   searchNeighbourhood,
   searchType,
@@ -57,7 +58,7 @@ const {
         <!-- Stats -->
         <div class="landing-hero-stats">
           <div class="landing-hero-stat">
-            <span class="landing-hero-stat-val">150+</span>
+            <span class="landing-hero-stat-val">{{ restaurantCount > 0 ? `${restaurantCount}+` : '—' }}</span>
             <span class="landing-hero-stat-lbl">Restaurantes</span>
           </div>
           <div class="landing-hero-stat">
