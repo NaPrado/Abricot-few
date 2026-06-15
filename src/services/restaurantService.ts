@@ -26,6 +26,6 @@ export const restaurantService = {
   uploadPhoto: (id: ApiId, file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-    return http.putForm<Restaurant>(`/restaurants/${id}/photo`, formData)
+    return http.postForm<Restaurant>(`/restaurants/${id}/photo`, formData)
   },
 }
