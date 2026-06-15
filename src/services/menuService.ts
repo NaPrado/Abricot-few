@@ -9,10 +9,10 @@ function normalizeMenuList(response: MenuListResponse): Menu[] {
 }
 
 export const menuService = {
-  /** Admin list: requires JWT. */
+  /** Admin list: requires JWT. Returns ALL menus, including drafts (isActive=false). */
   getByRestaurant: (restaurantId: ApiId) =>
     http
-      .get<MenuListResponse>(`/restaurants/${restaurantId}/menus`)
+      .get<MenuListResponse>(`/restaurants/${restaurantId}/admin/menus`)
       .then(normalizeMenuList),
   getActiveByRestaurant: (restaurantId: ApiId): Promise<MenuDetail> =>
     http.get<MenuDetail>(`/restaurants/${restaurantId}/menus`, {
@@ -28,7 +28,7 @@ export const menuService = {
   delete: (restaurantId: ApiId, menuId: ApiId) =>
     http.delete<void>(`/restaurants/${restaurantId}/menus/${menuId}`),
   activate: (restaurantId: ApiId, menuId: ApiId) =>
-    http.patch<Menu>(`/restaurants/${restaurantId}/menus/${menuId}`, { isActive: true }),
+    http.patch<Menu>(`/restaurants/${restaurantId}/menus/${menuId}/activate`),
   deactivate: (restaurantId: ApiId, menuId: ApiId) =>
     http.patch<Menu>(`/restaurants/${restaurantId}/menus/${menuId}`, { isActive: false }),
 }
