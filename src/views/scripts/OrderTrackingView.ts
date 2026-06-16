@@ -4,7 +4,18 @@ import { orderService } from '@/services'
 import { useAuthStore } from '@/stores/authStore'
 import { useRestaurantNames } from '@/composables'
 import { HttpError } from '@/services/http'
-import type { Order } from '@/types'
+import type { Order, OrderItem } from '@/types'
+
+/**
+ * Resolve the name the backend snapshots onto an order line at creation. The rebuilt
+ * backend may emit it under any of these camelCase keys; fall back to the id ONLY when
+ * none is present (which would indicate a backend gap, not a frontend one).
+ */
+function orderItemDisplayName(item: OrderItem): string {
+  const snapshot = item.menuItemName ?? item.itemName ?? item.name
+  if (typeof snapshot === 'string' && snapshot.trim()) return snapshot.trim()
+  return `Ítem ${String(item.menuItemId).slice(0, 8)}`
+}
 
 const STATUS_STEPS = ['PENDING', 'CONFIRMED', 'READY', 'COMPLETED'] as const
 const STATUS_LABEL: Record<string, string> = {
@@ -199,6 +210,7 @@ export function useOrderTrackingView() {
     formatMoney,
     formatEstimated,
     restaurantName,
+    itemName: orderItemDisplayName,
     goBack,
   }
 }

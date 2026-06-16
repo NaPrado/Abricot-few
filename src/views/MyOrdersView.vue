@@ -14,6 +14,7 @@ const {
   formatMoney,
   toggle,
   restaurantNameFor,
+  itemName,
   viewOrder,
 } = useMyOrdersView()
 </script>
@@ -96,7 +97,7 @@ const {
             </div>
             <div v-for="item in order.items ?? []" :key="item.id" class="order-item-row">
               <span>
-                <span class="order-item-name">{{ item.menuItemName ?? `Ítem ${String(item.menuItemId).slice(0, 8)}` }}</span>
+                <span class="order-item-name">{{ itemName(item) }}</span>
                 <span class="order-item-qty">×{{ item.quantity }}</span>
               </span>
               <span class="order-item-price">{{ formatMoney(Number(item.unitPrice) * item.quantity) }}</span>

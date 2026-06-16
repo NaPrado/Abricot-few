@@ -14,6 +14,7 @@ const {
   formatMoney,
   formatEstimated,
   restaurantName,
+  itemName,
   goBack,
 } = useOrderTrackingView()
 </script>
@@ -117,7 +118,7 @@ const {
         >
           <div class="order-tracking-item-left">
             <span class="order-tracking-item-name">
-              {{ item.menuItemName ?? `Ítem ${String(item.menuItemId).slice(0, 8)}` }}
+              {{ itemName(item) }}
             </span>
             <span v-if="item.notes" class="order-tracking-item-notes">{{ item.notes }}</span>
           </div>
