@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useToast } from '@/composables'
 import { HttpError } from '@/services/http'
 import { orderService } from '@/services'
+import { orderItemDisplayName } from '@/utils/orderItem'
 import type { Order, OrderStatus, RestaurantOrdersQuery } from '@/types'
 
 const route = useRoute()
@@ -16,6 +17,8 @@ const total = ref(0)
 const page = ref(1)
 const perPage = ref(20)
 const filterStatus = ref<OrderStatus | ''>('')
+const expandedId = ref<string | null>(null)
+const detailLoadingId = ref<string | null>(null)
 
 const STATUS_OPTIONS: OrderStatus[] = ['PENDING', 'CONFIRMED', 'READY', 'COMPLETED', 'CANCELLED']
 
@@ -39,6 +42,34 @@ function nextAction(s: string): string { return STATUS_LABEL[NEXT_STATUS[s] ?? '
 function formatMoney(n: string | number): string { return `$${Math.round(Number(n)).toLocaleString('es-AR')}` }
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+}
+
+/**
+ * Expand a card. The admin list endpoint omits line items, so on first open we hydrate
+ * the order via the detail endpoint (`getInRestaurant`) — same source the customer
+ * tracking view uses — and merge its `items` back into the list row.
+ */
+async function toggle(order: Order) {
+  if (expandedId.value === order.id) {
+    expandedId.value = null
+    return
+  }
+  expandedId.value = order.id
+  if (order.items?.length) return
+  detailLoadingId.value = order.id
+  try {
+    const detail = await orderService.getInRestaurant(restaurantId, order.id)
+    const idx = orders.value.findIndex(o => o.id === order.id)
+    if (idx !== -1) orders.value[idx] = { ...orders.value[idx], ...detail }
+  } catch (e) {
+    if (e instanceof HttpError && (e.status === 403 || e.status === 404)) {
+      toast.show('No tenés permisos sobre este pedido o ya no existe.', 'error')
+    } else {
+      toast.show('No se pudo cargar el detalle del pedido.', 'error')
+    }
+  } finally {
+    detailLoadingId.value = null
+  }
 }
 
 async function advance(order: Order) {
@@ -146,16 +177,25 @@ onMounted(load)
     </div>
     <div v-if="!loading && orders.length > 0" class="owner-orders-grid">
       <div v-for="o in orders" :key="o.id" class="owner-order-card">
-        <div class="owner-order-header">
+        <button type="button" class="owner-order-header" :aria-expanded="expandedId === o.id" @click="toggle(o)">
           <span class="owner-order-time">{{ formatTime(o.createdAt) }}</span>
           <span :class="['owner-order-status', `owner-order-status--${o.status}`]">{{ statusLabel(o.status) }}</span>
-        </div>
+        </button>
         <div class="owner-order-items">
-          <div v-if="!o.items?.length" class="owner-order-item owner-order-item--empty">Detalle disponible al abrir el pedido</div>
-          <div v-for="item in o.items ?? []" :key="item.id" class="owner-order-item">
-            <span class="owner-order-item-name">{{ item.menuItemName ?? item.menuItemId.slice(0, 8) }}</span>
-            <span class="owner-order-item-qty">×{{ item.quantity }}</span>
-          </div>
+          <template v-if="expandedId === o.id">
+            <div v-if="detailLoadingId === o.id" class="owner-order-item owner-order-item--empty">Cargando detalle…</div>
+            <template v-else>
+              <div v-if="!o.items?.length" class="owner-order-item owner-order-item--empty">Sin ítems en este pedido.</div>
+              <div v-for="item in o.items ?? []" :key="item.id" class="owner-order-item">
+                <span class="owner-order-item-name">{{ orderItemDisplayName(item) }}</span>
+                <span class="owner-order-item-qty">×{{ item.quantity }}</span>
+                <span class="owner-order-item-price">{{ formatMoney(item.unitPrice) }}</span>
+              </div>
+            </template>
+          </template>
+          <button v-else type="button" class="owner-order-item owner-order-item--empty owner-order-toggle" @click="toggle(o)">
+            Ver detalle
+          </button>
         </div>
         <div class="owner-order-footer">
           <span class="owner-order-total">{{ formatMoney(o.totalAmount) }}</span>
@@ -190,7 +230,7 @@ onMounted(load)
 .owner-sub-desc { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 2rem; }
 .owner-orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
 .owner-order-card { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); padding: 1.125rem; display: flex; flex-direction: column; gap: 0.75rem; }
-.owner-order-header { display: flex; justify-content: space-between; align-items: center; }
+.owner-order-header { display: flex; justify-content: space-between; align-items: center; width: 100%; background: transparent; border: none; padding: 0; font-family: inherit; cursor: pointer; }
 .owner-order-time { font-size: 0.75rem; color: var(--text-muted); }
 .owner-order-status { font-size: 0.5625rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 99px; }
 .owner-order-status--PENDING { color: #888; background: #0a0a0a; border: 1px solid #111; }
@@ -199,10 +239,13 @@ onMounted(load)
 .owner-order-status--COMPLETED { color: #333; background: #080808; border: 1px solid #0d0d0d; }
 .owner-order-status--CANCELLED { color: var(--danger); background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.12); }
 .owner-order-items { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.owner-order-item { display: flex; justify-content: space-between; font-size: 0.8125rem; }
-.owner-order-item-name { color: #444; }
+.owner-order-item { display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: baseline; font-size: 0.8125rem; }
+.owner-order-item-name { color: #888; }
 .owner-order-item-qty { color: var(--text-muted); }
-.owner-order-item--empty { color: var(--text-muted); font-style: italic; }
+.owner-order-item-price { color: var(--text-muted); text-align: right; min-width: 56px; }
+.owner-order-item--empty { display: block; color: var(--text-muted); font-style: italic; }
+.owner-order-toggle { width: 100%; text-align: left; background: transparent; border: none; padding: 0; font-family: inherit; font-size: 0.8125rem; cursor: pointer; }
+.owner-order-toggle:hover { color: #888; }
 .owner-order-footer { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding-top: 0.625rem; border-top: 1px solid #0a0a0a; }
 .owner-order-footer-actions { display: flex; gap: 0.35rem; }
 .owner-order-total { font-size: 0.9375rem; font-weight: 700; color: #666; }

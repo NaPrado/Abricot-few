@@ -110,7 +110,9 @@ export function useAppLayout() {
       { key: 'orders', label: 'Pedidos', to: `${base}/orders`, icon: 'M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
       { key: 'menus', label: 'Menú digital', to: `${base}/menus`, icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
       { key: 'promotions', label: 'Promociones', to: `${base}/promotions`, icon: 'M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01' },
-      { key: 'admins', label: 'Administradores', to: `${base}/admins`, icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', icon2: 'M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75' },
+      // Hidden until the Administradores screen is rebuilt (not a base requirement). Re-enable
+      // alongside the `restaurants/:restaurantId/admins` route in src/router/index.ts.
+      // { key: 'admins', label: 'Administradores', to: `${base}/admins`, icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', icon2: 'M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75' },
       restaurantListItem,
     ]
   })

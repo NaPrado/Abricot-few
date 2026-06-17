@@ -95,10 +95,14 @@ const router = createRouter({
           path: 'restaurants/:restaurantId/stats',
           component: () => import('@/views/OwnerAnalyticsView.vue'),
         },
-        {
-          path: 'restaurants/:restaurantId/admins',
-          component: () => import('@/views/OwnerAdminsView.vue'),
-        },
+        // Hidden until the Administradores screen is rebuilt (not a base requirement, and
+        // currently broken). Re-enable alongside the nav item in
+        // src/components/shared/scripts/AppLayout.ts. Direct URL access now falls through
+        // to the catch-all redirect.
+        // {
+        //   path: 'restaurants/:restaurantId/admins',
+        //   component: () => import('@/views/OwnerAdminsView.vue'),
+        // },
       ],
     },
 

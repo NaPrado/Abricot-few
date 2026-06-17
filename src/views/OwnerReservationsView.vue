@@ -36,6 +36,17 @@ const SOURCE_OPTIONS: ReservationSource[] = ['ONLINE', 'PHONE', 'EVENT']
 
 function statusLabel(s: string): string { return STATUS_LABEL[s] ?? s }
 
+/**
+ * Identify who made the reservation. Widget bookings capture `guestName` + `guestEmail`;
+ * fall back through the available contact fields so a row never collapses to a bare
+ * "Online". The confirmation code (rendered separately) keeps every row unique.
+ */
+function clientLabel(r: Reservation): string {
+  const candidate = r.guestName ?? r.guestEmail ?? r.guestPhone
+  if (typeof candidate === 'string' && candidate.trim()) return candidate.trim()
+  return r.userId ? 'Cliente registrado' : 'Sin datos'
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
 }
@@ -155,6 +166,7 @@ onMounted(() => void load())
     <div v-else class="owner-table">
       <div class="owner-table-head">
         <span>Cliente</span>
+        <span>Código</span>
         <span>Fecha</span>
         <span>Hora</span>
         <span>Personas</span>
@@ -162,7 +174,14 @@ onMounted(() => void load())
         <span>Acciones</span>
       </div>
       <div v-for="r in reservations" :key="r.id" class="owner-table-row">
-        <span class="owner-table-cell">{{ r.guestName ?? 'Online' }}</span>
+        <span class="owner-table-cell owner-client">
+          <span class="owner-client-name">{{ clientLabel(r) }}</span>
+          <span v-if="r.guestEmail && r.guestEmail !== clientLabel(r)" class="owner-client-email">{{ r.guestEmail }}</span>
+        </span>
+        <span class="owner-table-cell">
+          <span v-if="r.confirmationCode" class="owner-code">{{ r.confirmationCode }}</span>
+          <span v-else>—</span>
+        </span>
         <span class="owner-table-cell">{{ formatDate(r.date) }}</span>
         <span class="owner-table-cell">{{ r.timeSlot.slice(0,5) }}</span>
         <span class="owner-table-cell">{{ r.partySize }}</span>
@@ -208,9 +227,13 @@ onMounted(() => void load())
 .owner-reserv-filters select,
 .owner-reserv-filters input { min-height: 2.25rem; padding: 0 0.65rem; border-radius: var(--radius-sm); border: 1px solid #1a1a1a; background: #0a0a0a; color: #ccc; font-family: inherit; font-size: 0.8125rem; }
 .owner-table { background: #060606; border: 1px solid #0d0d0d; border-radius: var(--radius-lg); overflow: hidden; }
-.owner-table-head { display: grid; grid-template-columns: 1fr 80px 70px 70px 100px 220px; padding: 0.75rem 1.25rem; background: #080808; font-size: 0.5625rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; }
-.owner-table-row { display: grid; grid-template-columns: 1fr 80px 70px 70px 100px 220px; padding: 0.875rem 1.25rem; border-top: 1px solid #0a0a0a; align-items: center; }
+.owner-table-head { display: grid; grid-template-columns: 1.4fr 110px 80px 70px 70px 100px 220px; padding: 0.75rem 1.25rem; background: #080808; font-size: 0.5625rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; }
+.owner-table-row { display: grid; grid-template-columns: 1.4fr 110px 80px 70px 70px 100px 220px; padding: 0.875rem 1.25rem; border-top: 1px solid #0a0a0a; align-items: center; }
 .owner-table-cell { font-size: 0.8125rem; color: #444; }
+.owner-client { display: flex; flex-direction: column; gap: 2px; }
+.owner-client-name { color: #888; }
+.owner-client-email { font-size: 0.6875rem; color: var(--text-muted); }
+.owner-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--brand); }
 .owner-status { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; }
 .owner-status--CONFIRMED { color: var(--brand); }
 .owner-status--CANCELLED { color: #222; }
